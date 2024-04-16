@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:13:34 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/04/16 13:16:22 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/04/16 14:27:25 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 # include "irc.hpp"
 
 # define MAX_WAITLIST 5
+# define MAX_CLIENT 10
 
 	class Server {
 		private :
