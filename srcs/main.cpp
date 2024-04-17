@@ -6,15 +6,14 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:11:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/04/16 13:16:12 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/04/17 13:54:05 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../headers/irc.hpp"
 
-void check_port(std::string port);
-
-int main(int argc, char** argv) {
+int main(int argc, char** argv) 
+{
     
     int port;
     try {
@@ -40,9 +39,14 @@ int main(int argc, char** argv) {
     return (0);
 }
 
-void check_port(std::string port) {
+void    check_port(std::string port) {
     for (size_t i = 0; i != port.size(); i++) {
         if (port[i] < '0' || port[i] > '9')
             throw std::runtime_error("[ERROR] Port invalid");
     }
 }
+
+void    debugIRC(std::string str)
+{
+    std::cout << CYAN << "[DEBUG] " << str << RESET << std::endl;
+} 
