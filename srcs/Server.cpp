@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/04/18 13:43:14 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/04/18 14:29:15 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,15 @@ void Server::config() {
     _adress.sin_addr.s_addr = htonl(INADDR_ANY);
     _adress.sin_port = htons(_port);
     std::cout << GREEN << "[SERVER] Config OK" << RESET  << std::endl;
+}
+
+std::string getClientName(int client_socket) {
+    static std::map<int, std::string> client_name;
+
+    auto it = client_name.find(client_socket);
+    if (it != client_name.end())
+        return (it->second);
+    return ("none");
 }
 
 void Server::start() {
@@ -73,19 +82,16 @@ void Server::start() {
                 char buffer[1024];
                 ssize_t bytesRead = recv(fds[i].fd, buffer, 1024, 0);
                 if (bytesRead <= 0) {
-                    // Erreur de lecture ou client déconnecté
                     if (bytesRead == 0) {
-                        std::cout << "Client déconnecté" << std::endl;
+                        std::cout << YELLOW << "[CLIENT] left server" << RESET << std::endl;
                         numClients--;
-                    } else {
-                        std::cerr << "Erreur lors de la lecture des données du client" << std::endl;
-                    }
+                    } else
+                        throw std::runtime_error("data client can not read");
                     close(fds[i].fd);
-                    fds[i].fd = -1;
                     continue;
                 }
-                else
-                    std::cout << MAGENTA << "[CLIENT] " << buffer << std::endl;
+                std::string client_data(buffer, bytesRead);
+                std::string client_name = getClientName(fds[i].fd);
             }
         }
 

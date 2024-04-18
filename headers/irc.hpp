@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:09:45 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/04/17 13:54:12 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/04/18 14:27:51 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 # include <string>
 # include <cstdlib>
 # include <cstring>
+# include <map>
 # include <sys/types.h>
 # include <sys/socket.h>
 # include <cerrno>
