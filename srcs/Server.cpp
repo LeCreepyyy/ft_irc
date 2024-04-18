@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/04/17 14:16:42 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/04/18 13:43:14 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,9 +24,11 @@ Server::~Server() {
 }
 
 void Server::config() {
+    // Creation du socket
     _socket = socket(AF_INET, SOCK_STREAM, 0);
     if (_socket == -1)
         throw std::runtime_error("[ERROR] Sockets creation failed");
+    // Configuration du socket avec 
     _adress.sin_family = AF_INET;
     _adress.sin_addr.s_addr = htonl(INADDR_ANY);
     _adress.sin_port = htons(_port);
@@ -39,25 +41,62 @@ void Server::start() {
         close(_socket);
         throw std::runtime_error("[ERROR] Socket setup failed");
     }
+    struct pollfd fds[1];
+    fds[0].fd = _socket;
+    fds[0].events = POLLIN;
     std::cout << GREEN << "[SERVER] Listening..." << RESET  << std::endl;
+    int numClients = 0;
     while (true) {
-        struct sockaddr_in client_adress;
-        socklen_t client_adress_len = sizeof(client_adress);
-        int client_socket = accept(_socket, (struct sockaddr *)&client_adress, &client_adress_len);
-        if (client_socket == -1) {
+        int numReady = poll(fds, numClients + 1, -1);
+        if (numReady == -1) {
+            std::cerr << "Erreur lors de l'appel à poll()" << std::endl;
             close(_socket);
-            throw std::runtime_error("[ERROR] Client rejected");
+            exit(EXIT_FAILURE);
         }
-        char clientIP[INET_ADDRSTRLEN];
-        inet_ntop(AF_INET, &(client_adress.sin_addr), clientIP, INET_ADDRSTRLEN);
-        std::cout << YELLOW << "[CLIENT] " << clientIP << " connected" << RESET << std::endl;
 
-        // while for CLIENT ACTION
-        
-        close(client_socket);
+        if (fds[0].revents & POLLIN) {
+            struct sockaddr_in client_adress;
+            socklen_t client_adress_len = sizeof(client_adress);
+            int client_socket = accept(_socket, (struct sockaddr *)&client_adress, &client_adress_len);
+            if (client_socket == -1) {
+                close(_socket);
+                throw std::runtime_error("[ERROR] Client rejected");
+            }
+            char clientIP[INET_ADDRSTRLEN];
+            inet_ntop(AF_INET, &(client_adress.sin_addr), clientIP, INET_ADDRSTRLEN);
+            std::cout << YELLOW << "[CLIENT] " << clientIP << " connected" << RESET << std::endl;
+            numClients++;
+        }
+
+        for (int i = 1; i <= numClients; ++i) {
+            if (fds[i].revents & POLLIN) { // Données à lire
+                char buffer[1024];
+                ssize_t bytesRead = recv(fds[i].fd, buffer, 1024, 0);
+                if (bytesRead <= 0) {
+                    // Erreur de lecture ou client déconnecté
+                    if (bytesRead == 0) {
+                        std::cout << "Client déconnecté" << std::endl;
+                        numClients--;
+                    } else {
+                        std::cerr << "Erreur lors de la lecture des données du client" << std::endl;
+                    }
+                    close(fds[i].fd);
+                    fds[i].fd = -1;
+                    continue;
+                }
+                else
+                    std::cout << MAGENTA << "[CLIENT] " << buffer << std::endl;
+            }
+        }
+
+        //close(client_socket);
     }
 }
 
 void Server::end() {
     close(_socket);
+}
+
+void Server::handle_client(int client_socket) {
+    (void)client_socket;
 }
