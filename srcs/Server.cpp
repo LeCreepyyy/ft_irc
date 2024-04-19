@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: creepy <creepy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/04/18 14:29:15 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/04/19 18:22:12 by creepy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,10 +38,24 @@ void Server::config() {
 std::string getClientName(int client_socket) {
     static std::map<int, std::string> client_name;
 
-    auto it = client_name.find(client_socket);
+    std::map<int, std::string>::iterator it = client_name.find(client_socket);
     if (it != client_name.end())
-        return (it->second);
+        return it->second;
     return ("none");
+}
+
+void handle_client_action(const std::string & command, const std::string & name) {
+    if (command == "/quit") {
+        std::cout << YELLOW << "[CLIENT] " << name << " left the server" << std::endl;
+    }
+    else if (command.substr(0, 5) == "/join") {
+        std::string channel_name = command.substr(6);
+        //gerer le channel
+        debugIRC("/join work");
+    }
+    else {
+        std::cerr << MAGENTA << "[CLIENT] excute unknow command" << std::endl;
+    }
 }
 
 void Server::start() {
