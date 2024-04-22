@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:11:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/04/17 13:54:05 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/04/22 13:57:04 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ int main(int argc, char** argv)
     try {
         server.config();
         server.start();
-        server.end();
+        server.end("");
     }
     catch (const std::exception& e) {
         std::cerr << RED << e.what() << RESET << std::endl;

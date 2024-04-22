@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: creepy <creepy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/04/19 18:22:12 by creepy           ###   ########.fr       */
+/*   Updated: 2024/04/22 14:42:26 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,57 +64,114 @@ void Server::start() {
         close(_socket);
         throw std::runtime_error("[ERROR] Socket setup failed");
     }
-    struct pollfd fds[1];
-    fds[0].fd = _socket;
-    fds[0].events = POLLIN;
     std::cout << GREEN << "[SERVER] Listening..." << RESET  << std::endl;
-    int numClients = 0;
+
+    std::vector<pollfd> fds;
+     
+    /*while (true) {
+
+        struct sockaddr_in cli_address;
+		socklen_t cli_address_len = sizeof(cli_address);
+		int cli_socket = accept(_socket, (struct sockaddr *)&cli_address, &cli_address_len);
+
+        if (cli_socket == -1)
+            this->end("Client rejected");
+
+        char clientIP[INET_ADDRSTRLEN];
+		inet_ntop(AF_INET, &(cli_address.sin_addr), clientIP, INET_ADDRSTRLEN);
+		std::cout << YELLOW "[CLIENT] " << clientIP << " connected" << RESET << std::endl;
+
+        pollfd client_fd;
+		client_fd.fd = cli_socket;
+		client_fd.events = POLLIN;
+		fds.push_back(client_fd);
+
+        std::cout << "fds.size() =" << fds.size() << std::endl;
+        
+        int poll_nbr = poll(&fds[0], fds.size(), 250);
+        if (poll_nbr == -1)
+                this->end("poll() exception");
+            
+        while (poll_nbr != 0)
+        {   
+            for (size_t i = 0; i < fds.size(); i++)
+            {
+                if (fds[i].revents & POLLIN)
+                {
+                    char buffer[1024];
+                    int bytes_received = recv(fds[i].fd, buffer, sizeof(buffer), 0);
+                    if (bytes_received == -1)
+                        this->end("recv() exception");
+                    else if (bytes_received == 0)
+                    {
+                        close(fds[i].fd);
+                        fds.erase(fds.begin() + i);
+                        std::cout << "Connection closed by client" << std::endl;
+                        break;
+                    }
+                    else
+                    {
+                        buffer[bytes_received] = '\0';
+                        std::cout << "Received from client " << fds[i].fd << ": " << buffer << std::endl;
+                    }
+                }
+            }
+            poll_nbr = poll(&fds[0], fds.size(), 250);
+            if (poll_nbr == -1)
+                this->end("poll() exception");
+        }
+    }*/
+
+
+
     while (true) {
-        int numReady = poll(fds, numClients + 1, -1);
-        if (numReady == -1) {
-            std::cerr << "Erreur lors de l'appel à poll()" << std::endl;
+        struct sockaddr_in clientAddr;
+        socklen_t clientAddrLen = sizeof(clientAddr);
+        int clientSocket = accept(_socket, (struct sockaddr *)&clientAddr, &clientAddrLen);
+        if (clientSocket == -1) {
+            std::cerr << "Erreur lors de l'acceptation de la connexion" << std::endl;
             close(_socket);
             exit(EXIT_FAILURE);
         }
 
-        if (fds[0].revents & POLLIN) {
-            struct sockaddr_in client_adress;
-            socklen_t client_adress_len = sizeof(client_adress);
-            int client_socket = accept(_socket, (struct sockaddr *)&client_adress, &client_adress_len);
-            if (client_socket == -1) {
-                close(_socket);
-                throw std::runtime_error("[ERROR] Client rejected");
-            }
-            char clientIP[INET_ADDRSTRLEN];
-            inet_ntop(AF_INET, &(client_adress.sin_addr), clientIP, INET_ADDRSTRLEN);
-            std::cout << YELLOW << "[CLIENT] " << clientIP << " connected" << RESET << std::endl;
-            numClients++;
+        // Récupération de l'adresse IP du client
+        char clientIP[INET_ADDRSTRLEN];
+        inet_ntop(AF_INET, &(clientAddr.sin_addr), clientIP, INET_ADDRSTRLEN);
+        std::cout << "Client connecté depuis l'adresse IP : " << clientIP << std::endl;
+
+        // Lecture des données envoyées par le client
+        char buffer[1024];
+        ssize_t bytesRead = recv(clientSocket, buffer, 1024, 0);
+        if (bytesRead == -1) {
+            std::cerr << "Erreur lors de la lecture des données du client" << std::endl;
+            close(clientSocket);
+            continue;
         }
 
-        for (int i = 1; i <= numClients; ++i) {
-            if (fds[i].revents & POLLIN) { // Données à lire
-                char buffer[1024];
-                ssize_t bytesRead = recv(fds[i].fd, buffer, 1024, 0);
-                if (bytesRead <= 0) {
-                    if (bytesRead == 0) {
-                        std::cout << YELLOW << "[CLIENT] left server" << RESET << std::endl;
-                        numClients--;
-                    } else
-                        throw std::runtime_error("data client can not read");
-                    close(fds[i].fd);
-                    continue;
-                }
-                std::string client_data(buffer, bytesRead);
-                std::string client_name = getClientName(fds[i].fd);
-            }
+        // Analyse des commandes USER et NICK envoyées par le client
+        std::string data(buffer, bytesRead);
+        size_t userPos = data.find("USER");
+        size_t nickPos = data.find("NICK");
+        if (userPos != std::string::npos && nickPos != std::string::npos) {
+            std::string username = data.substr(userPos + 5, data.find('\n', userPos) - (userPos + 5));
+            std::string nickname = data.substr(nickPos + 5, data.find('\n', nickPos) - (nickPos + 5));
+            std::cout << "Nom d'utilisateur : " << username << std::endl;
+            std::cout << "Pseudo : " << nickname << std::endl;
         }
 
-        //close(client_socket);
+        // Envoyer une réponse au client (par exemple, un message de bienvenue)
+        std::string welcomeMessage = "Bienvenue sur le serveur IRC !";
+        send(clientSocket, welcomeMessage.c_str(), welcomeMessage.length(), 0);
+
+        //close(clientSocket); // Fermer la connexion avec le client
     }
+
 }
 
-void Server::end() {
+void Server::end(std::string msg) {
     close(_socket);
+    if (msg.length() != 0)
+        throw std::runtime_error(msg);
 }
 
 void Server::handle_client(int client_socket) {

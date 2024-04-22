@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:13:34 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/04/18 13:16:13 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/04/22 13:56:48 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@
 
 			void	config();
 			void	start();
-			void	end();
+			void	end(std::string msg);
 			void	handle_client(int client_socket);
 	};
 
