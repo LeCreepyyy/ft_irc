@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/04/23 13:53:15 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/04/23 14:06:05 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,7 +68,9 @@ void Server::start() {
         int poll_events = poll(&fds[0], fds.size(), 150);
         if (poll_events == -1)
                 this->end("poll() exception");
-            
+        for (size_t i = 0; i != fds.size(); i++) {
+            std::cout << i << " : " << fds[i].fd << std::endl;
+        }
         while (poll_events != 0)
         {   
             for (size_t i = 0; i < fds.size(); i++)
