@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:11:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/04/23 13:30:35 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/04/23 14:13:46 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,3 @@ void    parsing(char **argv) {
     if (password.find(' ') != std::string::npos)
         throw std::runtime_error("Invalid Password");
 }
-
-void    debugIRC(std::string str) {
-    std::cout << CYAN << "[DEBUG] " << str << RESET << std::endl;
-} 

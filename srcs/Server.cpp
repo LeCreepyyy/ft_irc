@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/04/23 14:06:05 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/04/23 14:14:20 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ void Server::start() {
         this->end("Unable to listen");
     
     
-    debugIRC("Listening...");
+    debug("Listening...");
     
     // clients fds
     std::vector<pollfd> fds;
@@ -72,7 +72,7 @@ void Server::start() {
             std::cout << i << " : " << fds[i].fd << std::endl;
         }
         while (poll_events != 0)
-        {   
+        {
             for (size_t i = 0; i < fds.size(); i++)
             {
                 if (fds[i].revents & POLLIN)
