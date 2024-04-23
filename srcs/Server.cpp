@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/04/23 13:35:03 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/04/23 13:53:15 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,9 +63,9 @@ void Server::start() {
 
         char clientIP[INET_ADDRSTRLEN];
 		inet_ntop(AF_INET, &(client_address.sin_addr), clientIP, INET_ADDRSTRLEN);
-		std::cout << YELLOW "[CLIENT] " << clientIP << " connected" << RESET << std::endl;
+		std::cout << YELLOW "[CLIENT] " << clientIP << " try to connect" << RESET << std::endl;
         
-        int poll_events = poll(&fds[0], fds.size(), 250);
+        int poll_events = poll(&fds[0], fds.size(), 150);
         if (poll_events == -1)
                 this->end("poll() exception");
             
@@ -76,10 +76,13 @@ void Server::start() {
                 if (fds[i].revents & POLLIN)
                 {
                     char buffer[1024];
-                    int bytes_received = recv(fds[i].fd, buffer, sizeof(buffer), 0);
-                    if (bytes_received == -1)
-                        this->end("recv() exception");
-                    else if (bytes_received == 0)
+                    ssize_t bytesRead = recv(client_socket, buffer, 1024, 0);
+                    if (bytesRead == -1) {
+                        std::cerr << "Erreur lors de la lecture des données du client" << std::endl;
+                        close(client_socket);
+                        continue;
+                    }
+                    else if (bytesRead == 0)
                     {
                         close(fds[i].fd);
                         fds.erase(fds.begin() + i);
@@ -88,12 +91,23 @@ void Server::start() {
                     }
                     else
                     {
-                        buffer[bytes_received] = '\0';
-                        std::cout << "Received from client " << fds[i].fd << ": " << buffer << std::endl;
+                        buffer[bytesRead] = '\0';
+                        std::string data(buffer, bytesRead);
+                        size_t userPos = data.find("USER");
+                        size_t nickPos = data.find("NICK");
+                        if (userPos != std::string::npos && nickPos != std::string::npos) {
+                            std::string username = data.substr(userPos + 5, data.find('\n', userPos) - (userPos + 5));
+                            std::string nickname = data.substr(nickPos + 5, data.find('\n', nickPos) - (nickPos + 5));
+                            std::cout << "Nom d'utilisateur : " << username << std::endl;
+                            std::cout << "Pseudo : " << nickname << std::endl;
+                        }
+                        std::string welcomeMessage = "Bienvenue sur le serveur IRC !";
+                        send(client_socket, welcomeMessage.c_str(), welcomeMessage.length(), 0);
                     }
+                    memset(&buffer, 0, sizeof(buffer));
                 }
             }
-            poll_events = poll(&fds[0], fds.size(), 250);
+            poll_events = poll(&fds[0], fds.size(), 150);
             if (poll_events == -1)
                 this->end("poll() exception");
         }
