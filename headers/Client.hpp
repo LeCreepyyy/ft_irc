@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:05:32 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/04/24 14:22:27 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/04/24 14:38:31 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,11 +56,14 @@
 				}
 			}
 
-			std::string getNickname();
-			std::string getUsername();
-			int			getSocket();
-			struct sockaddr_in getAddress();
-			socklen_t	getAddressLen();
+			void					setClientSocket(int socket);
+			std::string				getNickname();
+			std::string				getUsername();
+			int						getSocket();
+			struct sockaddr_in 		getAddress();
+			socklen_t				getAddressLen();
+			struct sockaddr_in& 	getAddressREF();
+			socklen_t& 				getAddressLenREF();
 	};
 
 #endif

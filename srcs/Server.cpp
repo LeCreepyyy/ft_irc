@@ -6,7 +6,7 @@
 /*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/04/24 12:46:24 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/04/24 14:37:36 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,7 @@ void Server::start()
 	std::cout << BLUE << "Server listening on port " << serv_port << RESET << std::endl;
 
 	// clients fds
+    std::vector<Client> clients;
 	std::vector<int>	client_sockets ;
 	fd_set				readfds;
 	int					maxFd;
@@ -78,13 +79,13 @@ void Server::start()
 
         // si ya un event sur le serv_socket, c'est une nouvelle connexion de client
         if (FD_ISSET(serv_socket, &readfds)) {
-            struct sockaddr_in	client_address;
-            socklen_t 			client_address_len = sizeof(client_address);
-            int client_socket = accept(serv_socket, (struct sockaddr*)&client_address, &client_address_len);
+            Client  client;
+            int client_socket = accept(serv_socket, (struct sockaddr*)&(client.getAddressREF()), &(client.getAddressLenREF()));
             if (client_socket == -1)
                 this->end("Could not accept connexion");
+            client.setClientSocket(client_socket);
 
-            std::cout << "New connection from " << inet_ntoa(client_address.sin_addr) << std::endl;
+            std::cout << "New connection from " << inet_ntoa(client.getAddress().sin_addr) << std::endl;
 
             // ajouter le nouveau socket client dans le container 
             client_sockets.push_back(client_socket);

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:09:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/04/24 14:25:02 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/04/24 14:38:46 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,10 @@ Client::Client() {
 
 Client::~Client() {
     ;
+}
+
+void    Client::setClientSocket(int socket) {
+    client_socket = socket;
 }
 
 std::string Client::getNickname() {
@@ -38,5 +42,13 @@ struct sockaddr_in Client::getAddress() {
 }
 
 socklen_t Client::getAddressLen() {
+    return (client_address_len);
+}
+
+struct sockaddr_in& Client::getAddressREF() {
+    return (client_address);
+}
+
+socklen_t& Client::getAddressLenREF() {
     return (client_address_len);
 }
