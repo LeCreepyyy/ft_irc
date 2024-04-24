@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   irc.hpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:09:45 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/04/23 14:14:00 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/04/24 12:30:00 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@
 # define MAGENTA "\033[35m" // CLIENT ACTION
 # define GRAY    "\033[37m" // CLIENT INFO
 # define CYAN    "\033[36m" // DEBUG
-# define BLUE    "\033[34m" // ...
+# define BLUE    "\033[34m" // SERVER
 # define WHITE   "\033[37m" // ...
 
 void    parsing(char **argv);
