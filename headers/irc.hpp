@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   irc.hpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
+/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:09:45 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/04/24 12:30:00 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/04/24 13:36:29 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,12 @@
 # include <poll.h>
 # include <vector>
 
-# include "Server.hpp"
+// for client object
+# define NICKNAME 0
+# define USERNAME 1
+# define CLIENT_SOCKET 2
+# define CLIENT_ADDRESS 3
+# define CLIENT_ADDRESS_LEN 4
 
 # define RESET   "\033[0m" // RESET COLOR
 # define RED     "\033[31m" // ERROR
@@ -38,6 +43,9 @@
 # define CYAN    "\033[36m" // DEBUG
 # define BLUE    "\033[34m" // SERVER
 # define WHITE   "\033[37m" // ...
+
+# include "Server.hpp"
+# include "Client.hpp"
 
 void    parsing(char **argv);
 
