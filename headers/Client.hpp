@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:05:32 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/04/24 13:33:50 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/04/24 14:22:27 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,27 +56,11 @@
 				}
 			}
 
-			/**
-			 * Get attribute's content
-			 * @param attribute  NICKNAME, USERNAME, CLIENT_SOCKET, CLIENT_ADDRESS or CLIENT_ADDRESS_LEN
-			*/
-			template<typename T>
-			T& get(int attribute) {
-				switch (attribute) {
-					case NICKNAME:
-						return (nickname);
-					case USERNAME:
-						return (username);
-					case CLIENT_SOCKET:
-						return (client_socket);
-					case CLIENT_ADDRESS:
-						return (client_address);
-					case CLIENT_ADDRESS_LEN:
-						return (client_address_len);
-					default:
-						break;
-				}
-			}
+			std::string getNickname();
+			std::string getUsername();
+			int			getSocket();
+			struct sockaddr_in getAddress();
+			socklen_t	getAddressLen();
 	};
 
 #endif
