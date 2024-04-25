@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
+/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:05:32 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/04/24 14:38:31 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/04/25 10:04:51 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,41 +28,21 @@
 			Client();
 			~Client();
 
-			/**
-			 * Set attribute's value
-			 * @param attribute NICKNAME, USERNAME, CLIENT_SOCKET, CLIENT_ADDRESS or CLIENT_ADDRESS_LEN
-			 * @param value The value to set
-			*/
-			template<typename T>
-			void set(int attribute, T value) {
-				switch (attribute) {
-					case NICKNAME:
-						nickname = value;
-						break;
-					case USERNAME:
-						username = value;
-						break;
-					case CLIENT_SOCKET:
-						client_socket = value;
-						break;
-					case CLIENT_ADDRESS:
-						client_address = value;
-						break;
-					case CLIENT_ADDRESS_LEN:
-						client_address_len = value;
-						break;
-					default:
-						break;
-				}
-			}
+			void					setNickname(std::string nickname);
+			std::string				getNickname();
+
+			void					setUsername(std::string username);
+			std::string				getUsername();
 
 			void					setClientSocket(int socket);
-			std::string				getNickname();
-			std::string				getUsername();
 			int						getSocket();
+
+			void					setClientAddress(struct sockaddr_in addr);
 			struct sockaddr_in 		getAddress();
-			socklen_t				getAddressLen();
 			struct sockaddr_in& 	getAddressREF();
+
+			void					setClientAddressLen(socklen_t addr_len);
+			socklen_t				getAddressLen();
 			socklen_t& 				getAddressLenREF();
 	};
 
