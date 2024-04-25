@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:09:45 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/04/24 13:36:29 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/04/25 13:54:39 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,14 +44,14 @@
 # define BLUE    "\033[34m" // SERVER
 # define WHITE   "\033[37m" // ...
 
-# include "Server.hpp"
 # include "Client.hpp"
+# include "Server.hpp"
 
 void    parsing(char **argv);
 
 template<typename T>
 void debug(T log) {
-	std::cout << "\033[36m" << "[DEBUG] " << log << std::endl;
+	std::cout << "\033[36m" << "[DEBUG] " << log << RESET << std::endl;
 }
 
 #endif

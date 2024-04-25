@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/04/25 13:29:07 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/04/25 13:55:57 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,14 @@ Server::Server(std::string name, std::string password, int port)
 Server::~Server()
 {
 	;
+}
+
+void handle_client(std::string data_sent, std::vector<Client>::iterator & it)
+{
+	if (!data_sent.find("NICK")) {
+		debug(&data_sent[4]);
+		it->setNickname(&data_sent[4]);
+	}
 }
 
 void Server::start()
@@ -110,8 +118,8 @@ void Server::start()
 
 				std::string message(buffer, bytesReceived);
 				// parse msg + exec command
-				std::cout << it->getUsername() << " send : " << message;
-
+				handle_client(message, it);
+				std::cout << it->getNickname() << " send : " << message;
 				// Parse and handle IRC message
 				// Here you would implement your IRC protocol logic
 				// For simplicity, let's just echo the message back to the client
@@ -128,9 +136,4 @@ void Server::end(std::string log)
 	close(serv_socket);
 	if (log.length() != 0)
 		throw std::runtime_error(log);
-}
-
-void Server::handle_client(int client_socket)
-{
-	(void)client_socket;
 }
