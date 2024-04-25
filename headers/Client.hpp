@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:05:32 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/04/25 10:04:51 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/04/25 13:26:05 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 		private:
 			std::string			nickname;
 			std::string			username;
+			std::string			ip;
 			int					client_socket;
 			struct sockaddr_in	client_address;
 			socklen_t			client_address_len;
@@ -37,13 +38,16 @@
 			void					setClientSocket(int socket);
 			int						getSocket();
 
-			void					setClientAddress(struct sockaddr_in addr);
+			void					setAddress(struct sockaddr_in addr);
 			struct sockaddr_in 		getAddress();
 			struct sockaddr_in& 	getAddressREF();
 
-			void					setClientAddressLen(socklen_t addr_len);
+			void					setAddressLen(socklen_t addr_len);
 			socklen_t				getAddressLen();
 			socklen_t& 				getAddressLenREF();
+
+			std::string				getIP();
+			void					setIP(std::string x);			
 	};
 
 #endif

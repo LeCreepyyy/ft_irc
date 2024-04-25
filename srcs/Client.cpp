@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:09:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/04/25 10:09:03 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/04/25 13:26:39 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ std::string Client::getUsername() {
 
 // accessor Client Address
 
-void    Client::setClientAddress(struct sockaddr_in addr) {
+void    Client::setAddress(struct sockaddr_in addr) {
     client_address = addr;
 }
 
@@ -62,12 +62,12 @@ struct sockaddr_in Client::getAddress() {
 }
 
 struct sockaddr_in& Client::getAddressREF() {
-    return (client_address);
+    return (this->client_address);
 }
 
 // accessor Client Address Len
 
-void    Client::setClientAddressLen(socklen_t addr_len) {
+void    Client::setAddressLen(socklen_t addr_len) {
     client_address_len = addr_len;
 }
 
@@ -77,4 +77,14 @@ socklen_t Client::getAddressLen() {
 
 socklen_t& Client::getAddressLenREF() {
     return (client_address_len);
+}
+
+// accessor Client IP
+
+std::string Client::getIP() {
+    return (ip);
+}
+
+void    Client::setIP(std::string x) {
+    ip = x;
 }

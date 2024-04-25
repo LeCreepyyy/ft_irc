@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
+/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/04/24 14:37:36 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/04/25 13:29:07 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,69 +51,75 @@ void Server::start()
 	std::cout << BLUE << "Server listening on port " << serv_port << RESET << std::endl;
 
 	// clients fds
-    std::vector<Client> clients;
-	std::vector<int>	client_sockets ;
-	fd_set				readfds;
-	int					maxFd;
+	std::vector<Client> clients;
+	std::vector<int> client_sockets;
+	fd_set readfds;
+	int maxFd;
 
 	while (true)
 	{
 		// clear le fd_set
 		FD_ZERO(&readfds);
 
-        // ajouter le socket du server dans fd_set
-        FD_SET(serv_socket, &readfds);
-        maxFd = serv_socket;
+		// ajouter le socket du server dans fd_set
+		FD_SET(serv_socket, &readfds);
+		maxFd = serv_socket;
 
-        // ajouter le socket client dans fd_set
-       	for (std::vector<int>::const_iterator it = client_sockets.begin(); it != client_sockets.end(); ++it) {
-   			int clientSocket = *it;
-   			FD_SET(clientSocket, &readfds);
-    		maxFd = std::max(maxFd, clientSocket);
+		// ajouter le socket client dans fd_set
+		for (std::vector<Client>::iterator it = clients.begin(); it != clients.end(); ++it)
+		{
+			int clientSocket = it->getSocket();
+			FD_SET(clientSocket, &readfds);
+			maxFd = std::max(maxFd, clientSocket);
 		}
 
-        // Surveiller les events sur les socket de readfds
-        int activity = select(maxFd + 1, &readfds, NULL, NULL, NULL);
-        if ((activity < 0) && (errno != EINTR))
-            this->end("Select() exception");
+		// Surveiller les events sur les socket de readfds
+		int activity = select(maxFd + 1, &readfds, NULL, NULL, NULL);
+		if ((activity < 0) && (errno != EINTR))
+			this->end("Select() exception");
 
-        // si ya un event sur le serv_socket, c'est une nouvelle connexion de client
-        if (FD_ISSET(serv_socket, &readfds)) {
-            Client  client;
-            int client_socket = accept(serv_socket, (struct sockaddr*)&(client.getAddressREF()), &(client.getAddressLenREF()));
-            if (client_socket == -1)
-                this->end("Could not accept connexion");
-            client.setClientSocket(client_socket);
+		// si ya un event sur le serv_socket, c'est une nouvelle connexion de client
+		if (FD_ISSET(serv_socket, &readfds))
+		{
+			Client client;
+			int clientSocket = accept(serv_socket, (struct sockaddr *)&(client.getAddressREF()), &(client.getAddressLenREF()));
+			if (clientSocket == -1)
+				this->end("Could not accept connexion");
+			client.setClientSocket(clientSocket);
+			client.setIP(inet_ntoa(client.getAddress().sin_addr));
+			std::cout << "New connection from " << client.getIP() << std::endl;
 
-            std::cout << "New connection from " << inet_ntoa(client.getAddress().sin_addr) << std::endl;
+			// ajouter le nouveau socket client dans le container
+			clients.push_back(client);
+		}
 
-            // ajouter le nouveau socket client dans le container 
-            client_sockets.push_back(client_socket);
-        }
+		// gerer les events des sockets client
+		for (std::vector<Client>::iterator it = clients.begin(); it != clients.end();)
+		{
+			if (FD_ISSET(it->getSocket(), &readfds))
+			{
+				char buffer[1024];
+				int bytesReceived = recv(it->getSocket(), buffer, 1024, 0);
+				if (bytesReceived <= 0)
+				{
+					std::cout << "Client disconnected" << std::endl;
+					close(it->getSocket());
+					it = clients.erase(it);
+					continue;
+				}
 
-        // gerer les events des sockets client
-        for (std::vector<int>::iterator it = client_sockets.begin(); it != client_sockets.end();) {
-            int client_socket = *it;
-            if (FD_ISSET(client_socket, &readfds)) {
-                char buffer[1024];
-                int bytesReceived = recv(client_socket, buffer, 1024, 0);
-                if (bytesReceived <= 0) {
-                    std::cout << "Client disconnected" << std::endl;
-                    close(client_socket);
-                    it = client_sockets.erase(it);
-                    continue;
-                }
+				std::string message(buffer, bytesReceived);
+				// parse msg + exec command
+				std::cout << it->getUsername() << " send : " << message;
 
-                std::string message(buffer, bytesReceived);
-                std::cout << "Received message from client: " << message;
-
-                // Parse and handle IRC message
-                // Here you would implement your IRC protocol logic
-                // For simplicity, let's just echo the message back to the client
-                send(client_socket, buffer, bytesReceived, 0);
-            }
-            ++it;
-        }
+				// Parse and handle IRC message
+				// Here you would implement your IRC protocol logic
+				// For simplicity, let's just echo the message back to the client
+				
+				//send(it->getSocket(), buffer, bytesReceived, 0);
+			}
+			++it;
+		}
 	}
 }
 
