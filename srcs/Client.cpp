@@ -3,88 +3,128 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: creepy <creepy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:09:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/04/25 13:26:39 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/01 11:19:35 by creepy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../headers/Client.hpp"
 
-Client::Client() {
-    nickname = "/";
-    username = "/";
+Client::Client()
+{
+    static int Usercode = 1000;
+    std::ostringstream oss;
+    oss << Usercode;
+    std::string code = oss.str();
+	nickname = "/";
+	username = "User" + code;
+    Usercode++;
 }
 
-Client::~Client() {
-    ;
+Client::~Client()
+{
+	;
 }
 
 // accessor Client Socket
 
-void    Client::setClientSocket(int socket) {
-    client_socket = socket;
+void Client::setClientSocket(int socket)
+{
+	client_socket = socket;
 }
 
-int Client::getSocket() {
-    return (client_socket);
+int Client::getSocket()
+{
+	return (client_socket);
 }
 
 // accessor Client Nickname
 
-void Client::setNickname(std::string name) {
-    nickname = name;
+void Client::setNickname(std::string cmd)
+{
+	size_t start = 5;
+	
+	if (start == std::string::npos)
+		nickname = "/";
+	size_t end = cmd.find_first_of(" \n", start);
+	if (end == std::string::npos) {
+		end = cmd.length();
+	}
+
+	nickname = cmd.substr(start, end - start);
 }
 
-std::string Client::getNickname() {
-    return (nickname);
+std::string Client::getNickname()
+{
+	return (nickname);
 }
 
-// accessor Client Username 
+// accessor Client Username
 
-void    Client::setUsername(std::string name) {
-    username = name;
+void Client::setUsername(std::string cmd)
+{
+	size_t start = 5;
+
+	if (start == std::string::npos)
+		username = "/";
+	
+	size_t end = cmd.find_first_of(" \n", start);
+	if (end == std::string::npos) {
+		end = cmd.length();
+	}
+
+	username = cmd.substr(start, end - start);
 }
 
-std::string Client::getUsername() {
-    return (username);
+std::string Client::getUsername()
+{
+	return (username);
 }
 
 // accessor Client Address
 
-void    Client::setAddress(struct sockaddr_in addr) {
-    client_address = addr;
+void Client::setAddress(struct sockaddr_in addr)
+{
+	client_address = addr;
 }
 
-struct sockaddr_in Client::getAddress() {
-    return (client_address);
+struct sockaddr_in Client::getAddress()
+{
+	return (client_address);
 }
 
-struct sockaddr_in& Client::getAddressREF() {
-    return (this->client_address);
+struct sockaddr_in &Client::getAddressREF()
+{
+	return (this->client_address);
 }
 
 // accessor Client Address Len
 
-void    Client::setAddressLen(socklen_t addr_len) {
-    client_address_len = addr_len;
+void Client::setAddressLen(socklen_t addr_len)
+{
+	client_address_len = addr_len;
 }
 
-socklen_t Client::getAddressLen() {
-    return (client_address_len);
+socklen_t Client::getAddressLen()
+{
+	return (client_address_len);
 }
 
-socklen_t& Client::getAddressLenREF() {
-    return (client_address_len);
+socklen_t &Client::getAddressLenREF()
+{
+	return (client_address_len);
 }
 
 // accessor Client IP
 
-std::string Client::getIP() {
-    return (ip);
+std::string Client::getIP()
+{
+	return (ip);
 }
 
-void    Client::setIP(std::string x) {
-    ip = x;
+void Client::setIP(std::string x)
+{
+	ip = x;
 }

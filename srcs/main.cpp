@@ -3,34 +3,37 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: creepy <creepy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:11:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/04/23 14:13:46 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/01 10:56:00 by creepy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../headers/irc.hpp"
 
-int main(int argc, char** argv) {
-    try {
+int main(int argc, char **argv)
+{
+    try
+    {
         if (argc != 3)
             throw std::runtime_error("Usage:    ./irc <port> <password>");
         parsing(argv);
-        
+
         Server server("Concorde", argv[2], atoi(argv[1]));
-    
+
         server.start();
-        server.end("");
     }
-    catch (const std::exception& e) {
+    catch (const std::exception &e)
+    {
         std::cerr << RED << "[ERROR]" << e.what() << RESET << std::endl;
         exit(EXIT_FAILURE);
     }
     return (EXIT_SUCCESS);
 }
 
-void    parsing(char **argv) {
+void parsing(char **argv)
+{
     std::string port = argv[1];
     std::string password = argv[2];
 

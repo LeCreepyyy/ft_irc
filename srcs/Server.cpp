@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: creepy <creepy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/04/25 13:55:57 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/01 11:30:32 by creepy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,8 +28,19 @@ Server::~Server()
 void handle_client(std::string data_sent, std::vector<Client>::iterator & it)
 {
 	if (!data_sent.find("NICK")) {
-		debug(&data_sent[4]);
-		it->setNickname(&data_sent[4]);
+		debug(it->getNickname().append(" used command NICK"));
+		it->setNickname(data_sent);
+	}
+	if (!data_sent.find("USER")) {
+		debug(it->getNickname().append(" used command USER"));
+		std::cout << it->getUsername();
+		it->setUsername(data_sent);
+		std::cout << it->getUsername();
+	}
+	if (!data_sent.find("JOIN"))
+	{
+		debug(it->getNickname().append(" used command JOIN"));
+		//
 	}
 }
 
@@ -47,7 +58,7 @@ void Server::start()
 
 	// Configuration du serv_socket
 	serv_address.sin_family = AF_INET;
-	serv_address.sin_addr.s_addr = htonl(INADDR_ANY);
+	serv_address.sin_addr.s_addr = INADDR_ANY;
 	serv_address.sin_port = htons(serv_port);
 
 	// Binding et mise en ecoute du serv_socket
@@ -82,8 +93,7 @@ void Server::start()
 		}
 
 		// Surveiller les events sur les socket de readfds
-		int activity = select(maxFd + 1, &readfds, NULL, NULL, NULL);
-		if ((activity < 0) && (errno != EINTR))
+		if ((select(maxFd + 1, &readfds, NULL, NULL, NULL) < 0) && (errno != EINTR))
 			this->end("Select() exception");
 
 		// si ya un event sur le serv_socket, c'est une nouvelle connexion de client
@@ -95,9 +105,8 @@ void Server::start()
 				this->end("Could not accept connexion");
 			client.setClientSocket(clientSocket);
 			client.setIP(inet_ntoa(client.getAddress().sin_addr));
-			std::cout << "New connection from " << client.getIP() << std::endl;
+			std::cout << YELLOW << "[CLIENT] New connection from " << client.getIP() << RESET << std::endl;
 
-			// ajouter le nouveau socket client dans le container
 			clients.push_back(client);
 		}
 
@@ -108,9 +117,8 @@ void Server::start()
 			{
 				char buffer[1024];
 				int bytesReceived = recv(it->getSocket(), buffer, 1024, 0);
-				if (bytesReceived <= 0)
-				{
-					std::cout << "Client disconnected" << std::endl;
+				if (bytesReceived <= 0) {
+					std::cout << YELLOW << "[CLIENT] " << it->getNickname() << " left server (" << it->getIP() << ")" << std::endl;
 					close(it->getSocket());
 					it = clients.erase(it);
 					continue;
@@ -119,12 +127,7 @@ void Server::start()
 				std::string message(buffer, bytesReceived);
 				// parse msg + exec command
 				handle_client(message, it);
-				std::cout << it->getNickname() << " send : " << message;
-				// Parse and handle IRC message
-				// Here you would implement your IRC protocol logic
-				// For simplicity, let's just echo the message back to the client
-				
-				//send(it->getSocket(), buffer, bytesReceived, 0);
+				std::cout << "[" << it->getNickname() << "] :" << message;
 			}
 			++it;
 		}
