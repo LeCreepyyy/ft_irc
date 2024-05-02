@@ -3,33 +3,35 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: creepy <creepy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:05:32 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/01 11:28:26 by creepy           ###   ########.fr       */
+/*   Updated: 2024/05/02 14:11:25 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CLIENT_HPP
-#define CLIENT_HPP
+# define CLIENT_HPP
 
-#include "../headers/irc.hpp"
+# include "Channel.hpp"
+# include "irc.hpp"
 
 	class Client {
 		
 		private:
-			std::string			nickname;
-			std::string			username;
-			std::string			ip;
-			int					client_socket;
-			struct sockaddr_in	client_address;
-			socklen_t			client_address_len;
-			std::string			current_channel;
+			std::string				nickname;
+			std::string				username;
+			std::string				ip;
+			int						client_socket;
+			struct sockaddr_in		client_address;
+			socklen_t				client_address_len;
+			std::map<Channel, bool>	current_channels; // bool = operator
 		
 		public:
 			Client();
 			~Client();
 
+		// Accessors
 			void					setNickname(std::string cmd);
 			std::string				getNickname();
 
@@ -47,8 +49,11 @@
 			socklen_t				getAddressLen();
 			socklen_t& 				getAddressLenREF();
 
+			/*void					setCurrentChannel(Channel &channel);
+			std::map<Channels&>		getCurrentChannel();*/
+			
 			std::string				getIP();
 			void					setIP(std::string x);
 	};
 
-#endif
+# endif

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: creepy <creepy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/01 11:30:32 by creepy           ###   ########.fr       */
+/*   Updated: 2024/05/02 14:20:17 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,23 +25,33 @@ Server::~Server()
 	;
 }
 
-void handle_client(std::string data_sent, std::vector<Client>::iterator & it)
+void handle_client(std::string data_sent, std::vector<Client>::iterator & client)
 {
 	if (!data_sent.find("NICK")) {
-		debug(it->getNickname().append(" used command NICK"));
-		it->setNickname(data_sent);
+		debug(client->getNickname().append(" used command NICK"));
+	client->setNickname(data_sent);
 	}
 	if (!data_sent.find("USER")) {
-		debug(it->getNickname().append(" used command USER"));
-		std::cout << it->getUsername();
-		it->setUsername(data_sent);
-		std::cout << it->getUsername();
+		debug(client->getNickname().append(" used command USER"));
+		std::cout << client->getUsername();
+		client->setUsername(data_sent);
+		std::cout << client->getUsername();
 	}
 	if (!data_sent.find("JOIN"))
 	{
-		debug(it->getNickname().append(" used command JOIN"));
-		//
+		debug(client->getNickname().append(" used command JOIN"));
+		/**
+		 * if (channel n'est pas creer) {
+		 * 		le creer;
+		 * }
+		 * it-> rajouter le channel dans le map avec le grade OP si il l'as creer et sans s'il ne l'as pas creer
+		 * pour verif si le joueur la creer :
+		 *  -on peut mettre la partie rejoindre le channel dans un else et celui qui creer le channel dans le if rejoint en meme temps le channel avec l'op
+		*/
+		send(client->getSocket(), "Channel joined !\n", strlen("Channel joined !\n"), MSG_DONTWAIT);
 	}
+	// ecrire dans a tous clients present dans le(s) channel(s) ou le client actuel se trouve
+	// (le mettre dans une autre fonction juste apres celle actuel pour avoir acces a tout les clients)
 }
 
 void Server::start()
@@ -127,7 +137,7 @@ void Server::start()
 				std::string message(buffer, bytesReceived);
 				// parse msg + exec command
 				handle_client(message, it);
-				std::cout << "[" << it->getNickname() << "] :" << message;
+				std::cout << "[" << it->getNickname() << "] : " << message;
 			}
 			++it;
 		}
