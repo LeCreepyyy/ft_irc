@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: creepy <creepy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:11:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/01 10:56:00 by creepy           ###   ########.fr       */
+/*   Updated: 2024/05/03 13:33:41 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../headers/irc.hpp"
+#include "../headers/Server.hpp"
 
 int main(int argc, char **argv)
 {

@@ -6,26 +6,25 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/03 10:31:29 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/03 11:41:17 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/03 14:12:05 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CHANNEL_HPP
 # define CHANNEL_HPP
 
-# include <string>
-# include <stdexcept>
-# include <list>
+# include "irc.hpp"
 
 	class Channel {
 		
 		private :
-			std::list<int>		channel_ops;	
 			std::string			channel_name;
+			std::vector<int>		channel_ops;
+			std::vector<int>		channel_users;
 			std::string			channel_mode;
 
 		public :
-			Channel(std::string name);
+			Channel(std::string name, int op_socket);
 			~Channel();
 
 		// Accessors
@@ -36,8 +35,13 @@
 			void			setMode(std::string mode);
 			std::string		getMode();
 
-			std::list<int>&	getChannelOps();
-			void			addToChannelOps(int socket_to_op);
+			std::vector<int>&	getChannelOps();
+			void			addClientToChannelOps(int client_socket);
+			void			removeClientFromChannelOps(int client_socket);
+
+			std::vector<int>&	getChannelUsers();
+			void			addClientToChannel(int client_socket);
+			void			removeClientFromChannel(int client_socket);
 	};
 
 #endif

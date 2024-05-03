@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:09:45 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/03 11:41:26 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/03 13:33:17 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,9 +45,6 @@
 # define CYAN    "\033[36m" // DEBUG
 # define BLUE    "\033[34m" // SERVER
 # define WHITE   "\033[37m" // ...
-
-# include "Client.hpp"
-# include "Server.hpp"
 
 void    parsing(char **argv);
 

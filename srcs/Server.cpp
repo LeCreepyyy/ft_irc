@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/03 11:45:41 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/03 14:43:21 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,39 +29,40 @@ void Server::handle_client(std::string data_sent, std::vector<Client>::iterator 
 {
 	if (!data_sent.find("NICK")) {
 		debug(client->getNickname().append(" used command NICK"));
-	client->setNickname(data_sent);
+		client->setNickname(data_sent);
 	}
-	if (!data_sent.find("USER")) {
+	else if (!data_sent.find("USER")) {
 		debug(client->getNickname().append(" used command USER"));
-		std::cout << client->getUsername();
 		client->setUsername(data_sent);
-		std::cout << client->getUsername();
 	}
-	if (!data_sent.find("JOIN"))
-	{
+	else if (!data_sent.find("JOIN")) {
 		debug(client->getNickname().append(" used command JOIN"));
-		try {
-			for (size_t i = 0; i != this->channels.size(); i++) {
-				if (channels[i].getName() == "#e")
-					throw std::runtime_error("Channel found");
-			}
-			debug("Creation channel");
-		} catch (std::exception &e) {
-			debug(e.what());
+		if (data_sent[5] != '#') {
+			debug("Improper channel name in JOIN command");
+			send(client->getSocket(), "Improper channel name in JOIN command\n", strlen("Improper channel name in JOIN command\n"), MSG_DONTWAIT);
+			return ;
 		}
-		/**
-		 * if (channel n'est pas creer) {
-		 * 		le creer;
-		 * }
-		 * (it)client-> rajouter le channel dans le map avec le grade OP si il l'as creer et sans s'il ne l'as pas creer
-		 * pour verif si le joueur la creer :
-		 *  -on peut mettre la partie rejoindre le channel dans un else et celui qui creer le channel dans le if rejoint en meme temps le channel avec l'op
-		*/
+		for (size_t i = 0; i != this->channels.size(); i++) {
+			if (channels[i].getName() == &data_sent[6]) {
+				debug("Channel exists");
+				channels[i].addClientToChannel(client->getSocket()); // add client in channel
+				client->addToCurrentChannels(channels[i]); // add channel in client
+				send(client->getSocket(), "Channel joined !\n", strlen("Channel joined !\n"), MSG_DONTWAIT);
+				return ;
+			}	
+		}
+		Channel newChannel(&data_sent[6], client->getSocket());
+		debug("channel created");
+		newChannel.addClientToChannel(client->getSocket());
+		newChannel.addClientToChannelOps(client->getSocket());
+		client->addToCurrentChannels(newChannel);
+		this->channels.push_back(newChannel);
 		send(client->getSocket(), "Channel joined !\n", strlen("Channel joined !\n"), MSG_DONTWAIT);
 	}
-	// ecrire dans a tous clients present dans le(s) channel(s) ou le client actuel se trouve
-	// (le mettre dans une autre fonction juste apres celle actuel pour avoir acces a tout les clients)
-}
+	// /msg <#canal> <msg>	Envoyer un message dans un channel non rejoins par le client
+	// /say <msg>			Envoyer un message dans le channel rejoins par le client
+	// <msg>				Envoyer un message dans le dernier channel ou le client a interagit (et est rejoins)
+} 
 
 void Server::start()
 {

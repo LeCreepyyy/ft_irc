@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:05:32 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/03 11:31:45 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/03 13:50:58 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 # define CLIENT_HPP
 
 # include "Channel.hpp"
-# include "irc.hpp"
 
 	class Client {
 		
@@ -53,7 +52,7 @@
 			void					setIP(std::string x);
 
 			std::vector<Channel>	get_current_channels();
-			void					add_to_current_channels(Channel Channel);
+			void					addToCurrentChannels(Channel Channel);
 	};
 
 # endif

@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:09:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/03 11:38:14 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/03 14:12:48 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,6 +133,6 @@ std::vector<Channel>	Client::get_current_channels() {
 	return current_channels;
 }
 
-void	Client::add_to_current_channels(Channel channel) {
-	current_channels.pushback(channel);
+void	Client::addToCurrentChannels(Channel channel) {
+	current_channels.push_back(channel);
 }
