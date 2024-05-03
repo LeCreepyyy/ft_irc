@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/02 14:20:17 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/03 11:45:41 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ Server::~Server()
 	;
 }
 
-void handle_client(std::string data_sent, std::vector<Client>::iterator & client)
+void Server::handle_client(std::string data_sent, std::vector<Client>::iterator & client)
 {
 	if (!data_sent.find("NICK")) {
 		debug(client->getNickname().append(" used command NICK"));
@@ -40,11 +40,20 @@ void handle_client(std::string data_sent, std::vector<Client>::iterator & client
 	if (!data_sent.find("JOIN"))
 	{
 		debug(client->getNickname().append(" used command JOIN"));
+		try {
+			for (size_t i = 0; i != this->channels.size(); i++) {
+				if (channels[i].getName() == "#e")
+					throw std::runtime_error("Channel found");
+			}
+			debug("Creation channel");
+		} catch (std::exception &e) {
+			debug(e.what());
+		}
 		/**
 		 * if (channel n'est pas creer) {
 		 * 		le creer;
 		 * }
-		 * it-> rajouter le channel dans le map avec le grade OP si il l'as creer et sans s'il ne l'as pas creer
+		 * (it)client-> rajouter le channel dans le map avec le grade OP si il l'as creer et sans s'il ne l'as pas creer
 		 * pour verif si le joueur la creer :
 		 *  -on peut mettre la partie rejoindre le channel dans un else et celui qui creer le channel dans le if rejoint en meme temps le channel avec l'op
 		*/
@@ -80,7 +89,6 @@ void Server::start()
 	std::cout << BLUE << "Server listening on port " << serv_port << RESET << std::endl;
 
 	// clients fds
-	std::vector<Client> clients;
 	std::vector<int> client_sockets;
 	fd_set readfds;
 	int maxFd;

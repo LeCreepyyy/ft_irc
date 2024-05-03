@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:05:32 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/02 14:11:25 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/03 11:31:45 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@
 			int						client_socket;
 			struct sockaddr_in		client_address;
 			socklen_t				client_address_len;
-			std::map<Channel, bool>	current_channels; // bool = operator
+			std::vector<Channel>	current_channels;
 		
 		public:
 			Client();
@@ -48,12 +48,12 @@
 			void					setAddressLen(socklen_t addr_len);
 			socklen_t				getAddressLen();
 			socklen_t& 				getAddressLenREF();
-
-			/*void					setCurrentChannel(Channel &channel);
-			std::map<Channels&>		getCurrentChannel();*/
 			
 			std::string				getIP();
 			void					setIP(std::string x);
+
+			std::vector<Channel>	get_current_channels();
+			void					add_to_current_channels(Channel Channel);
 	};
 
 # endif
