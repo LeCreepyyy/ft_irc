@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:09:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/03 14:12:48 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/06 16:56:51 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,10 +49,8 @@ void Client::setNickname(std::string cmd)
 	if (start == std::string::npos)
 		nickname = "/";
 	size_t end = cmd.find_first_of(" \n", start);
-	if (end == std::string::npos) {
+	if (end == std::string::npos)
 		end = cmd.length();
-	}
-
 	nickname = cmd.substr(start, end - start);
 }
 
@@ -69,12 +67,9 @@ void Client::setUsername(std::string cmd)
 
 	if (start == std::string::npos)
 		username = "/";
-	
 	size_t end = cmd.find_first_of(" \n", start);
-	if (end == std::string::npos) {
+	if (end == std::string::npos)
 		end = cmd.length();
-	}
-
 	username = cmd.substr(start, end - start);
 }
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/06 14:01:00 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/06 16:54:33 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,48 +25,58 @@ Server::~Server()
 	;
 }
 
-std::string getCanalName(const std::string& chaine) {
-    std::istringstream iss(chaine);
-    std::string premierMot;
-    iss >> premierMot;
-    return premierMot;
+std::string getCanalName(const std::string &chaine)
+{
+	std::istringstream iss(chaine);
+	std::string premierMot;
+	iss >> premierMot;
+	return premierMot;
 }
 
-void	Server::send_message(std::string msg, std::string canal, std::vector<Client>::iterator & client) {
+void Server::send_message(std::string msg, std::string canal, std::vector<Client>::iterator &client)
+{
 	std::string message = "[" + canal + "] " + client->getNickname() + " : " + msg + "\n";
 	canal += "\n";
 	debug(canal);
-	for (size_t i = 0; i != this->channels.size(); i++) {
+	for (size_t i = 0; i != this->channels.size(); i++)
+	{
 		debug(channels[i].getName());
-		if (channels[i].getName() == canal) {
-			for (size_t j = 0; j != channels[i].getChannelUsers().size(); i++) {
+		if (channels[i].getName() == canal)
+		{
+			for (size_t j = 0; j != channels[i].getChannelUsers().size(); i++)
+			{
 				send(channels[i].getChannelUsers()[j], message.c_str(), message.size(), MSG_DONTWAIT);
 			}
 		}
 	}
 }
 
-void Server::handle_client(std::string data_sent, std::vector<Client>::iterator & client)
+void Server::handle_client_input(std::string data_sent, std::vector<Client>::iterator &client)
 {
-	if (!data_sent.find("NICK")) {
+	if (!data_sent.find("NICK"))
+	{
 		debug(client->getNickname().append(" used command NICK"));
 		client->setNickname(data_sent);
 	}
-	else if (!data_sent.find("USER")) {
+	else if (!data_sent.find("USER"))
+	{
 		debug(client->getNickname().append(" used command USER"));
 		client->setUsername(data_sent);
 	}
-	else if (!data_sent.find("JOIN")) {
+	else if (!data_sent.find("JOIN"))
+	{
 		debug(client->getNickname().append(" used command JOIN"));
 		if (data_sent[5] != '#')
 			throw std::runtime_error("Improper channel name in JOIN command\n");
-		for (size_t i = 0; i != this->channels.size(); i++) {
-			if (channels[i].getName() == &data_sent[6]) {
+		for (size_t i = 0; i != this->channels.size(); i++)
+		{
+			if (channels[i].getName() == &data_sent[6])
+			{
 				debug("channel exists");
 				channels[i].addClientToChannel(client->getSocket()); // add client in channel
-				client->addToCurrentChannels(channels[i]); // add channel in client
+				client->addToCurrentChannels(channels[i]);			 // add channel in client
 				send(client->getSocket(), "Channel joined !\n", strlen("Channel joined !\n"), MSG_DONTWAIT);
-				return ;
+				return;
 			}
 		}
 		Channel newChannel(&data_sent[6], client->getSocket());
@@ -75,11 +85,13 @@ void Server::handle_client(std::string data_sent, std::vector<Client>::iterator 
 		newChannel.addClientToChannelOps(client->getSocket());
 		client->addToCurrentChannels(newChannel);
 		this->channels.push_back(newChannel);
-		
+
 		send(client->getSocket(), "Channel joined !\n", strlen("Channel joined !\n"), MSG_DONTWAIT);
 	}
-	else {
-		if (!data_sent.find("/msg")) {
+	else
+	{
+		if (!data_sent.find("/msg"))
+		{
 			send_message(&data_sent[getCanalName(&data_sent[5]).size() + 6], getCanalName(&data_sent[5]), client);
 		}
 		else if (!data_sent.find("/say"))
@@ -91,7 +103,7 @@ void Server::handle_client(std::string data_sent, std::vector<Client>::iterator 
 	// /say <msg>			Envoyer un message dans le channel rejoins par le client
 	// <msg>				Envoyer un message dans le dernier channel ou le client a interagit (et est rejoins)
 	// exemple msg : [channel_name] (user-nick)name : <msg>
-} 
+}
 
 void Server::start()
 {
@@ -127,7 +139,6 @@ void Server::start()
 	{
 		// clear le fd_set
 		FD_ZERO(&readfds);
-
 		// ajouter le socket du server dans fd_set
 		FD_SET(serv_socket, &readfds);
 		maxFd = serv_socket;
@@ -140,7 +151,7 @@ void Server::start()
 			maxFd = std::max(maxFd, clientSocket);
 		}
 
-		// Surveiller les events sur les socket de readfds
+		// Surveiller les events sur les sockets de readfds
 		if ((select(maxFd + 1, &readfds, NULL, NULL, NULL) < 0) && (errno != EINTR))
 			this->end("Select() exception");
 
@@ -165,23 +176,25 @@ void Server::start()
 			{
 				char buffer[1024];
 				int bytesReceived = recv(it->getSocket(), buffer, 1024, 0);
-				if (bytesReceived <= 0) {
+				if (bytesReceived <= 0)
+				{
 					std::cout << YELLOW << "[CLIENT] " << it->getNickname() << " left server (" << it->getIP() << ")" << std::endl;
 					close(it->getSocket());
 					it = clients.erase(it);
 					continue;
 				}
 
-				std::string message(buffer, bytesReceived);
-				try {
-					handle_client(message, it);
+				std::string client_input(buffer, bytesReceived);
+				try
+				{
+					handle_client_input(client_input, it);
 				}
 				catch (const std::exception &e)
-    			{
+				{
 					debug(e.what());
-        			send(it->getSocket(), e.what(), std::strlen(e.what()), 0);
-    			}
-				std::cout << "[" << it->getNickname() << "] : " << message;
+					send(it->getSocket(), e.what(), std::strlen(e.what()), 0);
+				}
+				std::cout << "[" << it->getNickname() << "] : " << client_input;
 			}
 			++it;
 		}

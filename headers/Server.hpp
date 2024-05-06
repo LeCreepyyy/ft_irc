@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:13:34 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/06 13:16:29 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/06 16:54:11 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@
 
 			void	start();
 			void	end(std::string log);
-			void	handle_client(std::string data_sent, std::vector<Client>::iterator & client);
+			void	handle_client_input(std::string data_sent, std::vector<Client>::iterator & client);
 			void	send_message(std::string msg, std::string canal, std::vector<Client>::iterator & client);
 			// Accessors
 	};

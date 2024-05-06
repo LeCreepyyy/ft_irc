@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:11:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/03 13:33:41 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/06 16:57:39 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,34 +14,33 @@
 
 int main(int argc, char **argv)
 {
-    try
-    {
-        if (argc != 3)
-            throw std::runtime_error("Usage:    ./irc <port> <password>");
-        parsing(argv);
+	try
+	{
+		if (argc != 3)
+			throw std::runtime_error("Usage:    ./irc <port> <password>");
+		parsing(argv);
 
-        Server server("Concorde", argv[2], atoi(argv[1]));
-
-        server.start();
-    }
-    catch (const std::exception &e)
-    {
-        std::cerr << RED << "[ERROR]" << e.what() << RESET << std::endl;
-        exit(EXIT_FAILURE);
-    }
-    return (EXIT_SUCCESS);
+		Server server("Concorde", argv[2], atoi(argv[1]));
+		server.start();
+	}
+	catch (const std::exception &e)
+	{
+		std::cerr << RED << "[ERROR]" << e.what() << RESET << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	return (EXIT_SUCCESS);
 }
 
 void parsing(char **argv)
 {
-    std::string port = argv[1];
-    std::string password = argv[2];
+	std::string port = argv[1];
+	std::string password = argv[2];
 
-    for (size_t i = 0; i != port.size(); i++)
-    {
-        if (!isdigit(port[i]))
-            throw std::runtime_error("Invalid Port");
-    }
-    if (password.find(' ') != std::string::npos)
-        throw std::runtime_error("Invalid Password");
+	for (size_t i = 0; i != port.size(); i++)
+	{
+		if (!isdigit(port[i]))
+			throw std::runtime_error("Invalid Port");
+	}
+	if (password.find(' ') != std::string::npos)
+		throw std::runtime_error("Invalid Password");
 }
