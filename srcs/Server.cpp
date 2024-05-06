@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/03 14:43:21 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/06 14:01:00 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,27 @@ Server::~Server()
 	;
 }
 
+std::string getCanalName(const std::string& chaine) {
+    std::istringstream iss(chaine);
+    std::string premierMot;
+    iss >> premierMot;
+    return premierMot;
+}
+
+void	Server::send_message(std::string msg, std::string canal, std::vector<Client>::iterator & client) {
+	std::string message = "[" + canal + "] " + client->getNickname() + " : " + msg + "\n";
+	canal += "\n";
+	debug(canal);
+	for (size_t i = 0; i != this->channels.size(); i++) {
+		debug(channels[i].getName());
+		if (channels[i].getName() == canal) {
+			for (size_t j = 0; j != channels[i].getChannelUsers().size(); i++) {
+				send(channels[i].getChannelUsers()[j], message.c_str(), message.size(), MSG_DONTWAIT);
+			}
+		}
+	}
+}
+
 void Server::handle_client(std::string data_sent, std::vector<Client>::iterator & client)
 {
 	if (!data_sent.find("NICK")) {
@@ -37,19 +58,16 @@ void Server::handle_client(std::string data_sent, std::vector<Client>::iterator 
 	}
 	else if (!data_sent.find("JOIN")) {
 		debug(client->getNickname().append(" used command JOIN"));
-		if (data_sent[5] != '#') {
-			debug("Improper channel name in JOIN command");
-			send(client->getSocket(), "Improper channel name in JOIN command\n", strlen("Improper channel name in JOIN command\n"), MSG_DONTWAIT);
-			return ;
-		}
+		if (data_sent[5] != '#')
+			throw std::runtime_error("Improper channel name in JOIN command\n");
 		for (size_t i = 0; i != this->channels.size(); i++) {
 			if (channels[i].getName() == &data_sent[6]) {
-				debug("Channel exists");
+				debug("channel exists");
 				channels[i].addClientToChannel(client->getSocket()); // add client in channel
 				client->addToCurrentChannels(channels[i]); // add channel in client
 				send(client->getSocket(), "Channel joined !\n", strlen("Channel joined !\n"), MSG_DONTWAIT);
 				return ;
-			}	
+			}
 		}
 		Channel newChannel(&data_sent[6], client->getSocket());
 		debug("channel created");
@@ -57,11 +75,22 @@ void Server::handle_client(std::string data_sent, std::vector<Client>::iterator 
 		newChannel.addClientToChannelOps(client->getSocket());
 		client->addToCurrentChannels(newChannel);
 		this->channels.push_back(newChannel);
+		
 		send(client->getSocket(), "Channel joined !\n", strlen("Channel joined !\n"), MSG_DONTWAIT);
+	}
+	else {
+		if (!data_sent.find("/msg")) {
+			send_message(&data_sent[getCanalName(&data_sent[5]).size() + 6], getCanalName(&data_sent[5]), client);
+		}
+		else if (!data_sent.find("/say"))
+			;
+		else
+			;
 	}
 	// /msg <#canal> <msg>	Envoyer un message dans un channel non rejoins par le client
 	// /say <msg>			Envoyer un message dans le channel rejoins par le client
 	// <msg>				Envoyer un message dans le dernier channel ou le client a interagit (et est rejoins)
+	// exemple msg : [channel_name] (user-nick)name : <msg>
 } 
 
 void Server::start()
@@ -144,8 +173,14 @@ void Server::start()
 				}
 
 				std::string message(buffer, bytesReceived);
-				// parse msg + exec command
-				handle_client(message, it);
+				try {
+					handle_client(message, it);
+				}
+				catch (const std::exception &e)
+    			{
+					debug(e.what());
+        			send(it->getSocket(), e.what(), std::strlen(e.what()), 0);
+    			}
 				std::cout << "[" << it->getNickname() << "] : " << message;
 			}
 			++it;

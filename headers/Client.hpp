@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:05:32 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/03 13:50:58 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/06 10:06:00 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,8 +23,9 @@
 			std::string				ip;
 			int						client_socket;
 			struct sockaddr_in		client_address;
-			socklen_t				client_address_len;
 			std::vector<Channel>	current_channels;
+			socklen_t				client_address_len;
+			std::string				last_channel_speak;
 		
 		public:
 			Client();
