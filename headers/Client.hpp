@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
+/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:05:32 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/07 01:36:50 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/05/07 11:52:17 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@
 			struct sockaddr_in		client_address;
 			std::vector<Channel>	current_channels;
 			socklen_t				client_address_len;
-			std::string				last_channel_speak;
+			std::string				last_interaction;
 		
 		public:
 
@@ -58,6 +58,9 @@
 
 			std::vector<Channel>	getCurrentChannels();
 			void					addToCurrentChannels(Channel Channel);
+
+			void					setLastInteraction(std::string channel_name);
+			std::string				getLastInteraction();
 	};
 
 # endif

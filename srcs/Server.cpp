@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
+/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/07 02:29:47 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/05/07 13:14:19 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -152,44 +152,35 @@ void Server::handle_client_input(std::string data_sent, std::vector<Client>::ite
 		debug(sender->getNickname().append(" used command NICK"));
 		sender->setNickname(data_sent);
 	}
-
 	else if (!data_sent.find("USER")) {
 		debug(sender->getNickname().append(" used command USER"));
 		sender->setUsername(data_sent);
 	}
-
 	else if (!data_sent.find("JOIN")) {
 		debug(sender->getNickname().append(" used command JOIN"));
 		cmd_join(data_sent, sender);
 	}
-
-	else {
-		if (!data_sent.find("/msg")) {
+	else if (!data_sent.find("/msg")) {
 			std::istringstream iss(&data_sent[5]);
 			std::string channel_name;
 			iss >> channel_name;
+			sender->setLastInteraction(channel_name);
 			msg_to_channel(&data_sent[channel_name.size() + 6], channel_name, sender);
-		}
-		/*else if (!data_sent.find("/say"))
-			;
-		else
-			;*/
 	}
-	// /msg <#canal> <msg>	Envoyer un message dans un channel non rejoins par le client
-	// /say <msg>			Envoyer un message dans le channel rejoins par le client
-	// <msg>				Envoyer un message dans le dernier channel ou le client a interagit (et est rejoins)
-	// exemple msg : [channel_name] (user-nick)name : <msg>
+	else if (!data_sent.find("/say"))
+		msg_to_channel(&data_sent[5], sender->getLastInteraction(), sender);
+	else
+		msg_to_channel(data_sent, sender->getLastInteraction(), sender);
 }
 
-
+// !!! PARSING !!!
 void	Server::msg_to_channel(std::string msg, std::string channel_name, std::vector<Client>::iterator &sender)
 {
 	std::string message = "[" + channel_name + "] " + sender->getNickname() + " : " + msg + "\n";
-	channel_name += "\n";
 	for (size_t i = 0; i != all_channels.size(); i++) {
-		if (all_channels[i].getName() == channel_name) {
-			for (size_t j = 0; j != all_channels[i].getAllUsers().size(); i++) {
-				send(all_channels[i].getAllUsers()[j], message.c_str(), message.size(), MSG_DONTWAIT);
+		if (all_channels[i].getName() == channel_name || all_channels[i].getName() == channel_name + "\n") {
+			for (size_t j = 0; j != all_channels[i].getAllUsers().size(); j++) {
+				send(all_channels[i].getAllUsers()[j], message.c_str(), strlen(message.c_str()), MSG_DONTWAIT);
 			}
 		}
 	}
@@ -202,6 +193,8 @@ void	Server::cmd_join(std::string data_sent, std::vector<Client>::iterator &send
 
 	// Looking if the channel already exists
 	std::string	channel_name(&data_sent[6], std::strlen(&data_sent[6]));
+	channel_name.erase(std::remove(channel_name.begin(), channel_name.end(), '\n'), channel_name.end());
+	sender->setLastInteraction(channel_name);
 	for (size_t i = 0; i != all_channels.size(); i++) {
 		if (all_channels[i].getName() == channel_name) {
 			// Joining the channel

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
+/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:09:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/07 01:37:34 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/05/07 11:53:16 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,4 +116,13 @@ std::vector<Channel>	Client::getCurrentChannels() {
 }
 void	Client::addToCurrentChannels(Channel channel) {
 	current_channels.push_back(channel);
+}
+
+
+void	Client::setLastInteraction(std::string channel_name) {
+	this->last_interaction = channel_name;
+}
+
+std::string Client::getLastInteraction() {
+	return this->last_interaction;
 }
