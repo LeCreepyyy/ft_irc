@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/07 13:14:19 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/07 13:15:54 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -173,7 +173,7 @@ void Server::handle_client_input(std::string data_sent, std::vector<Client>::ite
 		msg_to_channel(data_sent, sender->getLastInteraction(), sender);
 }
 
-// !!! PARSING !!!
+
 void	Server::msg_to_channel(std::string msg, std::string channel_name, std::vector<Client>::iterator &sender)
 {
 	std::string message = "[" + channel_name + "] " + sender->getNickname() + " : " + msg + "\n";
