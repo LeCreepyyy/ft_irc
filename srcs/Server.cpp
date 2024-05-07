@@ -6,7 +6,7 @@
 /*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/07 02:23:32 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/05/07 02:29:47 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,7 +111,7 @@ void Server::start()
 
 				// If buffer is empty, its a disconnection
 				if (bytesReceived <= 0) {
-					std::cout << YELLOW << "[CLIENT] " << it->getNickname() << " left server (" << it->getIP() << ")" << std::endl;
+					std::cout << YELLOW << "[CLIENT] " << it->getNickname() << " left server (" << it->getIP() << ")" << RESET << std::endl;
 					close(it->getSocket());
 					it = all_clients.erase(it);
 					continue;
@@ -126,7 +126,8 @@ void Server::start()
 				}
 				catch (const std::exception &e)
 				{
-					// Any exception thrown in the handling of the input is reported to both server and client
+					// Any exception thrown in the handling of the input is reported to
+					// both server and client as should a parsing error be
 					debug(e.what());
 					send(it->getSocket(), e.what(), std::strlen(e.what()), 0);
 				}
@@ -205,8 +206,8 @@ void	Server::cmd_join(std::string data_sent, std::vector<Client>::iterator &send
 		if (all_channels[i].getName() == channel_name) {
 			// Joining the channel
 			debug("Channel exists: Joining...");
-			all_channels[i].addClientToChannel(sender->getSocket()); // adding client in channel
-			sender->addToCurrentChannels(all_channels[i]);			 // adding channel in client
+			all_channels[i].addClientToChannel(sender->getSocket()); // adding client to channel's user list
+			sender->addToCurrentChannels(all_channels[i]);			 // adding channel to client's channel list
 			// Notifying the client
 			std::string	notif = " === You joined : " + channel_name;
 			send(sender->getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
@@ -217,9 +218,9 @@ void	Server::cmd_join(std::string data_sent, std::vector<Client>::iterator &send
 	// Channel does not exists, so we create it
 	debug("Channel does not exists: creating it...");
 	Channel	newChannel(&data_sent[6], sender->getSocket());
-	newChannel.addClientToChannel(sender->getSocket()); // adding client to channel
-	newChannel.addClientToOperators(sender->getSocket()); // adding client to operators, since he created it
-	sender->addToCurrentChannels(newChannel); // adding channel to client
+	newChannel.addClientToChannel(sender->getSocket()); // adding client to channel's user list
+	newChannel.addClientToOperators(sender->getSocket()); // adding client to channel's operators, since he created it
+	sender->addToCurrentChannels(newChannel); // adding channel to client's channel list
 	all_channels.push_back(newChannel); // pushing newChannel into the all_channels list
 
 	// Notifying the client
