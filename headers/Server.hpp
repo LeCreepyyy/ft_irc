@@ -6,7 +6,7 @@
 /*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:13:34 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/06 16:54:11 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/05/07 02:20:37 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,18 +26,27 @@
 			std::string					serv_name;
 			std::string					serv_password;
 			struct sockaddr_in			serv_address;
-			std::vector<Channel>		channels;
-			std::vector<Client> 		clients;
+			std::vector<Channel>		all_channels;
+			std::vector<Client> 		all_clients;
 
 		public :
+
+			/* Constructors, Destructors */
 			Server(std::string name, std::string password, int port);
 			~Server();
 
+
+			/* Methods */
 			void	start();
-			void	end(std::string log);
-			void	handle_client_input(std::string data_sent, std::vector<Client>::iterator & client);
-			void	send_message(std::string msg, std::string canal, std::vector<Client>::iterator & client);
-			// Accessors
+			void	crash(std::string log);
+
+			void	handle_client_input(std::string data_sent, std::vector<Client>::iterator &client);
+			void	msg_to_channel(std::string msg, std::string channel_name, std::vector<Client>::iterator &client);
+
+			void	cmd_join(std::string data_sent, std::vector<Client>::iterator &sender);
+
+			
+			/* Accessors */
 	};
 
 #endif

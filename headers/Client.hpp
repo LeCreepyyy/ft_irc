@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:05:32 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/06 10:06:00 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/07 01:36:50 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,17 +28,21 @@
 			std::string				last_channel_speak;
 		
 		public:
+
+			/* Constructors, Destructors */
 			Client();
 			~Client();
 
-		// Accessors
+			/* Methods */
+
+			/* Accessors */
 			void					setNickname(std::string cmd);
 			std::string				getNickname();
 
 			void					setUsername(std::string username);
 			std::string				getUsername();
 
-			void					setClientSocket(int socket);
+			void					setSocket(int socket);
 			int						getSocket();
 
 			void					setAddress(struct sockaddr_in addr);
@@ -52,7 +56,7 @@
 			std::string				getIP();
 			void					setIP(std::string x);
 
-			std::vector<Channel>	get_current_channels();
+			std::vector<Channel>	getCurrentChannels();
 			void					addToCurrentChannels(Channel Channel);
 	};
 

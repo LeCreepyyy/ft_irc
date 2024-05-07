@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   irc.hpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:09:45 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/03 13:33:17 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/07 01:49:47 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,13 +29,6 @@
 # include <vector>
 # include <sstream>
 
-// for client object
-# define NICKNAME 0
-# define USERNAME 1
-# define CLIENT_SOCKET 2
-# define CLIENT_ADDRESS 3
-# define CLIENT_ADDRESS_LEN 4
-
 # define RESET   "\033[0m" // RESET COLOR
 # define RED     "\033[31m" // ERROR
 # define GREEN   "\033[32m" // LOG - START END
@@ -46,7 +39,7 @@
 # define BLUE    "\033[34m" // SERVER
 # define WHITE   "\033[37m" // ...
 
-void    parsing(char **argv);
+void    parsing_args(char **argv);
 
 template<typename T>
 void debug(T log) {

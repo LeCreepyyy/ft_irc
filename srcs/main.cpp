@@ -6,7 +6,7 @@
 /*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:11:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/06 16:57:39 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/05/07 01:13:40 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,8 @@ int main(int argc, char **argv)
 	{
 		if (argc != 3)
 			throw std::runtime_error("Usage:    ./irc <port> <password>");
-		parsing(argv);
 
+		parsing_args(argv);
 		Server server("Concorde", argv[2], atoi(argv[1]));
 		server.start();
 	}
@@ -31,7 +31,7 @@ int main(int argc, char **argv)
 	return (EXIT_SUCCESS);
 }
 
-void parsing(char **argv)
+void parsing_args(char **argv)
 {
 	std::string port = argv[1];
 	std::string password = argv[2];

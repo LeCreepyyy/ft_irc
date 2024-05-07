@@ -1,11 +1,27 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Channel.cpp                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/05/07 01:42:29 by bgaertne          #+#    #+#             */
+/*   Updated: 2024/05/07 01:47:15 by bgaertne         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../headers/Channel.hpp"
 
-Channel::Channel(std::string name, int op_sockets)
+////////////////////////////////
+//  Constructors, Destructor  //
+////////////////////////////////
+
+Channel::Channel(std::string name, int op_socket)
 {
 	if (name.length() > 199 || name.find('\x07') != std::string::npos || name.find(',') != std::string::npos)
 		throw std::runtime_error("[Error] Improper channel name");
-	channel_name = name;
-	channel_ops.push_back(op_sockets);
+	this->name = name;
+	this->all_operators.push_back(op_socket);
 }
 
 Channel::~Channel()
@@ -14,52 +30,61 @@ Channel::~Channel()
 }
 
 
+
+///////////////
+//  Methods  //
+///////////////
+
+
+
+/////////////////
+//  Accessors  //
+/////////////////
+
 void	Channel::setName(std::string name) {
 	if (name.length() > 199 || name.find('\x07') != std::string::npos || name.find(',') != std::string::npos)
 		throw std::runtime_error("[Error] Improper channel name");
 	else
-		channel_name = name;
+		this->name = name;
+}
+std::string		Channel::getName() {
+	return this->name;
 }
 
-std::string		Channel::getName() {
-	return channel_name;
-}
 
 void	Channel::setMode(std::string mode) {
-	this->channel_mode = mode;
+	this->mode = mode;
 }
-
 std::string		Channel::getMode() {
-	return channel_mode;
+	return this->mode;
 }
 
-std::vector<int>&	Channel::getChannelOps() {
-	return channel_ops;
-}
 
-void	Channel::addClientToChannelOps(int client_socket) {
-	channel_ops.push_back(client_socket);
+std::vector<int>&	Channel::getAllOperators() {
+	return this->all_operators;
 }
-
-void	Channel::removeClientFromChannelOps(int client_socket) {
-	for (std::vector<int>::iterator it; it != channel_ops.end(); it++) {
+void	Channel::addClientToOperators(int client_socket) {
+	this->all_operators.push_back(client_socket);
+}
+void	Channel::removeClientFromOperators(int client_socket) {
+	for (std::vector<int>::iterator it; it != this->all_operators.end(); it++) {
 		if (*it == client_socket)
-			channel_ops.erase(it);
+			this->all_operators.erase(it);
 	}
 }
 
-std::vector<int>& Channel::getChannelUsers() {
-	return channel_users;
-}
 
+
+std::vector<int>& Channel::getAllUsers() {
+	return this->all_users;
+}
 void	Channel::addClientToChannel(int client_socket) {
-	channel_users.push_back(client_socket);
+	this->all_users.push_back(client_socket);
 }
-
 void	Channel::removeClientFromChannel(int client_socket) {
-	for (std::vector<int>::iterator it; it != channel_users.end(); it++) {
+	for (std::vector<int>::iterator it; it != this->all_users.end(); it++) {
 		if (*it == client_socket)
-			channel_users.erase(it);
+			this->all_users.erase(it);
 	}
-	removeClientFromChannelOps(client_socket);
+	removeClientFromOperators(client_socket);
 }
