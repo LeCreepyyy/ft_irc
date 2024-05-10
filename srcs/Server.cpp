@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/07 13:15:54 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/10 14:41:53 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,7 +111,14 @@ void Server::start()
 
 				// If buffer is empty, its a disconnection
 				if (bytesReceived <= 0) {
-					std::cout << YELLOW << "[CLIENT] " << it->getNickname() << " left server (" << it->getIP() << ")" << RESET << std::endl;
+					std::cout << YELLOW << "[CLIENT] " << it->getNickname() << " left the game. (" << it->getIP() << ")" << RESET << std::endl;
+					for (std::vector<int>::iterator i = pass_list.begin(); i != pass_list.end(); i++) {
+						if (*i == it->getSocket())
+							pass_list.erase(i);
+					}
+					std::vector<Channel> current_channel = it->getCurrentChannels();
+					for (std::vector<Channel>::iterator i = current_channel.begin(); i != current_channel.end(); i++)
+						i->removeClientFromChannel(it->getSocket());
 					close(it->getSocket());
 					it = all_clients.erase(it);
 					continue;
@@ -121,6 +128,7 @@ void Server::start()
 				try
 				{
 					std::string client_input(buffer, bytesReceived);
+					check_password(client_input, it);
 					handle_client_input(client_input, it);
 					std::cout << "[" << it->getNickname() << "]: " << client_input;
 				}
@@ -146,6 +154,25 @@ void Server::crash(std::string log)
 }
 
 
+void Server::check_password(std::string data_sent, std::vector<Client>::iterator &sender) {
+	for (size_t i = 0; i != pass_list.size(); i++) {
+		if (pass_list[i] == sender->getSocket())
+			return ;
+	}
+	size_t it = data_sent.find("PASS");
+	if (it == data_sent.npos)
+		throw std::runtime_error("Wront password ! (PASS *****)\n");
+	it += 5;
+	std::istringstream iss(&data_sent[it]);
+	std::string password_sent;
+	iss >> password_sent;
+	if (password_sent != this->serv_password)
+		throw std::runtime_error("Wront password ! (PASS *****)\n");
+	pass_list.push_back(sender->getSocket());
+	debug("Password ok !");
+}
+
+
 void Server::handle_client_input(std::string data_sent, std::vector<Client>::iterator &sender)
 {
 	if (!data_sent.find("NICK")) {
@@ -160,6 +187,11 @@ void Server::handle_client_input(std::string data_sent, std::vector<Client>::ite
 		debug(sender->getNickname().append(" used command JOIN"));
 		cmd_join(data_sent, sender);
 	}
+	else if (!data_sent.find("MSG"))
+	{
+		debug(sender->getNickname().append(" used command MSG"));
+		cmd_msg(sender, data_sent);
+	}
 	else if (!data_sent.find("/msg")) {
 			std::istringstream iss(&data_sent[5]);
 			std::string channel_name;
@@ -171,6 +203,39 @@ void Server::handle_client_input(std::string data_sent, std::vector<Client>::ite
 		msg_to_channel(&data_sent[5], sender->getLastInteraction(), sender);
 	else
 		msg_to_channel(data_sent, sender->getLastInteraction(), sender);
+}
+
+
+void	Server::cmd_msg(std::vector<Client>::iterator &sender, std::string data_sent)
+{
+	(void) sender;
+	std::istringstream	iss(data_sent);
+	std::string			receiver_nick;
+	int i = 0;
+	
+	iss >> receiver_nick;
+	i = i + receiver_nick.size();
+	receiver_nick.clear();
+	iss >> receiver_nick;
+	i = i + receiver_nick.size();
+	i += 2;
+	
+	std::string message = &data_sent[i];
+	for (size_t i = 0; i < all_clients.size(); i++)
+	{
+		if (all_clients[i].getNickname() == receiver_nick)
+		{
+			Client receiver = all_clients[i];
+			std::string	notif = sender->getNickname() + " sent you a private message:\n";
+			send(receiver.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
+			send(receiver.getSocket(), (message + "\n").c_str(), message.size() + 1, MSG_DONTWAIT);
+			notif = "Message sent to " + receiver.getNickname() + "\n";
+			send(sender->getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
+			return;
+		}
+	}
+	std::string	notif = "No one named " + receiver_nick + " was found.\n";
+	send(sender->getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 }
 
 

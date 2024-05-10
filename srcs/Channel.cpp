@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
+/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/07 01:42:29 by bgaertne          #+#    #+#             */
-/*   Updated: 2024/05/07 01:47:15 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/05/10 14:07:49 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,7 +67,7 @@ void	Channel::addClientToOperators(int client_socket) {
 	this->all_operators.push_back(client_socket);
 }
 void	Channel::removeClientFromOperators(int client_socket) {
-	for (std::vector<int>::iterator it; it != this->all_operators.end(); it++) {
+	for (std::vector<int>::iterator it = all_operators.begin(); it != this->all_operators.end(); it++) {
 		if (*it == client_socket)
 			this->all_operators.erase(it);
 	}
@@ -82,7 +82,7 @@ void	Channel::addClientToChannel(int client_socket) {
 	this->all_users.push_back(client_socket);
 }
 void	Channel::removeClientFromChannel(int client_socket) {
-	for (std::vector<int>::iterator it; it != this->all_users.end(); it++) {
+	for (std::vector<int>::iterator it = all_users.begin(); it != this->all_users.end(); it++) {
 		if (*it == client_socket)
 			this->all_users.erase(it);
 	}
