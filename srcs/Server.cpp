@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/10 14:41:53 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/10 14:55:12 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,8 +113,10 @@ void Server::start()
 				if (bytesReceived <= 0) {
 					std::cout << YELLOW << "[CLIENT] " << it->getNickname() << " left the game. (" << it->getIP() << ")" << RESET << std::endl;
 					for (std::vector<int>::iterator i = pass_list.begin(); i != pass_list.end(); i++) {
-						if (*i == it->getSocket())
+						if (*i == it->getSocket()) {
 							pass_list.erase(i);
+							break;
+						}
 					}
 					std::vector<Channel> current_channel = it->getCurrentChannels();
 					for (std::vector<Channel>::iterator i = current_channel.begin(); i != current_channel.end(); i++)
