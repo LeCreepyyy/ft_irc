@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:09:45 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/07 13:19:17 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/13 13:55:31 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,22 +29,23 @@
 # include <poll.h>
 # include <vector>
 # include <sstream>
+# include <ctime>
 
-# define RESET   "\033[0m" // RESET COLOR
-# define RED     "\033[31m" // ERROR
-# define GREEN   "\033[32m" // LOG - START END
-# define YELLOW  "\033[33m" // CLIENT CONNECTION - DISCONECTION
-# define MAGENTA "\033[35m" // CLIENT ACTION
-# define GRAY    "\033[37m" // CLIENT INFO
-# define CYAN    "\033[36m" // DEBUG
-# define BLUE    "\033[34m" // SERVER
-# define WHITE   "\033[37m" // ...
+# define RESET   "\033[0m" // Reset
+# define RED     "\033[31m" // Error
+# define GREEN   "\033[32m" // Connection
+# define YELLOW  "\033[33m" // Disconnection
+# define MAGENTA "\033[35m" // Whispers
+# define GRAY    "\033[37m" // 
+# define CYAN    "\033[36m" // 
+# define BLUE    "\033[34m" // Server
 
-void    parsing_args(char **argv);
+void    		parsing_args(char **argv);
+std::string		irc_time();
 
 template<typename T>
 void debug(T log) {
-	std::cout << "\033[36m" << "[DEBUG] " << log << RESET << std::endl;
+	std::cout << "\033[36m" << log << RESET << std::endl;
 }
 
 #endif

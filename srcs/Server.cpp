@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/10 14:55:12 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/13 14:31:30 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@ void Server::start()
 	if (listen(serv_socket, MAX_WAITLIST) == -1)
 		this->crash("Unable to listen");
 
-	std::cout << BLUE << "Server listening on port " << serv_port << RESET << std::endl;
+	std::cout << irc_time() << BLUE << "Server listening on port " << serv_port << RESET << std::endl;
 
 	// Server is now fully configured.
 	// Listening to any events on server/clients sockets endlessly
@@ -98,7 +98,7 @@ void Server::start()
 			client.setIP(inet_ntoa(client.getAddress().sin_addr));
 			all_clients.push_back(client);
 
-			std::cout << YELLOW << "[CLIENT] New connection from " << client.getIP() << RESET << std::endl;
+			std::cout << irc_time() << YELLOW << "New connection from " << client.getIP() << RESET << std::endl;
 		}
 
 		// Event occured on a client socket : either a disconnection, or a text input
@@ -111,7 +111,7 @@ void Server::start()
 
 				// If buffer is empty, its a disconnection
 				if (bytesReceived <= 0) {
-					std::cout << YELLOW << "[CLIENT] " << it->getNickname() << " left the game. (" << it->getIP() << ")" << RESET << std::endl;
+					std::cout <<  irc_time() << YELLOW << it->getNickname() << " left the game. (" << it->getIP() << ")" << RESET << std::endl;
 					for (std::vector<int>::iterator i = pass_list.begin(); i != pass_list.end(); i++) {
 						if (*i == it->getSocket()) {
 							pass_list.erase(i);
@@ -132,13 +132,15 @@ void Server::start()
 					std::string client_input(buffer, bytesReceived);
 					check_password(client_input, it);
 					handle_client_input(client_input, it);
-					std::cout << "[" << it->getNickname() << "]: " << client_input;
+					std::cout << irc_time() << it->getNickname() << ": " << client_input;
 				}
 				catch (const std::exception &e)
 				{
 					// Any exception thrown in the handling of the input is reported to
 					// both server and client as should a parsing error be
-					debug(e.what());
+					std::string notif(irc_time() + it->getNickname() + " : " + RED + e.what());
+					debug(notif);
+					notif.append("\n");
 					send(it->getSocket(), e.what(), std::strlen(e.what()), 0);
 				}
 			}
@@ -163,13 +165,13 @@ void Server::check_password(std::string data_sent, std::vector<Client>::iterator
 	}
 	size_t it = data_sent.find("PASS");
 	if (it == data_sent.npos)
-		throw std::runtime_error("Wront password ! (PASS *****)\n");
+		throw std::runtime_error(RED "Wrong password, try again");
 	it += 5;
 	std::istringstream iss(&data_sent[it]);
 	std::string password_sent;
 	iss >> password_sent;
 	if (password_sent != this->serv_password)
-		throw std::runtime_error("Wront password ! (PASS *****)\n");
+		throw std::runtime_error(RED "Wrong password, try again");
 	pass_list.push_back(sender->getSocket());
 	debug("Password ok !");
 }
@@ -179,11 +181,12 @@ void Server::handle_client_input(std::string data_sent, std::vector<Client>::ite
 {
 	if (!data_sent.find("NICK")) {
 		debug(sender->getNickname().append(" used command NICK"));
-		sender->setNickname(data_sent);
+		sender->setNickname(data_sent, all_clients);
 	}
 	else if (!data_sent.find("USER")) {
 		debug(sender->getNickname().append(" used command USER"));
 		sender->setUsername(data_sent);
+		debug(sender->getUsername());
 	}
 	else if (!data_sent.find("JOIN")) {
 		debug(sender->getNickname().append(" used command JOIN"));
@@ -205,6 +208,14 @@ void Server::handle_client_input(std::string data_sent, std::vector<Client>::ite
 		msg_to_channel(&data_sent[5], sender->getLastInteraction(), sender);
 	else
 		msg_to_channel(data_sent, sender->getLastInteraction(), sender);
+
+
+	if (!data_sent.find("\n")) {
+		debug("here");
+		size_t eol = data_sent.find("\n"); // ascii 10 et 13 au lieu de \n ou mettre tout les autres \etc
+		if (data_sent[eol + 1])
+			handle_client_input(&data_sent[eol + 1], sender);
+	}
 }
 
 
@@ -216,11 +227,10 @@ void	Server::cmd_msg(std::vector<Client>::iterator &sender, std::string data_sen
 	int i = 0;
 	
 	iss >> receiver_nick;
-	i = i + receiver_nick.size();
+	i = i + receiver_nick.size() + 1;
 	receiver_nick.clear();
 	iss >> receiver_nick;
-	i = i + receiver_nick.size();
-	i += 2;
+	i = i + receiver_nick.size() + 1;
 	
 	std::string message = &data_sent[i];
 	for (size_t i = 0; i < all_clients.size(); i++)
@@ -228,15 +238,13 @@ void	Server::cmd_msg(std::vector<Client>::iterator &sender, std::string data_sen
 		if (all_clients[i].getNickname() == receiver_nick)
 		{
 			Client receiver = all_clients[i];
-			std::string	notif = sender->getNickname() + " sent you a private message:\n";
+			std::string	notif(irc_time() + MAGENTA + sender->getNickname() + " : " + message + "\n");
 			send(receiver.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
-			send(receiver.getSocket(), (message + "\n").c_str(), message.size() + 1, MSG_DONTWAIT);
-			notif = "Message sent to " + receiver.getNickname() + "\n";
 			send(sender->getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 			return;
 		}
 	}
-	std::string	notif = "No one named " + receiver_nick + " was found.\n";
+	std::string	notif(RED "No one named " + receiver_nick + " was found.\n");
 	send(sender->getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 }
 

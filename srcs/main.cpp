@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
+/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:11:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/07 01:13:40 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/05/13 13:29:19 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,4 +43,15 @@ void parsing_args(char **argv)
 	}
 	if (password.find(' ') != std::string::npos)
 		throw std::runtime_error("Invalid Password");
+}
+
+std::string		irc_time()
+{
+	time_t now = time(0);
+	
+	tm *localTime = localtime(&now);
+
+	char str[100];
+	strftime(str, sizeof(str), "[%H:%M:%S] ", localTime);
+	return std::string(str);
 }

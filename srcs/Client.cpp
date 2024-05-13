@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:09:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/07 11:53:16 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/13 11:10:14 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,14 +53,21 @@ int	Client::getSocket() {
 }
 
 
-void	Client::setNickname(std::string cmd) {
+void	Client::setNickname(std::string cmd, std::vector<Client> &all_clients) {
 	size_t start = 5;
 	if (start == std::string::npos)
 		nickname = "/";
 	size_t end = cmd.find_first_of(" \n", start);
 	if (end == std::string::npos)
 		end = cmd.length();
-	nickname = cmd.substr(start, end - start);
+	std::string temp = cmd.substr(start, end - start);
+	for (std::vector<Client>::iterator it = all_clients.begin(); it != all_clients.end(); it++)
+	{
+		if (it->nickname == temp)
+			throw std::runtime_error("Nickname already in use. Try another one.\n");
+	}
+	nickname = temp;
+	
 }
 std::string	Client::getNickname() {
 	return (nickname);
@@ -75,6 +82,10 @@ void	Client::setUsername(std::string cmd) {
 	if (end == std::string::npos)
 		end = cmd.length();
 	username = cmd.substr(start, end - start);
+	std::istringstream iss(username);
+	std::string new_username;
+	iss >> new_username;
+	username = new_username;
 }
 std::string	Client::getUsername() {
 	return (username);

@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:05:32 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/10 11:10:07 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/13 11:05:21 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@
 			/* Methods */
 
 			/* Accessors */
-			void					setNickname(std::string cmd);
+			void					setNickname(std::string cmd, std::vector<Client> &all_clients);
 			std::string				getNickname();
 
 			void					setUsername(std::string username);
