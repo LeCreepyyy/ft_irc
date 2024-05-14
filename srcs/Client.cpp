@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:09:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/13 11:10:14 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/14 14:11:21 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,19 +55,22 @@ int	Client::getSocket() {
 
 void	Client::setNickname(std::string cmd, std::vector<Client> &all_clients) {
 	size_t start = 5;
-	if (start == std::string::npos)
-		nickname = "/";
+	if (!cmd[start])
+		throw std::runtime_error("Nickname cannot be empty.\n");
 	size_t end = cmd.find_first_of(" \n", start);
 	if (end == std::string::npos)
 		end = cmd.length();
 	std::string temp = cmd.substr(start, end - start);
+	if (temp.size() < 1)
+		throw std::runtime_error("Nickname cannot be empty.\n");
 	for (std::vector<Client>::iterator it = all_clients.begin(); it != all_clients.end(); it++)
 	{
 		if (it->nickname == temp)
 			throw std::runtime_error("Nickname already in use. Try another one.\n");
 	}
 	nickname = temp;
-	
+	std::string notif(GREEN "You are now known as " + nickname + ".\n" RESET);
+	send(client_socket, notif.c_str(), strlen(notif.c_str()), MSG_DONTWAIT);
 }
 std::string	Client::getNickname() {
 	return (nickname);
@@ -76,12 +79,14 @@ std::string	Client::getNickname() {
 
 void	Client::setUsername(std::string cmd) {
 	size_t start = 5;
-	if (start == std::string::npos)
-		username = "/";
+	if (!cmd[start])
+		throw std::runtime_error("Username cannot be empty.\n");
 	size_t end = cmd.find_first_of(" \n", start);
 	if (end == std::string::npos)
 		end = cmd.length();
 	username = cmd.substr(start, end - start);
+	if (username.size() < 1)
+		throw std::runtime_error("Username cannot be empty.\n");
 	std::istringstream iss(username);
 	std::string new_username;
 	iss >> new_username;
@@ -129,6 +134,20 @@ void	Client::addToCurrentChannels(Channel channel) {
 	current_channels.push_back(channel);
 }
 
+void	Client::removeFromCurrentChannels(Channel channel) {
+	for (std::vector<Channel>::iterator it = current_channels.begin(); it != current_channels.end(); it++) {
+		if (channel.getName() == it->getName()) {
+			it->removeClientFromChannel(this->client_socket);
+			if (this->getLastInteraction() == it->getName()) {
+				if (current_channels.size() == 1)
+					setLastInteraction(NULL);
+				else
+					setLastInteraction(current_channels.back().getName());
+			}
+			current_channels.erase(it);
+		}
+	}
+}
 
 void	Client::setLastInteraction(std::string channel_name) {
 	this->last_interaction = channel_name;

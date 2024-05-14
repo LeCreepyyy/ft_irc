@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:05:32 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/13 11:05:21 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/14 13:20:32 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,7 @@
 
 			std::vector<Channel>	getCurrentChannels();
 			void					addToCurrentChannels(Channel Channel);
+			void					removeFromCurrentChannels(Channel Channel);
 
 			void					setLastInteraction(std::string channel_name);
 			std::string				getLastInteraction();

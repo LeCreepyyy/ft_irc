@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:09:45 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/13 13:55:31 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/14 12:01:16 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,8 +36,8 @@
 # define GREEN   "\033[32m" // Connection
 # define YELLOW  "\033[33m" // Disconnection
 # define MAGENTA "\033[35m" // Whispers
-# define GRAY    "\033[37m" // 
-# define CYAN    "\033[36m" // 
+# define GRAY    "\033[37m" // Debug
+# define CYAN    "\033[36m" // Client notif
 # define BLUE    "\033[34m" // Server
 
 void    		parsing_args(char **argv);
@@ -45,7 +45,7 @@ std::string		irc_time();
 
 template<typename T>
 void debug(T log) {
-	std::cout << "\033[36m" << log << RESET << std::endl;
+	std::cout << "\033[37m" << "[DEBUG] " << log << RESET << std::endl;
 }
 
 #endif
