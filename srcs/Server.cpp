@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/14 14:30:11 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/15 14:28:20 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,30 +102,30 @@ void Server::start()
 		}
 
 		// Event occured on a client socket : either a disconnection, or a text input
-		for (std::vector<Client>::iterator it = all_clients.begin(); it != all_clients.end();)
+		for (std::vector<Client>::iterator iter_client = all_clients.begin(); iter_client != all_clients.end();)
 		{
-			if (FD_ISSET(it->getSocket(), &monitored)) {
+			if (FD_ISSET(iter_client->getSocket(), &monitored)) {
 				// Receiving data from client, using a buffer
 				char buffer[1024];
-				int bytesReceived = recv(it->getSocket(), buffer, 1024, 0);
+				int bytesReceived = recv(iter_client->getSocket(), buffer, 1024, 0);
 
 				// If buffer is empty, its a disconnection
 				if (bytesReceived <= 0) {
-					std::cout <<  irc_time() << YELLOW << it->getNickname() << " left the game." << RESET << std::endl;
+					std::cout <<  irc_time() << YELLOW << iter_client->getNickname() << " left the game." << RESET << std::endl;
 					for (std::vector<int>::iterator i = pass_list.begin(); i != pass_list.end(); i++) {
-						if (*i == it->getSocket()) {
+						if (*i == iter_client->getSocket()) {
 							pass_list.erase(i);
 							break;
 						}
 					}
-					std::vector<Channel> current_channel = it->getCurrentChannels();
-					for (std::vector<Channel>::iterator i = current_channel.begin(); i != current_channel.end(); i++) {
-						i->removeClientFromChannel(it->getSocket());
-						if (i->getAllUsers().size() == 0)
-							all_channels.erase(i);
+					std::vector<Channel> current_channel = iter_client->getCurrentChannels();
+					for (std::vector<Channel>::iterator iter_channel = current_channel.begin(); iter_channel != current_channel.end(); iter_channel++) {
+						iter_channel->removeClientFromChannel(iter_client->getSocket());
+						/*if (iter_channel->getAllUsers().size() == 0)
+							all_channels.erase(iter_channel);*/
 					}
-					close(it->getSocket());
-					it = all_clients.erase(it);
+					close(iter_client->getSocket());
+					iter_client = all_clients.erase(iter_client);
 					continue;
 				}
 
@@ -133,22 +133,22 @@ void Server::start()
 				try
 				{
 					std::string client_input(buffer, bytesReceived);
-					check_password(client_input, it);
-					handle_client_input(client_input, it);
-					//std::cout << irc_time() << it->getNickname() << ": " << client_input;
+					check_password(client_input, iter_client);
+					handle_client_input(client_input, iter_client);
+					//std::cout << irc_time() << iter_client->getNickname() << ": " << client_input;
 				}
 				catch (const std::exception &e)
 				{
 					// Any exception thrown in the handling of the input is reported to
 					// both server and client as should a parsing error be
-					std::string notif(irc_time() + it->getNickname() + " : " + e.what());
-					debug(notif);
+					std::string notif(irc_time() + iter_client->getNickname() + " : " + e.what());
+					debug(notif);	
 					notif = e.what();
 					notif += "\n";
-					send(it->getSocket(), notif.c_str(), std::strlen(notif.c_str()) + 1, 0);
+					send(iter_client->getSocket(), notif.c_str(), std::strlen(notif.c_str()) + 1, 0);
 				}
 			}
-			++it;
+			++iter_client;
 		}
 	}
 }
@@ -204,7 +204,8 @@ void Server::handle_client_input(std::string data_sent, std::vector<Client>::ite
 		debug(sender->getNickname().append(" used command MSG"));
 		cmd_msg(sender, data_sent);
 	}
-	else if (!data_sent.find("PART")) {
+	/*else if (!data_sent.find("PART")) {
+		debug(sender->getNickname().append(" used command PART"));
 		std::istringstream iss(&data_sent[6]);
 		std::string channel_name;
 		iss >> channel_name;
@@ -214,7 +215,7 @@ void Server::handle_client_input(std::string data_sent, std::vector<Client>::ite
 				all_channels.erase(it);
 			}
 		}
-	}
+	}*/
 	else if (!data_sent.find("SAY")) {          // !!!!!!!!!!!!!!!!! a tester le changement du nom de la commande
 			std::istringstream iss(&data_sent[4]);
 			std::string channel_name;
@@ -307,6 +308,14 @@ void	Server::cmd_join(std::string data_sent, std::vector<Client>::iterator &send
 					+ irc_time() + GREEN + sender->getNickname() + " joined this channel.\n" + RESET;
 
 	send(sender->getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
+	
+	std::cout << "::CHANNEL DEBUG PRINT::" << std::endl;
+	std::cout << "NAME : " << newChannel.getName() << std::endl;
+	for (std::vector<int>::iterator iter = newChannel.getAllUsers().begin(); iter != newChannel.getAllUsers().end(); iter++)
+		std::cout << "USER : " << *iter << std::endl;
+	for (std::vector<int>::iterator iter = newChannel.getAllOperators().begin(); iter != newChannel.getAllOperators().end(); iter++)
+		std::cout << "OPER : " << *iter << std::endl;
+	
 }
 
 
