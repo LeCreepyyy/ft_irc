@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/07 01:42:29 by bgaertne          #+#    #+#             */
-/*   Updated: 2024/05/15 14:16:12 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/16 11:23:18 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,10 +67,8 @@ void	Channel::addClientToOperators(int client_socket) {
 	this->all_operators.push_back(client_socket);
 }
 void	Channel::removeClientFromOperators(int client_socket) {
-	for (std::vector<int>::iterator it = all_operators.begin(); it != this->all_operators.end(); it++) {
-		if (*it == client_socket)
-			this->all_operators.erase(it);
-	}
+	std::vector<int>::iterator new_end = std::remove(all_operators.begin(), all_operators.end(), client_socket);
+	all_operators.erase(new_end, all_operators.end());
 }
 
 
@@ -83,8 +81,6 @@ void	Channel::addClientToChannel(int client_socket) {
 }
 void	Channel::removeClientFromChannel(int client_socket) {
 	removeClientFromOperators(client_socket);
-	for (std::vector<int>::iterator it = all_users.begin(); it != this->all_users.end(); it++) {
-		if (*it == client_socket)
-			this->all_users.erase(it);
-	}
+	std::vector<int>::iterator new_end = std::remove(all_users.begin(), all_users.end(), client_socket);
+	all_users.erase(new_end, all_users.end());
 }

@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/15 14:28:20 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/16 13:56:15 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,7 +86,7 @@ void Server::start()
 		if ((select(maxFd + 1, &monitored, NULL, NULL, NULL) < 0) && (errno != EINTR))
 			this->crash("Select() exception");
 
-		// Event occured on the server socket : has to be a new client connection
+		// Event occured on the server socket : its a new client connection
 		if (FD_ISSET(serv_socket, &monitored)) {
 			// Accepting new client connexion, then storing the new client in the 'clients' vector
 			Client client;
@@ -121,8 +121,8 @@ void Server::start()
 					std::vector<Channel> current_channel = iter_client->getCurrentChannels();
 					for (std::vector<Channel>::iterator iter_channel = current_channel.begin(); iter_channel != current_channel.end(); iter_channel++) {
 						iter_channel->removeClientFromChannel(iter_client->getSocket());
-						/*if (iter_channel->getAllUsers().size() == 0)
-							all_channels.erase(iter_channel);*/
+						if (iter_channel->getAllUsers().size() == 0)
+							all_channels.erase(iter_channel);
 					}
 					close(iter_client->getSocket());
 					iter_client = all_clients.erase(iter_client);
@@ -204,18 +204,17 @@ void Server::handle_client_input(std::string data_sent, std::vector<Client>::ite
 		debug(sender->getNickname().append(" used command MSG"));
 		cmd_msg(sender, data_sent);
 	}
-	/*else if (!data_sent.find("PART")) {
-		debug(sender->getNickname().append(" used command PART"));
-		std::istringstream iss(&data_sent[6]);
-		std::string channel_name;
-		iss >> channel_name;
-		for (std::vector<Channel>::iterator it = all_channels.begin(); it != all_channels.end(); it++) {
-			if (it->getName() == channel_name) {
-				it->removeClientFromChannel(sender->getSocket());
-				all_channels.erase(it);
-			}
-		}
-	}*/
+	// else if (!data_sent.find("PART"))
+	// {
+	// 	debug(sender->getNickname().append(" used command PART"));
+	// 	std::istringstream iss(&data_sent[6]);
+	// 	std::string channel_name;
+	// 	iss >> channel_name;
+	// 	std::vector<Channel> client_current_channel = sender->getCurrentChannels();
+	// 	for (std::vector<Channel>::iterator it = client_current_channel.begin(); it != sender->getCurrentChannels().end(); it++) {
+	// 		debug(it->getName());
+	// 	}
+	// }
 	else if (!data_sent.find("SAY")) {          // !!!!!!!!!!!!!!!!! a tester le changement du nom de la commande
 			std::istringstream iss(&data_sent[4]);
 			std::string channel_name;
@@ -280,6 +279,7 @@ void	Server::cmd_join(std::string data_sent, std::vector<Client>::iterator &send
 	channel_name.erase(std::remove(channel_name.begin(), channel_name.end(), '\n'), channel_name.end());
 	sender->setLastInteraction(channel_name);
 	for (size_t i = 0; i != all_channels.size(); i++) {
+		debug(all_channels[i].getName() + " == " + channel_name);
 		if (all_channels[i].getName() == channel_name) {
 			// Joining the channel
 			debug("Channel exists: Joining...");
@@ -296,7 +296,7 @@ void	Server::cmd_join(std::string data_sent, std::vector<Client>::iterator &send
 
 	// Channel does not exists, so we create it
 	debug("Channel does not exists: creating it...");
-	Channel	newChannel(&data_sent[6], sender->getSocket());
+	Channel	newChannel(channel_name, sender->getSocket());
 	newChannel.addClientToChannel(sender->getSocket()); // adding client to channel's user list
 	newChannel.addClientToOperators(sender->getSocket()); // adding client to channel's operators, since he created it
 	sender->addToCurrentChannels(newChannel); // adding channel to client's channel list
@@ -309,12 +309,12 @@ void	Server::cmd_join(std::string data_sent, std::vector<Client>::iterator &send
 
 	send(sender->getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 	
-	std::cout << "::CHANNEL DEBUG PRINT::" << std::endl;
-	std::cout << "NAME : " << newChannel.getName() << std::endl;
-	for (std::vector<int>::iterator iter = newChannel.getAllUsers().begin(); iter != newChannel.getAllUsers().end(); iter++)
-		std::cout << "USER : " << *iter << std::endl;
-	for (std::vector<int>::iterator iter = newChannel.getAllOperators().begin(); iter != newChannel.getAllOperators().end(); iter++)
-		std::cout << "OPER : " << *iter << std::endl;
+	// std::cout << "::CHANNEL DEBUG PRINT::" << std::endl;
+	// std::cout << "NAME : " << newChannel.getName() << std::endl;
+	// for (std::vector<int>::iterator iter = newChannel.getAllUsers().begin(); iter != newChannel.getAllUsers().end(); iter++)
+	// 	std::cout << "USER : " << *iter << std::endl;
+	// for (std::vector<int>::iterator iter = newChannel.getAllOperators().begin(); iter != newChannel.getAllOperators().end(); iter++)
+	// 	std::cout << "OPER : " << *iter << std::endl;
 	
 }
 
