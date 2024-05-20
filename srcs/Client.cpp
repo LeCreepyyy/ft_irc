@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: creepy <creepy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:09:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/16 13:25:58 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/20 15:26:38 by creepy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,13 +18,7 @@
 
 Client::Client()
 {
-	static int Usercode = 1000;
-	std::ostringstream oss;
-	oss << Usercode;
-	std::string code = oss.str();
 	nickname = "/";
-	username = "User" + code;
-	Usercode++;
 }
 
 
@@ -78,21 +72,22 @@ std::string	Client::getNickname() {
 
 
 void	Client::setUsername(std::string cmd) {
-	size_t start = 5;
-	if (!cmd[start])
-		throw std::runtime_error("Username cannot be empty.\n");
-	size_t end = cmd.find_first_of(" \n", start);
-	if (end == std::string::npos)
-		end = cmd.length();
-	username = cmd.substr(start, end - start);
-	if (username.size() < 1)
-		throw std::runtime_error("Username cannot be empty.\n");
-	std::istringstream iss(username);
-	std::string new_username;
-	iss >> new_username;
-	username = new_username;
+	std::string prompt = &cmd[4];
+	debug(prompt.size());
+	for (size_t it = 0; prompt[it] || prompt[it] != '\n' || it != prompt.size(); it++) {
+		if (prompt[it] == ' ') {
+			std::cout << it;
+			std::istringstream iss(&prompt[it]);
+			std::string next_word;
+			iss >> next_word;
+			debug(next_word);
+			username.push_back(next_word);
+		}
+		debug(it);
+	}
+	debug("out");
 }
-std::string	Client::getUsername() {
+std::vector<std::string>	Client::getUsername() {
 	return (username);
 }
 

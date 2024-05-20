@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: creepy <creepy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/07 01:42:29 by bgaertne          #+#    #+#             */
-/*   Updated: 2024/05/16 11:23:18 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/20 10:57:02 by creepy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,9 @@ Channel::~Channel()
 //  Methods  //
 ///////////////
 
-
+bool Channel::operator==(const Channel &other) const {
+	return this->name == other.name;
+}
 
 /////////////////
 //  Accessors  //

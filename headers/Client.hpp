@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: creepy <creepy@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:05:32 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/16 13:25:54 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/20 12:26:21 by creepy           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,13 +19,13 @@
 		
 		private:
 			std::string				nickname;
-			std::string				username;
 			std::string				ip;
 			int						client_socket;
 			struct sockaddr_in		client_address;
 			std::vector<Channel>	current_channels;
 			socklen_t				client_address_len;
 			std::string				last_interaction;
+			std::vector<std::string>	username;
 		
 		public:
 
@@ -40,7 +40,7 @@
 			std::string				getNickname();
 
 			void					setUsername(std::string username);
-			std::string				getUsername();
+			std::vector<std::string>				getUsername();
 
 			void					setSocket(int socket);
 			int						getSocket();
