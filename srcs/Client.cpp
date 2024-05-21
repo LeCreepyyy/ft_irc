@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: creepy <creepy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:09:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/20 15:26:38 by creepy           ###   ########.fr       */
+/*   Updated: 2024/05/21 13:02:26 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,19 +73,15 @@ std::string	Client::getNickname() {
 
 void	Client::setUsername(std::string cmd) {
 	std::string prompt = &cmd[4];
-	debug(prompt.size());
-	for (size_t it = 0; prompt[it] || prompt[it] != '\n' || it != prompt.size(); it++) {
-		if (prompt[it] == ' ') {
-			std::cout << it;
-			std::istringstream iss(&prompt[it]);
-			std::string next_word;
-			iss >> next_word;
-			debug(next_word);
-			username.push_back(next_word);
-		}
-		debug(it);
+	size_t word_size = 0;
+	for (size_t it = 0; prompt[it] || it < prompt.size(); it += word_size) {
+		std::istringstream iss(&prompt[it]);
+		std::string next_word;
+		iss >> next_word;
+		word_size = next_word.size();
+		word_size++;
+		username.push_back(next_word);
 	}
-	debug("out");
 }
 std::vector<std::string>	Client::getUsername() {
 	return (username);
