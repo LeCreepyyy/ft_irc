@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:09:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/21 13:02:26 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/21 13:12:25 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,17 +50,17 @@ int	Client::getSocket() {
 void	Client::setNickname(std::string cmd, std::vector<Client> &all_clients) {
 	size_t start = 5;
 	if (!cmd[start])
-		throw std::runtime_error("Nickname cannot be empty.\n");
+		throw std::runtime_error("Nickname cannot be empty.");
 	size_t end = cmd.find_first_of(" \n", start);
 	if (end == std::string::npos)
 		end = cmd.length();
 	std::string temp = cmd.substr(start, end - start);
 	if (temp.size() < 1)
-		throw std::runtime_error("Nickname cannot be empty.\n");
+		throw std::runtime_error("Nickname cannot be empty.");
 	for (std::vector<Client>::iterator it = all_clients.begin(); it != all_clients.end(); it++)
 	{
 		if (it->nickname == temp)
-			throw std::runtime_error("Nickname already in use. Try another one.\n");
+			throw std::runtime_error("Nickname already in use. Try another one.");
 	}
 	nickname = temp;
 	std::string notif(GREEN "You are now known as " + nickname + ".\n" RESET);
