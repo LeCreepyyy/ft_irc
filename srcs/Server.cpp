@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
+/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/21 14:59:56 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/05/22 11:13:15 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -169,7 +169,13 @@ void Server::crash(std::string log)
 void Server::check_password(std::string data_sent, std::vector<Client>::iterator &sender) {
 	for (size_t i = 0; i != pass_list.size(); i++) {
 		if (pass_list[i] == sender->getSocket()) {
-			// placer ici le forcing sur le fait de mettre le nick et le user
+			std::istringstream iss(data_sent);
+			std::string cmd;
+			iss >> cmd;
+			if (sender->getNickname() == "/" && cmd != "NICK")
+				throw std::runtime_error(RED "Choose a Nickname (NICK <nickname>)" RESET);
+			else if (sender->getUsername().size() == 0 && cmd != "USER")
+				throw std::runtime_error(RED "Choose a Username (USER <username> <hostname> <servername> <realname>)");
 			return ;
 		}
 	}
@@ -210,31 +216,11 @@ void Server::handle_client_input(std::string data_sent, std::vector<Client>::ite
 	}
 	else if (command == "PRIVMSG") {
 		debug(sender->getIP().append(" used command PRIVMSG"));
-		cmd_msg(sender, data_sent);
+		cmd_msg(data_sent, sender);
 	}
 	else if (command == "PART") {
 		debug(sender->getIP().append(" used command PART"));
-		std::istringstream iss(&data_sent[6]);
-		std::string channel_name;
-		iss >> channel_name;
-		std::string notif = irc_time() + YELLOW + "You left " + channel_name + ".\n"+ RESET;
-		send(sender->getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
-		notif = YELLOW "I have left " + channel_name + "." + RESET;
-		msg_to_channel(notif, channel_name, sender);
-		std::vector<Channel> client_current_channels = sender->getCurrentChannels();
-
-
-		////// MARCHE PO
-		for (std::vector<Channel>::iterator iter_channel = client_current_channels.begin(); iter_channel != client_current_channels.end(); ++iter_channel) {
-			if (iter_channel->getName() == channel_name + '\n') {
-				iter_channel->removeClientFromChannel(sender->getSocket());
-				if (iter_channel->getAllUsers().size() == 0)
-					all_channels.erase(std::remove(all_channels.begin(), all_channels.end(), *iter_channel), all_channels.end());
-			}
-		}
-
-
-
+		cmd_part(data_sent, sender);
 	}
 	else if (command == "MSG") {
 		debug(sender->getIP().append(" used command MSG"));
@@ -250,10 +236,28 @@ void Server::handle_client_input(std::string data_sent, std::vector<Client>::ite
 	}
 }
 
-
-void	Server::cmd_msg(std::vector<Client>::iterator &sender, std::string data_sent)
+void	Server::cmd_part(std::string data_sent, std::vector<Client>::iterator &sender)
 {
-	(void) sender;
+	std::istringstream iss(&data_sent[6]);
+	std::string channel_name;
+	iss >> channel_name;
+
+	std::string notif = irc_time() + YELLOW + "You left " + channel_name + ".\n"+ RESET;
+	msg_to_channel(notif, channel_name, sender);
+	
+	 for (std::vector<Channel>::iterator it = all_channels.begin(); it != all_channels.end(); ++it) {
+		if (it->getName() == channel_name) {
+			it->removeClientFromChannel(sender->getSocket());
+			if (it->getAllUsers().size() < 1)
+				debug("SUPP CHANNEL");
+		}
+		
+	}
+}
+
+
+void	Server::cmd_msg(std::string data_sent, std::vector<Client>::iterator &sender)
+{
 	std::istringstream	iss(data_sent);
 	std::string			receiver_nick;
 	int i = 0;
