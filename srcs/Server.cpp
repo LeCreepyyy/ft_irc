@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/23 10:27:02 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/23 10:52:24 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,7 +139,7 @@ void Server::start()
 				try
 				{
 					std::string client_input(buffer, bytesReceived);
-					check_password(client_input, iter_client);
+					//check_password(client_input, iter_client);
 					handle_client_input(client_input, iter_client);
 					//std::cout << irc_time() << iter_client->getNickname() << ": " << client_input;
 				}
@@ -194,7 +194,6 @@ void Server::check_password(std::string data_sent, std::vector<Client>::iterator
 	send(sender->getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 	debug(sender->getIP() + " logged in.");
 }
-
 
 void Server::handle_client_input(std::string data_sent, std::vector<Client>::iterator &sender)
 {
