@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/22 11:13:15 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/23 10:27:02 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -174,8 +174,8 @@ void Server::check_password(std::string data_sent, std::vector<Client>::iterator
 			iss >> cmd;
 			if (sender->getNickname() == "/" && cmd != "NICK")
 				throw std::runtime_error(RED "Choose a Nickname (NICK <nickname>)" RESET);
-			else if (sender->getUsername().size() == 0 && cmd != "USER")
-				throw std::runtime_error(RED "Choose a Username (USER <username> <hostname> <servername> <realname>)");
+			else if (sender->getNickname() != "/" && sender->getUsername().size() == 0 && cmd != "USER")
+				throw std::runtime_error(RED "Choose a Username (USER <username> <hostname> <servername> <realname>)" RESET);
 			return ;
 		}
 	}
