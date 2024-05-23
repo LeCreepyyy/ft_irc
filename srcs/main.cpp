@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:11:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/13 13:29:19 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/23 13:15:50 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,10 +39,10 @@ void parsing_args(char **argv)
 	for (size_t i = 0; i != port.size(); i++)
 	{
 		if (!isdigit(port[i]))
-			throw std::runtime_error("Invalid Port");
+			throw std::runtime_error("Invalid Port.");
 	}
 	if (password.find(' ') != std::string::npos)
-		throw std::runtime_error("Invalid Password");
+		throw std::runtime_error("Invalid Password.");
 }
 
 std::string		irc_time()

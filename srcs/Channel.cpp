@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: creepy <creepy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/07 01:42:29 by bgaertne          #+#    #+#             */
-/*   Updated: 2024/05/20 10:57:02 by creepy           ###   ########.fr       */
+/*   Updated: 2024/05/23 12:53:17 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,6 @@ void	Channel::removeClientFromOperators(int client_socket) {
 }
 
 
-
 std::vector<int>& Channel::getAllUsers() {
 	return this->all_users;
 }
@@ -82,7 +81,7 @@ void	Channel::addClientToChannel(int client_socket) {
 	this->all_users.push_back(client_socket);
 }
 void	Channel::removeClientFromChannel(int client_socket) {
-	removeClientFromOperators(client_socket);
+	removeClientFromOperators(client_socket);	
 	std::vector<int>::iterator new_end = std::remove(all_users.begin(), all_users.end(), client_socket);
 	all_users.erase(new_end, all_users.end());
 }

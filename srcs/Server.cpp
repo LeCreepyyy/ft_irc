@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/23 10:52:24 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/23 14:23:27 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,11 +41,11 @@ void Server::start()
 	// Creating the server's socket
 	serv_socket = socket(AF_INET, SOCK_STREAM, 0);
 	if (serv_socket == -1)
-		throw std::runtime_error("serv_socket creation failed");
+		throw std::runtime_error("Failed to create server socket.");
 
 	int option = 1;
 	if (setsockopt(serv_socket, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) == -1)
-		this->crash("setsockopt() exception");
+		this->crash("Failed to configure server socket.");
 
 	// Socket configuration
 	serv_address.sin_family = AF_INET;
@@ -53,9 +53,9 @@ void Server::start()
 	serv_address.sin_port = htons(serv_port);
 
 	if (bind(serv_socket, (struct sockaddr *)&serv_address, sizeof(serv_address)) == -1)
-		this->crash("Unable to bind serv_socket");
+		this->crash("Unable to bind server socket.");
 	if (listen(serv_socket, MAX_WAITLIST) == -1)
-		this->crash("Unable to listen");
+		this->crash("Unable to listen on server socket.");
 
 	std::cout << irc_time() << BLUE << "Server listening on port " << serv_port << RESET << std::endl;
 
@@ -111,7 +111,7 @@ void Server::start()
 
 				// If buffer is empty, it's a disconnection
 				if (bytesReceived <= 0) {
-					std::cout << irc_time() << YELLOW << iter_client->getIP() << " left the game." << RESET << std::endl;
+					std::cout << irc_time() << YELLOW << iter_client->getNickname() << " left the game." << RESET << std::endl;
 
 					// Remove client from pass_list
 					for (std::vector<int>::iterator i = pass_list.begin(); i != pass_list.end(); ++i) {
@@ -122,8 +122,8 @@ void Server::start()
 					}
 
 					// Remove client from all channels
-					std::vector<Channel> current_channel = iter_client->getCurrentChannels();
-					for (std::vector<Channel>::iterator iter_channel = current_channel.begin(); iter_channel != current_channel.end(); ++iter_channel) {
+					std::vector<Channel> current_channels = iter_client->getCurrentChannels();
+					for (std::vector<Channel>::iterator iter_channel = current_channels.begin(); iter_channel != current_channels.end(); ++iter_channel) {
 						iter_channel->removeClientFromChannel(iter_client->getSocket());
 						if (iter_channel->getAllUsers().size() == 0)
 							all_channels.erase(std::remove(all_channels.begin(), all_channels.end(), *iter_channel), all_channels.end());
@@ -139,15 +139,14 @@ void Server::start()
 				try
 				{
 					std::string client_input(buffer, bytesReceived);
-					//check_password(client_input, iter_client);
+					check_password(client_input, iter_client);
 					handle_client_input(client_input, iter_client);
-					//std::cout << irc_time() << iter_client->getNickname() << ": " << client_input;
 				}
 				catch (const std::exception &e)
 				{
 					// Any exception thrown in the handling of the input is reported to both server and client
-					std::string notif(irc_time() + iter_client->getNickname() + " : " + e.what());
-					debug(notif);
+					std::string notif(irc_time() + CYAN + iter_client->getNickname() + RESET ": " + RED + e.what() + RESET);
+					std::cout << notif << std::endl;
 					notif = irc_time() + RED + e.what() + '\n' + RESET;
 					send(iter_client->getSocket(), notif.c_str(), std::strlen(notif.c_str()) + 1, 0);
 				}
@@ -173,26 +172,26 @@ void Server::check_password(std::string data_sent, std::vector<Client>::iterator
 			std::string cmd;
 			iss >> cmd;
 			if (sender->getNickname() == "/" && cmd != "NICK")
-				throw std::runtime_error(RED "Choose a Nickname (NICK <nickname>)" RESET);
+				throw std::runtime_error("Choose a Nickname (NICK <nickname>)");
 			else if (sender->getNickname() != "/" && sender->getUsername().size() == 0 && cmd != "USER")
-				throw std::runtime_error(RED "Choose a Username (USER <username> <hostname> <servername> <realname>)" RESET);
+				throw std::runtime_error("Choose a Username (USER <username> <hostname> <servername> <realname>)");
 			return ;
 		}
 	}
 	size_t it = data_sent.find("PASS");
 	if (it == data_sent.npos)
-		throw std::runtime_error(RED "Wrong password, try again" RESET);
+		throw std::runtime_error("Wrong password, try again.");
 	it += 5;
 	std::istringstream iss(&data_sent[it]);
 	std::string password_sent;
 	iss >> password_sent;
 	if (password_sent != this->serv_password)
-		throw std::runtime_error(RED "Wrong password, try again" RESET);
+		throw std::runtime_error("Wrong password, try again.");
 	//validation
 	pass_list.push_back(sender->getSocket());
 	std::string notif(GREEN "You are now logged in.\n" RESET);
 	send(sender->getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
-	debug(sender->getIP() + " logged in.");
+	std::cout << sender->getIP() << " logged in." << std::endl;
 }
 
 void Server::handle_client_input(std::string data_sent, std::vector<Client>::iterator &sender)
@@ -200,6 +199,7 @@ void Server::handle_client_input(std::string data_sent, std::vector<Client>::ite
 	std::istringstream iss(data_sent);
 	std::string command;
 	iss >> command;
+	
 	// parse client input
 	if (command == "NICK") {
 		debug(sender->getIP().append(" used command NICK"));
@@ -221,14 +221,25 @@ void Server::handle_client_input(std::string data_sent, std::vector<Client>::ite
 		debug(sender->getIP().append(" used command PART"));
 		cmd_part(data_sent, sender);
 	}
+	else if (command == "KICK") {
+		debug(sender->getIP().append( "used command KICK"));
+	}
 	else if (command == "MSG") {
 		debug(sender->getIP().append(" used command MSG"));
 		std::istringstream iss(&data_sent[4]);
 		std::string channel_name;
 		iss >> channel_name;
-		msg_to_channel(&data_sent[channel_name.size() + 5], channel_name, sender);
+		std::vector<Channel> channel_client = sender->getCurrentChannels();
+		for (std::vector<Channel>::iterator it = channel_client.begin(); it != channel_client.end(); it++) {
+			if (it->getName() == channel_name) {
+				msg_to_channel(&data_sent[channel_name.size() + 5], channel_name, sender);
+				sender->setLastInteraction(channel_name);
+				return ;
+			}
+		}
+		throw std::runtime_error("You are not connected to this channel.");
 	}
-	else
+	else if (command != "PASS")
 	{
 		if (sender->getLastInteraction().size())
 			msg_to_channel(data_sent, sender->getLastInteraction(), sender);
@@ -241,16 +252,23 @@ void	Server::cmd_part(std::string data_sent, std::vector<Client>::iterator &send
 	std::string channel_name;
 	iss >> channel_name;
 
-	std::string notif = irc_time() + YELLOW + "You left " + channel_name + ".\n"+ RESET;
-	msg_to_channel(notif, channel_name, sender);
-	
-	 for (std::vector<Channel>::iterator it = all_channels.begin(); it != all_channels.end(); ++it) {
+	std::string notif =  YELLOW "You left " + channel_name + ".\n"+ RESET;
+	send(sender->getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
+
+	for (std::vector<Channel>::iterator it = all_channels.begin(); it != all_channels.end();) {
 		if (it->getName() == channel_name) {
 			it->removeClientFromChannel(sender->getSocket());
-			if (it->getAllUsers().size() < 1)
-				debug("SUPP CHANNEL");
+			sender->removeInteraction(channel_name);
+			if (it->getAllUsers().empty()) {
+				it = all_channels.erase(it);
+			} else {
+				notif = YELLOW + sender->getNickname() + " left " + channel_name + "." RESET;
+				msg_to_channel(notif, channel_name, sender);
+				++it;
+			}
+		} else {
+			++it;
 		}
-		
 	}
 }
 
@@ -279,7 +297,7 @@ void	Server::cmd_msg(std::string data_sent, std::vector<Client>::iterator &sende
 			return;
 		}
 	}
-	std::string	notif(RED "No one named " + receiver_nick + " was found.\n");
+	std::string	notif("No one named " + receiver_nick + " was found.\n");
 	send(sender->getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 }
 
@@ -289,7 +307,6 @@ void	Server::msg_to_channel(std::string msg, std::string channel_name, std::vect
 	std::string message = irc_time() + "[" + channel_name + "] " + BLUE + sender->getNickname() + RESET + ": " + msg + "\n";
 	bool found = false;
 	for (size_t i = 0; i != all_channels.size(); i++) {
-		debug(channel_name);
 		if (all_channels[i].getName() == channel_name || all_channels[i].getName() == channel_name + "\n") {
 			found = true;
 			for (size_t j = 0; j != all_channels[i].getAllUsers().size(); j++) {
@@ -304,7 +321,7 @@ void	Server::msg_to_channel(std::string msg, std::string channel_name, std::vect
 void	Server::cmd_join(std::string data_sent, std::vector<Client>::iterator &sender)
 {
 	if (data_sent[5] != '#' || data_sent[6] == ' ' || data_sent[6] == '\n')
-			throw std::runtime_error(RED "Improper channel name in JOIN command" RESET);
+			throw std::runtime_error("Improper channel name in JOIN command");
 
 	// Looking if the channel already exists
 	std::string	channel_name(&data_sent[6], std::strlen(&data_sent[6]));
@@ -317,7 +334,6 @@ void	Server::cmd_join(std::string data_sent, std::vector<Client>::iterator &send
 				throw std::runtime_error("You are already connected to this channel.");
 		
 			// Joining the channel
-			debug("Joining channel");
 			all_channels[i].addClientToChannel(sender->getSocket()); // adding client to channel's user list
 			sender->addToCurrentChannels(all_channels[i]);			 // adding channel to client's channel list
 			sender->setLastInteraction(channel_name);
@@ -331,10 +347,8 @@ void	Server::cmd_join(std::string data_sent, std::vector<Client>::iterator &send
 	}
 
 	// Channel does not exists, so we create it
-	debug("Creating channel");
 	Channel	newChannel(channel_name, sender->getSocket());
 	newChannel.addClientToChannel(sender->getSocket()); // adding client to channel's user list
-	newChannel.addClientToOperators(sender->getSocket()); // adding client to channel's operators, since he created it
 	sender->addToCurrentChannels(newChannel); // adding channel to client's channel list
 	all_channels.push_back(newChannel); // pushing newChannel into the all_channels list
 
@@ -342,7 +356,7 @@ void	Server::cmd_join(std::string data_sent, std::vector<Client>::iterator &send
 	std::string	notif = irc_time() + MAGENTA + "You created a channel named '" + channel_name + "'\n" + RESET
 					+ irc_time() + MAGENTA + "You now have ADMIN rights in this channel.\n" + RESET
 					+ irc_time() + GREEN + sender->getNickname() + " joined this channel.\n" + RESET;
-
+	sender->setLastInteraction(channel_name);
 	send(sender->getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 }
 

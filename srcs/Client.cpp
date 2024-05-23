@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
+/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:09:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/21 13:12:25 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/05/23 14:33:49 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,8 @@ void	Client::setNickname(std::string cmd, std::vector<Client> &all_clients) {
 		if (it->nickname == temp)
 			throw std::runtime_error("Nickname already in use. Try another one.");
 	}
+	if (temp[0] == '#')
+		throw std::runtime_error("\"#\" is forbidden.");
 	nickname = temp;
 	std::string notif(GREEN "You are now known as " + nickname + ".\n" RESET);
 	send(client_socket, notif.c_str(), strlen(notif.c_str()), MSG_DONTWAIT);
@@ -72,16 +74,22 @@ std::string	Client::getNickname() {
 
 
 void	Client::setUsername(std::string cmd) {
+	std::vector<std::string> temp;
 	std::string prompt = &cmd[4];
-	size_t word_size = 0;
+	size_t	word_size = 0;
+	int		args_count = 0;
 	for (size_t it = 0; prompt[it] || it < prompt.size(); it += word_size) {
 		std::istringstream iss(&prompt[it]);
 		std::string next_word;
 		iss >> next_word;
 		word_size = next_word.size();
 		word_size++;
-		username.push_back(next_word);
+		temp.push_back(next_word);
+		args_count++;
 	}
+	if (args_count != 5)
+		throw std::runtime_error("USER <username> <hostname> <servername> <realname>");
+	username = temp;
 }
 std::vector<std::string>	Client::getUsername() {
 	return (username);
@@ -141,9 +149,16 @@ void	Client::removeFromCurrentChannels(Channel channel) {
 }
 
 void	Client::setLastInteraction(std::string channel_name) {
-	this->last_interaction = channel_name;
+	std::vector<std::string>::iterator it = std::remove(last_interaction.begin(), last_interaction.end(), channel_name);
+	if (it == last_interaction.end())
+		last_interaction.push_back(channel_name);
+	// last_interaction.erase(it, last_interaction.end());
+	// last_interaction.push_back(channel_name);
 }
-
 std::string Client::getLastInteraction() {
-	return this->last_interaction;
+	return (last_interaction.back());
+}
+void	Client::removeInteraction(std::string channel_name) {
+	std::vector<std::string>::iterator it = std::remove(last_interaction.begin(), last_interaction.end(), channel_name);
+	last_interaction.erase(it, last_interaction.end());
 }

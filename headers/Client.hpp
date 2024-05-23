@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: creepy <creepy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:05:32 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/20 12:26:21 by creepy           ###   ########.fr       */
+/*   Updated: 2024/05/23 13:44:45 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@
 			struct sockaddr_in		client_address;
 			std::vector<Channel>	current_channels;
 			socklen_t				client_address_len;
-			std::string				last_interaction;
+			std::vector<std::string>	last_interaction;
 			std::vector<std::string>	username;
 		
 		public:
@@ -62,6 +62,7 @@
 
 			void					setLastInteraction(std::string channel_name);
 			std::string				getLastInteraction();
+			void					removeInteraction(std::string channel_name);
 	};
 
 # endif
