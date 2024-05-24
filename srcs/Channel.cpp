@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/07 01:42:29 by bgaertne          #+#    #+#             */
-/*   Updated: 2024/05/24 14:30:49 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/24 16:39:51 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ void	Channel::setTopic(std::string newTopic, int client_socket) {
 			is_op = true;
 	}
 	if (this->topic_restricted == true && is_op != true)
-		throw std::runtime_error("This channel's topic may only be modified by operators.");
+		throw std::runtime_error("Channel #" + this->name + ": topic may only be modified by operators.");
 	else if (newTopic.empty())
 		this->setTopic("Undefinied channel topic.", client_socket);
 	else
@@ -76,20 +76,21 @@ std::string		Channel::getTopic() {
 void	Channel::setTopicLimit(bool status, int client_socket) {
 	if (this->topic_restricted == true) {
 		if (status == true)
-			throw std::runtime_error("Topic is already limited to operators modification.");
+			throw std::runtime_error("Channel #" + this->name + ": topic is already limited to operators modification.");
 		else {
-			this->topic_restricted == false;
-			std::string notif = MAGENTA "Topic may now be changed by everyone." RESET;
+			this->topic_restricted = false;
+			std::string notif = irc_time() + MAGENTA "Channel #" + this->name + ": topic may now be changed by everyone.\n" RESET;
 			send(client_socket, notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
 	}
 	else {
 		if (status == false)
-			throw std::runtime_error("Topic is already publicly modifiable.");
-		else
-			this->topic_restricted == true;
-			std::string notif = MAGENTA "Topic modification is now limited to operators." RESET;
+			throw std::runtime_error("Channel #" + this->name + ": topic is already publicly modifiable.");
+		else {
+			this->topic_restricted = true;
+			std::string notif = irc_time() + MAGENTA "Channel #" + this->name + ": topic modification is now limited to operators.\n" RESET;
 			send(client_socket, notif.c_str(), notif.size(), MSG_DONTWAIT);
+		}
 	}
 }
 
@@ -124,22 +125,22 @@ void	Channel::setWhitelist(bool status, int client_socket)
 	if (this->on_whitelist == true)
 	{
 		if (status == true)
-			throw std::runtime_error("This channel is already invite-only.");
+			throw std::runtime_error("Channel #" + this->name + ": already invite-only.");
 		else {
 			this->whitelist.clear();
-			this->on_whitelist == false;
-			std::string notif = MAGENTA "This channel is now public.\n" RESET;
+			this->on_whitelist = false;
+			std::string notif = irc_time() + MAGENTA "Channel #" + this->name + ": public.\n" RESET;
 			send(client_socket, notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
 	}
 	else
 	{
 		if (status == false)
-			throw std::runtime_error("This channel is already public.");
+			throw std::runtime_error("Channel #" + this->name + ": already public.");
 		else {
 			this->whitelist.push_back(client_socket);
 			this->on_whitelist = true;
-			std::string notif = MAGENTA "This channel is now invite-only.\n" RESET;
+			std::string notif = irc_time() + MAGENTA "Channel #" + this->name + ": invite-only.\n" RESET;
 			send(client_socket, notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
 	}

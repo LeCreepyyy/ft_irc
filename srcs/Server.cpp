@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/24 14:30:49 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/24 15:55:14 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,7 +139,7 @@ void Server::start()
 				try
 				{
 					std::string client_input(buffer, bytesReceived);
-					check_password(client_input, iter_client);
+					//check_password(client_input, iter_client);
 					handle_client_input(client_input, iter_client);
 				}
 				catch (const std::exception &e)

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:11:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/23 13:15:50 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/24 16:08:45 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,6 @@ std::string		irc_time()
 	tm *localTime = localtime(&now);
 
 	char str[100];
-	strftime(str, sizeof(str), "[%H:%M:%S] ", localTime);
+	strftime(str, sizeof(str), "[%H:%M] ", localTime);
 	return std::string(str);
 }

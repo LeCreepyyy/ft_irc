@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Command.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/24 10:23:28 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/24 14:30:41 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/24 16:41:38 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -243,7 +243,7 @@ void	Server::cmd_topic(std::string data_sent, std::vector<Client>::iterator &sen
 		}
 	}
 	else
-		throw std::runtime_error("Missing target channel.")
+		throw std::runtime_error("Missing target channel.");
 }
 
 void	Server::cmd_mode(std::string data_sent, std::vector<Client>::iterator &sender)
@@ -254,40 +254,36 @@ void	Server::cmd_mode(std::string data_sent, std::vector<Client>::iterator &send
 	iss >> target;
 	iss >> option;
 
-	debug(target);
-	debug(option);
 	if (target.size() > 1 && target[0] == '#')
 	{
 		std::string channel_name = &target[1];
-		for (std::vector<Channel>::iterator channel_it = all_channels.begin(); channel_it != all_channels.end();) {
+		for (std::vector<Channel>::iterator channel_it = all_channels.begin(); channel_it != all_channels.end(); channel_it++) {
+			debug(channel_name);
+			debug(channel_it->getName());
 			if (channel_it->getName() == channel_name) {
 				bool is_op = false;
-				for (std::vector<int>::iterator operator_it = channel_it->getAllOperators().begin(); operator_it != channel_it->getAllOperators().end();) {
+				for (std::vector<int>::iterator operator_it = channel_it->getAllOperators().begin(); operator_it != channel_it->getAllOperators().end(); operator_it++)
 					if (*operator_it == sender->getSocket())
 						is_op = true;
-				}
 				if (is_op == false)
 					throw std::runtime_error("Only channel operators can use the MODE command.");
 				if (option == "+i")
-					channel_it->setWhitelist(true, sender->getSocket());
+					return (channel_it->setWhitelist(true, sender->getSocket()));
 				if (option == "-i")
-					channel_it->setWhitelist(false, sender->getSocket());
+					return (channel_it->setWhitelist(false, sender->getSocket()));
 				if (option == "+t")
-					channel_it->setTopicLimit(true, sender->getSocket());
+					return (channel_it->setTopicLimit(true, sender->getSocket()));
 				if (option == "-t")
-					channel_it->setTopicLimit(false, sender->getSocket());
+					return (channel_it->setTopicLimit(false, sender->getSocket()));
 				if (option == "+o")
-					// op
+					return;// op
 				if (option == "-o")
-					// deop
+					return;// deop
 				if (option == "+l")
-					// limite max de co au channel
+					return;// limite max de co au channel
 				if (option == "-l")
-					// supprime la limite de co au channel
-				
-
+					return;// supprime la limite de co au channel
 				throw std::runtime_error("Invalid option in MODE command.");
-					
 			}
 		}
 		throw std::runtime_error("Channel not found.");
