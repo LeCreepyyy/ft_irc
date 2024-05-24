@@ -7,6 +7,7 @@ SRCS        :=      srcs/main.cpp \
 						srcs/Server.cpp \
 						srcs/Client.cpp \
 						srcs/Channel.cpp \
+						srcs/Command.cpp \
                           
 OBJS        := ${SRCS:.cpp=.o}
 
