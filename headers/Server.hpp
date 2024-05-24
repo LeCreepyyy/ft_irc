@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:13:34 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/24 10:19:21 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/24 14:30:53 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,10 @@
 			void	cmd_privmsg(std::string data_sent, std::vector<Client>::iterator &sender);
 			void	cmd_part(std::string data_sent, std::vector<Client>::iterator &sender);
 			void	cmd_msg(std::string data_sent, std::vector<Client>::iterator &sender);
+			void	cmd_kick(std::string data_sent, std::vector<Client>::iterator &sender);
+			void	cmd_mode(std::string data_sent, std::vector<Client>::iterator &sender);
+			void	cmd_topic(std::string data_sent, std::vector<Client>::iterator &sender);
+			void	cmd_invite(std::string data_sent, std::vector<Client>::iterator &sender);
 			
 			/* Accessors */
 	};

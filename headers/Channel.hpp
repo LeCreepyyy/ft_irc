@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: creepy <creepy@student.42.fr>              +#+  +:+       +#+        */
+/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/03 10:31:29 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/20 10:52:38 by creepy           ###   ########.fr       */
+/*   Updated: 2024/05/24 14:15:51 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,13 @@
 			std::string			name;
 			std::vector<int>	all_operators;
 			std::vector<int>	all_users;
-			std::string			mode;
+			bool				on_whitelist;
+			std::vector<int>	whitelist;
+			bool				topic_restricted;
+			std::string			topic;
+			bool				password_protected;
+			std::string			password;
+			int					limit;
 
 		public :
 
@@ -36,8 +42,12 @@
 			void			setName(std::string name);
 			std::string		getName();
 
-			void			setMode(std::string mode);
-			std::string		getMode();
+			void			setTopic(std::string newTopic, int client_socket);
+			std::string		getTopic();
+			void			setTopicLimit(bool status, int client_socket);
+			
+			void				setWhitelist(bool status, int client_socket);
+			std::vector<int>	getWhitelist();
 
 			std::vector<int>&	getAllOperators();
 			void				addClientToOperators(int client_socket);

@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/24 10:26:00 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/24 14:30:49 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -145,9 +145,9 @@ void Server::start()
 				catch (const std::exception &e)
 				{
 					// Any exception thrown in the handling of the input is reported to both server and client
-					std::string notif(irc_time() + CYAN + iter_client->getNickname() + RESET ": " + RED + e.what() + RESET);
-					std::cout << notif << std::endl;
-					notif = irc_time() + RED + e.what() + '\n' + RESET;
+					// std::string notif(irc_time() + CYAN + iter_client->getNickname() + RESET ": " + RED + e.what() + RESET);
+					// std::cout << notif << std::endl;
+					std::string notif = irc_time() + RED + e.what() + '\n' + RESET;
 					send(iter_client->getSocket(), notif.c_str(), std::strlen(notif.c_str()) + 1, 0);
 				}
 			}
@@ -201,32 +201,27 @@ void Server::handle_client_input(std::string data_sent, std::vector<Client>::ite
 	iss >> command;
 	
 	// parse client input
-	if (command == "NICK") {
+	if (command == "NICK")
 		sender->setNickname(data_sent, all_clients);
-	}
-	else if (command == "USER") {
+	else if (command == "USER")
 		sender->setUsername(data_sent);
-	}
-	else if (command == "JOIN") {
+	else if (command == "JOIN")
 		cmd_join(data_sent, sender);
-	}
-	else if (command == "PRIVMSG") {
+	else if (command == "PRIVMSG")
 		cmd_privmsg(data_sent, sender);
-	}
-	else if (command == "PART") {
+	else if (command == "PART")
 		cmd_part(data_sent, sender);
-	}
-	else if (command == "KICK") {
-		debug(sender->getIP().append( "used command KICK"));
-	}
-	else if (command == "MSG") {
+	else if (command == "KICK")
+		cmd_kick(data_sent, sender);
+	else if (command == "MSG")
 		cmd_msg(data_sent, sender);
-	}
+	else if (command == "MODE")
+		cmd_mode(data_sent, sender);
+	else if (command == "INVITE")
+		cmd_invite(data_sent, sender);
 	else if (command != "PASS")
-	{
 		if (sender->getLastInteraction().size())
 			msg_to_channel(data_sent, sender->getLastInteraction(), sender);
-	}
 }
 
 
