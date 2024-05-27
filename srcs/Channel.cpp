@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/07 01:42:29 by bgaertne          #+#    #+#             */
-/*   Updated: 2024/05/27 10:54:09 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/27 14:19:22 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ Channel::Channel(std::string name, int op_socket)
 	this->topic_restricted = false;
 	this->password_protected = false;
 	this->name = name;
+	this->topic = "Undefinied channel topic.\n";
 	this->all_operators.push_back(op_socket);
 }
 
@@ -59,16 +60,15 @@ std::string		Channel::getName() {
 
 void	Channel::setTopic(std::string newTopic, int client_socket) {
 	bool is_op = false;
-	for (std::vector<int>::iterator it = all_operators.begin(); it != all_operators.end();) {
+	for (std::vector<int>::iterator it = all_operators.begin(); it != all_operators.end(); it++) {
 		if (*it == client_socket)
 			is_op = true;
 	}
 	if (this->topic_restricted == true && is_op != true)
 		throw std::runtime_error("Channel #" + this->name + ": topic may only be modified by operators.");
-	else if (newTopic.empty())
-		this->setTopic("Undefinied channel topic.", client_socket);
-	else
-		this->topic = newTopic;
+	if (find(this->all_users.begin(), this->all_users.end(), client_socket) == this->all_users.end())
+		throw std::runtime_error("You need to be connected to this channel.");
+	this->topic = newTopic + '\n';
 }
 std::string		Channel::getTopic() {
 	return this->topic;
@@ -145,9 +145,13 @@ void	Channel::setWhitelist(bool status, int client_socket)
 		}
 	}
 }
+std::vector<int>	Channel::getWhitelist()
+{
+	return this->whitelist;
+}
 
 
-bool	Channel::addToWhiteList(int client_socket) {
+bool	Channel::addToWhitelist(int client_socket) {
 	for (std::vector<int>::iterator it = whitelist.begin(); it != whitelist.end(); it++) {
 		if (*it == client_socket)
 			return (false);
@@ -155,7 +159,7 @@ bool	Channel::addToWhiteList(int client_socket) {
 	whitelist.push_back(client_socket);
 	return (true);
 }
-bool	Channel::removeToWhiteList(int client_socket) {
+bool	Channel::removeToWhitelist(int client_socket) {
 	for (std::vector<int>::iterator it = whitelist.begin(); it != whitelist.end(); it++) {
 		if (*it == client_socket) {
 			whitelist.erase(it);
@@ -164,6 +168,6 @@ bool	Channel::removeToWhiteList(int client_socket) {
 	}
 	return (false);
 }
-bool	Channel::statusWhiteList() {
+bool	Channel::getWhitelistStatus() {
 	return (on_whitelist);
 }

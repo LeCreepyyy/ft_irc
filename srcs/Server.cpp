@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/27 11:36:16 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/27 14:22:33 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,9 +121,10 @@ void Server::start()
 						}
 					}
 
-					// Remove client from all channels
+					// Remove client from all channels, and their whitelists
 					std::vector<Channel> current_channels = iter_client->getCurrentChannels();
 					for (std::vector<Channel>::iterator iter_channel = current_channels.begin(); iter_channel != current_channels.end(); ++iter_channel) {
+						iter_channel->removeToWhitelist(iter_client->getSocket());
 						iter_channel->removeClientFromChannel(iter_client->getSocket());
 						if (iter_channel->getAllUsers().size() == 0)
 							all_channels.erase(std::remove(all_channels.begin(), all_channels.end(), *iter_channel), all_channels.end());
@@ -139,7 +140,7 @@ void Server::start()
 				try
 				{
 					std::string client_input(buffer, bytesReceived);
-					//check_password(client_input, iter_client);
+					check_password(client_input, iter_client);
 					handle_client_input(client_input, iter_client);
 				}
 				catch (const std::exception &e)
@@ -219,7 +220,10 @@ void Server::handle_client_input(std::string data_sent, std::vector<Client>::ite
 		cmd_mode(data_sent, sender);
 	else if (command == "INVITE")
 		cmd_invite(data_sent, sender);
-	
+	else if (command == "TOPIC")
+		cmd_topic(data_sent, sender);
+	else if (command == "HELP")
+		cmd_help(data_sent, sender);
 	else if (command != "PASS") {
 		if (sender->getInteractions().size())
 			msg_to_channel(data_sent, sender->getLastInteraction(), sender);
