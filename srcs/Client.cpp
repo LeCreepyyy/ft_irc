@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:09:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/24 10:30:52 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/27 11:35:22 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -159,6 +159,9 @@ std::string Client::getLastInteraction() {
 	if (last_interaction.size() == 0)
 		return (NULL);
 	return (last_interaction.back());
+}
+std::vector<std::string> Client::getInteractions() {
+	return (last_interaction);
 }
 void	Client::removeInteraction(std::string channel_name) {
 	std::vector<std::string>::iterator it = std::remove(last_interaction.begin(), last_interaction.end(), channel_name);

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
+/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/07 01:42:29 by bgaertne          #+#    #+#             */
-/*   Updated: 2024/05/24 16:39:51 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/05/27 10:54:09 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -144,4 +144,26 @@ void	Channel::setWhitelist(bool status, int client_socket)
 			send(client_socket, notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
 	}
+}
+
+
+bool	Channel::addToWhiteList(int client_socket) {
+	for (std::vector<int>::iterator it = whitelist.begin(); it != whitelist.end(); it++) {
+		if (*it == client_socket)
+			return (false);
+	}
+	whitelist.push_back(client_socket);
+	return (true);
+}
+bool	Channel::removeToWhiteList(int client_socket) {
+	for (std::vector<int>::iterator it = whitelist.begin(); it != whitelist.end(); it++) {
+		if (*it == client_socket) {
+			whitelist.erase(it);
+			return (true);
+		}
+	}
+	return (false);
+}
+bool	Channel::statusWhiteList() {
+	return (on_whitelist);
 }

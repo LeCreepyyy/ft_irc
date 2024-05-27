@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:05:32 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/23 13:44:45 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/27 11:34:52 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,7 @@
 
 			void					setLastInteraction(std::string channel_name);
 			std::string				getLastInteraction();
+			std::vector<std::string> getInteractions();
 			void					removeInteraction(std::string channel_name);
 	};
 

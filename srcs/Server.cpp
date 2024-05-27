@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
+/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/24 15:55:14 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/05/27 11:36:16 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -199,7 +199,7 @@ void Server::handle_client_input(std::string data_sent, std::vector<Client>::ite
 	std::istringstream iss(data_sent);
 	std::string command;
 	iss >> command;
-	
+
 	// parse client input
 	if (command == "NICK")
 		sender->setNickname(data_sent, all_clients);
@@ -219,9 +219,13 @@ void Server::handle_client_input(std::string data_sent, std::vector<Client>::ite
 		cmd_mode(data_sent, sender);
 	else if (command == "INVITE")
 		cmd_invite(data_sent, sender);
-	else if (command != "PASS")
-		if (sender->getLastInteraction().size())
+	
+	else if (command != "PASS") {
+		if (sender->getInteractions().size())
 			msg_to_channel(data_sent, sender->getLastInteraction(), sender);
+		else
+			throw std::runtime_error("Unrecognized command. Try using 'HELP'");
+	}
 }
 
 

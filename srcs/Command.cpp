@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Command.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
+/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/24 10:23:28 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/24 16:41:38 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/05/27 11:10:12 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,9 +15,9 @@
 /**
  * To Do List :
  * 
- * addWhiteList()
- * removeWhiteList()
- * remove white list in kick() but not in part()
+ * addWhiteList() OK
+ * removeWhiteList() OK
+ * remove white list in kick() but not in part() OK
 */
 
 
@@ -41,6 +41,41 @@ void	Server::cmd_invite(std::string data_sent, std::vector<Client>::iterator &se
 	}
 	if (channel == all_channels.end())
 		throw std::runtime_error("Channel not found or never exist.");
+
+	if (channel->statusWhiteList() == true) {
+		std::vector<int> op_list = channel->getAllOperators();
+		std::vector<int>::iterator op_it;
+		for (op_it = op_list.begin(); op_it != op_list.end(); op_it++) {
+			if (*op_it == sender->getSocket())
+				break ;
+		}
+		if (op_it == op_list.end())
+			throw std::runtime_error("You are not Operator on this channel.");
+	}
+
+	if (target_nickname == "#") {
+		std::istringstream iss(&data_sent[9 + channel_name.size()]);
+		std::string new_target;
+		iss >> new_target;
+		target_nickname = new_target;
+	}
+	debug(target_nickname);
+	for (target = all_clients.begin(); target !=  all_clients.end(); target++) {
+		if (target->getNickname() == target_nickname)
+			break;
+	}
+	if (target == all_clients.end())
+		throw std::runtime_error("Target not exist");
+
+	std::vector<int> channelAllUser = channel->getAllUsers();
+	for (std::vector<int>::iterator it = channelAllUser.begin(); it != channelAllUser.end(); it++) {
+		if (*it == target->getSocket())
+			throw std::runtime_error("Already on this channel.");
+	}
+	if (channel->statusWhiteList() == true)
+		channel->addToWhiteList(target->getSocket());
+	std::string message = "You has been invited on : " + channel->getName();
+	send(target->getSocket(), message.c_str(), message.size(), MSG_DONTWAIT);
 }
 
 /**
@@ -99,8 +134,12 @@ void	Server::cmd_kick(std::string data_sent, std::vector<Client>::iterator &send
 	
 	std::vector<int> channelAllUser = channel->getAllUsers();
 	for (std::vector<int>::iterator it = channelAllUser.begin(); it != channelAllUser.end(); it++) {
-		if (*it == target->getSocket())
+		if (*it == target->getSocket()) {
+			channel->removeToWhiteList(target->getSocket());
 			cmd_part("PART " + channel_name, target);
+			std::string message = "You has been kicked of : " + channel->getName();
+			send(target->getSocket(), message.c_str(), message.size(), MSG_DONTWAIT);
+		}
 	}
 	throw std::runtime_error("Target is not on " + channel_name);
 
