@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:09:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/28 11:06:04 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/28 14:13:41 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,27 +125,27 @@ std::string Client::getIP() {
 	return (ip);
 }
 
-std::vector<Channel>	Client::getCurrentChannels() {
-	return current_channels;
-}
-void	Client::addToCurrentChannels(Channel channel) {
-	current_channels.push_back(channel);
-}
+// std::vector<Channel>	Client::getCurrentChannels() {
+// 	return current_channels;
+// }
+// void	Client::addToCurrentChannels(Channel channel) {
+// 	current_channels.push_back(channel);
+// }
 
-void	Client::removeFromCurrentChannels(Channel channel) {
-	for (std::vector<Channel>::iterator it = current_channels.begin(); it != current_channels.end(); it++) {
-		if (channel.getName() == it->getName()) {
-			it->removeClientFromChannel(this->client_socket);
-			if (this->getLastInteraction() == it->getName()) {
-				if (current_channels.size() == 1)
-					setLastInteraction(NULL);
-				else
-					setLastInteraction(current_channels.back().getName());
-			}
-			current_channels.erase(it);
-		}
-	}
-}
+// void	Client::removeFromCurrentChannels(Channel channel) {
+// 	for (std::vector<Channel>::iterator it = current_channels.begin(); it != current_channels.end(); it++) {
+// 		if (channel.getName() == it->getName()) {
+// 			it->removeClientFromChannel(this->client_socket);
+// 			if (this->getLastInteraction() == it->getName()) {
+// 				if (current_channels.size() == 1)
+// 					setLastInteraction(NULL);
+// 				else
+// 					setLastInteraction(current_channels.back().getName());
+// 			}
+// 			current_channels.erase(it);
+// 		}
+// 	}
+// }
 
 void	Client::setLastInteraction(std::string channel_name) {
 	for (std::vector<std::string>::iterator it = last_interaction.begin(); it != last_interaction.end(); it++) {

@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/24 10:23:28 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/28 14:11:10 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/28 14:14:04 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -185,7 +185,7 @@ void	Server::cmd_join(std::string data_sent, std::vector<Client>::iterator &send
 			}
 			// Joining the channel
 			all_channels[i].addClientToChannel(sender->getSocket()); // adding client to channel's user list
-			sender->addToCurrentChannels(all_channels[i]);			 // adding channel to client's channel list
+			//sender->addToCurrentChannels(all_channels[i]);			 // adding channel to client's channel list
 			sender->setLastInteraction(channel_name);
 			// Notifying the client
 			std::string	notif = irc_time() + MAGENTA + "You joined a new channel: " + channel_name + '\n' + RESET;
@@ -199,7 +199,7 @@ void	Server::cmd_join(std::string data_sent, std::vector<Client>::iterator &send
 	// Channel does not exists, so we create it
 	Channel	newChannel(channel_name, sender->getSocket());
 	newChannel.addClientToChannel(sender->getSocket()); // adding client to channel's user list
-	sender->addToCurrentChannels(newChannel); // adding channel to client's channel list
+	//sender->addToCurrentChannels(newChannel); // adding channel to client's channel list
 	all_channels.push_back(newChannel); // pushing newChannel into the all_channels list
 
 	// Notifying the client
@@ -241,7 +241,6 @@ void	Server::cmd_privmsg(std::string data_sent, std::vector<Client>::iterator &s
 	send(sender->getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 }
 
-// REMPLACER GETCURRENTCHANNELS PAR ALL_CHANNELS /!\ //
 void	Server::cmd_msg(std::string data_sent, std::vector<Client>::iterator &sender) {
 	std::istringstream iss(&data_sent[4]);
 	std::string channel_name;
