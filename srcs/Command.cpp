@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/24 10:23:28 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/28 14:14:04 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/28 14:15:00 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,6 @@
 To Do list :
 
 msg vide [O]
-msg a but im already in a [O]
-operator= pour channel [X]
 
 */
 
