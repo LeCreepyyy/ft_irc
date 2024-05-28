@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:09:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/27 11:35:22 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/28 11:06:04 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,7 +124,6 @@ void Client::setIP(std::string x) {
 std::string Client::getIP() {
 	return (ip);
 }
-
 
 std::vector<Channel>	Client::getCurrentChannels() {
 	return current_channels;

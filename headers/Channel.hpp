@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/03 10:31:29 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/27 13:09:12 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/28 13:55:45 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,8 @@
 			std::string			topic;
 			bool				password_protected;
 			std::string			password;
-			//int					limit;
+			int					user_limit;
+			//std::vector<Client> temp;
 
 		public :
 
@@ -37,6 +38,7 @@
 
 			/* Methods */
 			bool			operator==(const Channel& other) const;
+			bool			operator==(size_t size) const;
 
 			/* Accessors */
 			void			setName(std::string name);
@@ -55,11 +57,14 @@
 			std::vector<int>&	getAllOperators();
 			void				addClientToOperators(int client_socket);
 			void				removeClientFromOperators(int client_socket);
+			void				opUser(bool status, int target_socket, int sender_socket);
 
 			std::vector<int>&	getAllUsers();
 			void				addClientToChannel(int client_socket);
 			void				removeClientFromChannel(int client_socket);
 
+			int					getUserLimit();
+			void				setUserLimit(int limit);
 
 	};
 

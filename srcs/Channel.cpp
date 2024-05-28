@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/07 01:42:29 by bgaertne          #+#    #+#             */
-/*   Updated: 2024/05/27 14:19:22 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/28 13:46:26 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ Channel::Channel(std::string name, int op_socket)
 	this->topic_restricted = false;
 	this->password_protected = false;
 	this->name = name;
+	this->user_limit = -1;
 	this->topic = "Undefinied channel topic.\n";
 	this->all_operators.push_back(op_socket);
 }
@@ -41,6 +42,10 @@ Channel::~Channel()
 
 bool Channel::operator==(const Channel &other) const {
 	return this->name == other.name;
+}
+
+bool Channel::operator==(const size_t size) const {
+	return (this->all_users.size() == size);
 }
 
 /////////////////
@@ -94,6 +99,31 @@ void	Channel::setTopicLimit(bool status, int client_socket) {
 	}
 }
 
+void	Channel::opUser(bool status,int target_socket, int sender_socket)
+{
+	std::string notif;
+	if (status == true) {
+		if (find(this->all_operators.begin(), this->all_operators.end(), target_socket) == this->all_operators.end()) {
+			this->addClientToOperators(target_socket);
+			notif = MAGENTA "User got promoted to channel operator.\n" RESET;
+			send(sender_socket, notif.c_str(), notif.size(), MSG_DONTWAIT);
+		}
+		else
+			throw std::runtime_error("User is already operator in this channel.");
+	}
+	else
+	{
+		if (find(this->all_operators.begin(), this->all_operators.end(), target_socket) != this->all_operators.end()) {
+			this->removeClientFromOperators(target_socket);
+			notif = MAGENTA "User is no longer operator in this channel.\n" RESET;
+			send(sender_socket, notif.c_str(), notif.size(), MSG_DONTWAIT);
+		}
+		else
+			throw std::runtime_error("User is not operator in this channel.");
+	}
+	
+}
+
 
 std::vector<int>&	Channel::getAllOperators() {
 	return this->all_operators;
@@ -114,7 +144,7 @@ void	Channel::addClientToChannel(int client_socket) {
 	this->all_users.push_back(client_socket);
 }
 void	Channel::removeClientFromChannel(int client_socket) {
-	removeClientFromOperators(client_socket);	
+	//removeClientFromOperators(client_socket);
 	std::vector<int>::iterator new_end = std::remove(all_users.begin(), all_users.end(), client_socket);
 	all_users.erase(new_end, all_users.end());
 }
@@ -171,3 +201,12 @@ bool	Channel::removeToWhitelist(int client_socket) {
 bool	Channel::getWhitelistStatus() {
 	return (on_whitelist);
 }
+
+
+int		Channel::getUserLimit() {
+	return this->user_limit;
+}
+void	Channel::setUserLimit(int limit) {
+	this->user_limit = limit;
+}
+

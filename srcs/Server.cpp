@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/27 14:22:33 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/28 12:03:17 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,6 +101,7 @@ void Server::start()
 			std::cout << irc_time() << GREEN << "New connection" << RESET << std::endl;
 		}
 
+
 		// Event occured on a client socket : either a disconnection, or a text input
 		for (std::vector<Client>::iterator iter_client = all_clients.begin(); iter_client != all_clients.end();)
 		{
@@ -122,12 +123,14 @@ void Server::start()
 					}
 
 					// Remove client from all channels, and their whitelists
-					std::vector<Channel> current_channels = iter_client->getCurrentChannels();
-					for (std::vector<Channel>::iterator iter_channel = current_channels.begin(); iter_channel != current_channels.end(); ++iter_channel) {
+					for (std::vector<Channel>::iterator iter_channel = all_channels.begin(); iter_channel != all_channels.end(); ) {
 						iter_channel->removeToWhitelist(iter_client->getSocket());
 						iter_channel->removeClientFromChannel(iter_client->getSocket());
+						iter_channel->removeClientFromOperators(iter_client->getSocket());
 						if (iter_channel->getAllUsers().size() == 0)
 							all_channels.erase(std::remove(all_channels.begin(), all_channels.end(), *iter_channel), all_channels.end());
+						else
+							++iter_channel;
 					}
 
 					// Close the client socket and remove the client from all_clients
@@ -140,7 +143,7 @@ void Server::start()
 				try
 				{
 					std::string client_input(buffer, bytesReceived);
-					check_password(client_input, iter_client);
+					//check_password(client_input, iter_client);
 					handle_client_input(client_input, iter_client);
 				}
 				catch (const std::exception &e)

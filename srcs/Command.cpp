@@ -6,20 +6,21 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/24 10:23:28 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/27 14:11:33 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/28 14:11:10 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../headers/Server.hpp"
 
-/**
- * To Do List :
- * 
- * addWhitelist() OK
- * removeWhitelist() OK
- * remove white list in kick() but not in part() OK
-*/
+/*
 
+To Do list :
+
+msg vide [O]
+msg a but im already in a [O]
+operator= pour channel [X]
+
+*/
 
 void	Server::cmd_invite(std::string data_sent, std::vector<Client>::iterator &sender) {
 	std::vector<Client>::iterator target;
@@ -42,7 +43,7 @@ void	Server::cmd_invite(std::string data_sent, std::vector<Client>::iterator &se
 		}
 	}
 	if (channel == all_channels.end())
-		throw std::runtime_error("Channel not found or never exist.");
+		throw std::runtime_error("Channel not found.");
 
 	if (channel->getWhitelistStatus() == true) {
 		std::vector<int> op_list = channel->getAllOperators();
@@ -52,7 +53,7 @@ void	Server::cmd_invite(std::string data_sent, std::vector<Client>::iterator &se
 				break ;
 		}
 		if (op_it == op_list.end())
-			throw std::runtime_error("You are not Operator on this channel.");
+			throw std::runtime_error("You are not operator on this channel.");
 	}
 
 	if (target_nickname == "#") {
@@ -67,13 +68,18 @@ void	Server::cmd_invite(std::string data_sent, std::vector<Client>::iterator &se
 			break;
 	}
 	if (target == all_clients.end())
-		throw std::runtime_error("Target not exist");
+		throw std::runtime_error("Target does not exist");
 
 	std::vector<int> channelAllUser = channel->getAllUsers();
 	for (std::vector<int>::iterator it = channelAllUser.begin(); it != channelAllUser.end(); it++) {
 		if (*it == target->getSocket())
-			throw std::runtime_error("Already on this channel.");
+			throw std::runtime_error("Target is already on this channel.");
 	}
+
+	if (channel->getUserLimit() > -1)
+		if (channel->getAllUsers().size() >= static_cast<size_t>(channel->getUserLimit()))
+			throw std::runtime_error("Channel is full.");
+	
 	if (channel->getWhitelistStatus() == true)
 		channel->addToWhitelist(target->getSocket());
 	std::string message = "You has been invited on : " + channel->getName() + "\n";
@@ -140,13 +146,14 @@ void	Server::cmd_kick(std::string data_sent, std::vector<Client>::iterator &send
 	for (std::vector<int>::iterator it = channelAllUser.begin(); it != channelAllUser.end(); it++) {
 		if (*it == target->getSocket()) {
 			channel->removeToWhitelist(target->getSocket());
+			channel->removeClientFromOperators(target->getSocket());
 			cmd_part("PART " + channel_name, target);
 			std::string message = "You have been kicked of : " + channel->getName() + "\n";
 			send(target->getSocket(), message.c_str(), message.size(), MSG_DONTWAIT);
 			return ;
 		}
 	}
-	throw std::runtime_error("Target is not on " + channel_name);
+	throw std::runtime_error("Target is not connected to " + channel_name);
 
 }
 
@@ -165,6 +172,12 @@ void	Server::cmd_join(std::string data_sent, std::vector<Client>::iterator &send
 			if (std::find(users.begin(), users.end(), sender->getSocket()) != users.end())
 				throw std::runtime_error("You are already connected to this channel.");
 		
+			// If channel is limited, check if place is left
+			if (all_channels[i].getUserLimit() > -1)
+				if (all_channels[i].getAllUsers().size() >= static_cast<size_t>(all_channels[i].getUserLimit()))
+					throw std::runtime_error("Channel is full.");
+
+			// If channel is whitelisted, is the user on the whitelist
 			if (all_channels[i].getWhitelistStatus()) {
 			std::vector<int> whitelist = all_channels[i].getWhitelist();
 			if (std::find(whitelist.begin(), whitelist.end(), sender->getSocket()) == whitelist.end())
@@ -216,6 +229,8 @@ void	Server::cmd_privmsg(std::string data_sent, std::vector<Client>::iterator &s
 		if (all_clients[i].getNickname() == receiver_nick)
 		{
 			Client receiver = all_clients[i];
+			if (message.size() == 0)
+				return;
 			std::string	notif(irc_time() + MAGENTA + sender->getNickname() + " : " + message + "\n" + RESET);
 			send(receiver.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 			send(sender->getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
@@ -226,23 +241,28 @@ void	Server::cmd_privmsg(std::string data_sent, std::vector<Client>::iterator &s
 	send(sender->getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 }
 
-
+// REMPLACER GETCURRENTCHANNELS PAR ALL_CHANNELS /!\ //
 void	Server::cmd_msg(std::string data_sent, std::vector<Client>::iterator &sender) {
 	std::istringstream iss(&data_sent[4]);
 	std::string channel_name;
 	iss >> channel_name;
-	std::vector<Channel> channel_client = sender->getCurrentChannels();
-	for (std::vector<Channel>::iterator it = channel_client.begin(); it != channel_client.end(); it++) {
+	if (sender->getInteractions().size() && sender->getLastInteraction() == channel_name) {
+		msg_to_channel(&data_sent[channel_name.size() + 5], channel_name, sender);
+		return;
+	}
+	for (std::vector<Channel>::iterator it = all_channels.begin(); it != all_channels.end(); it++) {
 		if (it->getName() == channel_name) {
-			msg_to_channel(&data_sent[channel_name.size() + 5], channel_name, sender);
-			sender->setLastInteraction(channel_name);
-			return ;
+			std::vector<int> channel_users = it->getAllUsers();
+			if (find(channel_users.begin(), channel_users.end(), sender->getSocket()) != channel_users.end()) {
+				msg_to_channel(&data_sent[channel_name.size() + 5], channel_name, sender);
+				return;
+			}
+			throw std::runtime_error("You are not connected to this channel.");
 		}
 	}
-	throw std::runtime_error("You are not connected to this channel.");
+	throw std::runtime_error("Channel not found");
 }
 
-// data_sent = "PART #channel_name"
 void	Server::cmd_part(std::string data_sent, std::vector<Client>::iterator &sender)
 {
 	std::istringstream iss(&data_sent[6]);
@@ -311,8 +331,10 @@ void	Server::cmd_mode(std::string data_sent, std::vector<Client>::iterator &send
 	std::istringstream iss(&data_sent[5]);
 	std::string target;
 	std::string option;
+	std::string second_target;
 	iss >> target;
 	iss >> option;
+	iss >> second_target;
 
 	if (target.size() > 1 && target[0] == '#')
 	{
@@ -333,14 +355,34 @@ void	Server::cmd_mode(std::string data_sent, std::vector<Client>::iterator &send
 					return (channel_it->setTopicLimit(true, sender->getSocket()));
 				if (option == "-t")
 					return (channel_it->setTopicLimit(false, sender->getSocket()));
-				if (option == "+o")
-					return;// op
-				if (option == "-o")
-					return;// deop
-				if (option == "+l")
-					return;// limite max de co au channel
-				if (option == "-l")
-					return;// supprime la limite de co au channel
+				if (option == "+o" || option == "-o") {
+					for (std::vector<Client>::iterator it = this->all_clients.begin() ; it != this->all_clients.end() ; it++) {
+						if (it->getNickname() == second_target) {
+							if (option == "+o")
+								return (channel_it->opUser(true, it->getSocket(), sender->getSocket()));
+							else if (option == "-o")
+								return (channel_it->opUser(false, it->getSocket(), sender->getSocket()));
+						}
+					}
+					throw std::runtime_error("Could not find anyone matching this Nickname.");
+				}
+				if (option == "+l" || option == "-l")
+				{
+					int limit = -1;
+					if (option == "+l") {
+						if (second_target.empty())
+							throw std::runtime_error("Invalid limit. (>0 && <99)");
+						limit = atoi(second_target.c_str());
+						debug(limit);
+						if (limit <= 0 || limit > 99)
+							throw std::runtime_error("Invalid limit. (>0 && <99)");
+						if (static_cast<size_t>(limit) < channel_it->getAllUsers().size())
+							throw std::runtime_error("Too much users in channel to set this limit.");
+					}
+					std::string notif = MAGENTA "Limit was set.\n" RESET;
+					send(sender->getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
+					return (channel_it->setUserLimit(limit));
+				}
 				throw std::runtime_error("Invalid option in MODE command.");
 			}
 		}
