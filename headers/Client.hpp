@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:05:32 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/29 11:27:35 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/29 12:52:11 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,6 @@
 			std::string				ip;
 			int						client_socket;
 			struct sockaddr_in		client_address;
-			//std::vector<Channel>	current_channels;
 			socklen_t				client_address_len;
 			std::vector<std::string>	last_interaction;
 			std::vector<std::string>	username;
@@ -36,13 +35,14 @@
 			~Client();
 
 			/* Methods */
-
+			bool					operator==(const Client& other) const;
+			
 			/* Accessors */
 			void					setNickname(std::string cmd, std::vector<Client> &all_clients);
 			std::string				getNickname();
 
 			void					setUsername(std::string username);
-			std::vector<std::string>				getUsername();
+			std::vector<std::string>	getUsername();
 
 			void					setSocket(int socket);
 			int						getSocket();
@@ -64,7 +64,7 @@
 
 			void					setLastInteraction(std::string channel_name);
 			std::string				getLastInteraction();
-			std::vector<std::string> getInteractions();
+			std::vector<std::string>	getInteractions();
 			void					removeInteraction(std::string channel_name);
 	};
 

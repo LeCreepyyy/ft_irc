@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/07 01:42:29 by bgaertne          #+#    #+#             */
-/*   Updated: 2024/05/28 13:46:26 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/29 13:07:33 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -201,6 +201,44 @@ bool	Channel::removeToWhitelist(int client_socket) {
 bool	Channel::getWhitelistStatus() {
 	return (on_whitelist);
 }
+
+
+void	Channel::setPassword(bool status, std::string password, int client_socket) {
+	if (this->password_protected == true) {
+		if (status == true) {
+			if (password.empty())
+				throw std::runtime_error("Invalid password.");
+			this->password = password;
+			std::string notif = MAGENTA "Password updated.\n" RESET;
+			send(client_socket, notif.c_str(), notif.size(), MSG_DONTWAIT);
+		}
+		else {
+			this->password_protected = false;
+			this->password = "/";
+			std::string notif = MAGENTA "Channel is no longer protected by a password.\n" RESET;
+			send(client_socket, notif.c_str(), notif.size(), MSG_DONTWAIT);
+		}
+	}
+	else {
+		if (status == true) {
+			if (password.empty())
+				throw std::runtime_error("Invalid password.");
+			this->password_protected = true;
+			this->password = password;
+			std::string notif = MAGENTA "Channel is now protected by password.\n" RESET;
+			send(client_socket, notif.c_str(), notif.size(), MSG_DONTWAIT);
+		}
+		else
+			throw std::runtime_error("Channel is not protected by password.");
+	}
+}
+std::string		Channel::getPassword() {
+	return this->password;
+}
+bool			Channel::getPasswordStatus() {
+	return this->password_protected;
+}
+
 
 
 int		Channel::getUserLimit() {

@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:13:34 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/29 11:26:50 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/29 13:05:10 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@
 			int 						serv_socket;
 			std::string					serv_name;
 			std::string					serv_password;
-			std::vector<int>			pass_list;
+			std::vector<Client>			pass_list;
 			struct sockaddr_in			serv_address;
 			std::vector<Channel>		all_channels;
 			std::vector<Client> 		all_clients;

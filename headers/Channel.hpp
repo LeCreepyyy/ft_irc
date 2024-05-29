@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/03 10:31:29 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/29 11:27:15 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/29 13:07:39 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,10 @@
 			bool				addToWhitelist(int client_socket);
 			bool				removeToWhitelist(int client_socket);
 			bool				getWhitelistStatus();
+
+			void				setPassword(bool status, std::string password, int client_socket);
+			std::string			getPassword();
+			bool				getPasswordStatus();
 
 			std::vector<int>&	getAllOperators();
 			void				addClientToOperators(int client_socket);

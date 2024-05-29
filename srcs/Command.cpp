@@ -6,20 +6,11 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/24 10:23:28 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/29 12:43:09 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/29 13:33:30 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../headers/Server.hpp"
-
-/*
-
-To Do list :
-
-msg vide [O]
-part et mode sans le #channel [O]
-
-*/
 
 void	Server::cmd_invite(std::string data_sent, std::vector<Client>::iterator &sender) {
 	std::vector<Client>::iterator target;
@@ -158,12 +149,18 @@ void	Server::cmd_kick(std::string data_sent, std::vector<Client>::iterator &send
 
 void	Server::cmd_join(std::string data_sent, std::vector<Client>::iterator &sender)
 {
-	if (data_sent[5] != '#' || data_sent[6] == ' ' || data_sent[6] == '\n')
-			throw std::runtime_error("Improper channel name in JOIN command");
+	std::istringstream iss(&data_sent[5]);
+	std::string channel_name;
+	std::string password;
+	iss >> channel_name;
+	iss >> password;
 
+	debug(channel_name);
+	debug(password);
+	if (channel_name[0] != '#')
+		throw std::runtime_error("Invalid channel name.");
+	channel_name = &channel_name[1];
 	// Looking if the channel already exists
-	std::string	channel_name(&data_sent[6], std::strlen(&data_sent[6]));
-	channel_name.erase(std::remove(channel_name.begin(), channel_name.end(), '\n'), channel_name.end());
 	for (size_t i = 0; i != all_channels.size(); i++) {
 		if (all_channels[i].getName() == channel_name) {
 			// Check if user is already in channel
@@ -182,6 +179,13 @@ void	Server::cmd_join(std::string data_sent, std::vector<Client>::iterator &send
 			if (std::find(whitelist.begin(), whitelist.end(), sender->getSocket()) == whitelist.end())
 				throw std::runtime_error("Channel is whitelisted. You need to be invited by a channel operator.");			
 			}
+
+			// if channel is protected by password, look for it in the user input.
+			if (all_channels[i].getPasswordStatus() == true) {
+				if (all_channels[i].getPassword() != password)
+					throw std::runtime_error("Wrong password.");
+			}
+			
 			// Joining the channel
 			all_channels[i].addClientToChannel(sender->getSocket()); // adding client to channel's user list
 			//sender->addToCurrentChannels(all_channels[i]);			 // adding channel to client's channel list
@@ -366,6 +370,10 @@ void	Server::cmd_mode(std::string data_sent, std::vector<Client>::iterator &send
 				return (channel_it->setTopicLimit(true, sender->getSocket()));
 			if (option == "-t")
 				return (channel_it->setTopicLimit(false, sender->getSocket()));
+			if (option == "+k")
+				return (channel_it->setPassword(true, second_target, sender->getSocket()));
+			if (option == "-k")
+				return (channel_it->setPassword(false, "/", sender->getSocket()));
 			if (option == "+o" || option == "-o") {
 				for (std::vector<Client>::iterator it = this->all_clients.begin() ; it != this->all_clients.end() ; it++) {
 					if (it->getNickname() == second_target) {

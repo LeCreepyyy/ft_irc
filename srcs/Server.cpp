@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/29 12:23:41 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/29 13:35:52 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,8 +115,8 @@ void Server::start()
 					std::cout << irc_time() << YELLOW << iter_client->getNickname() << " left the game." << RESET << std::endl;
 
 					// Remove client from pass_list
-					for (std::vector<int>::iterator i = pass_list.begin(); i != pass_list.end(); ++i) {
-						if (*i == iter_client->getSocket()) {
+					for (std::vector<Client>::iterator i = pass_list.begin(); i != pass_list.end(); ++i) {
+						if (i == iter_client) {
 							pass_list.erase(i);
 							break;
 						}
@@ -170,8 +170,8 @@ void Server::crash(std::string log)
 
 
 void Server::check_password(std::string data_sent, std::vector<Client>::iterator &sender) {
-	for (size_t i = 0; i != pass_list.size(); i++) {
-		if (pass_list[i] == sender->getSocket()) {
+	for (std::vector<Client>::iterator i = pass_list.begin(); i != pass_list.end(); i++) {
+		if (*i == *sender) {
 			std::istringstream iss(data_sent);
 			std::string cmd;
 			iss >> cmd;
@@ -192,7 +192,7 @@ void Server::check_password(std::string data_sent, std::vector<Client>::iterator
 	if (password_sent != this->serv_password)
 		throw std::runtime_error("Wrong password, try again.");
 	//validation
-	pass_list.push_back(sender->getSocket());
+	pass_list.push_back(*sender);
 	std::string notif(GREEN "You are now logged in.\n" RESET);
 	send(sender->getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 	std::cout << sender->getIP() << " logged in." << std::endl;
