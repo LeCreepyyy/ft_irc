@@ -6,14 +6,16 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:05:32 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/28 14:13:33 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/29 11:27:35 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CLIENT_HPP
 # define CLIENT_HPP
 
-# include "Channel.hpp"
+# include "irc.hpp"
+
+	class Channel;
 
 	class Client {
 		

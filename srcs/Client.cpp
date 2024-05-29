@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:09:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/28 14:13:41 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/29 11:40:31 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -156,7 +156,7 @@ void	Client::setLastInteraction(std::string channel_name) {
 }
 std::string Client::getLastInteraction() {
 	if (last_interaction.size() == 0)
-		return (NULL);
+		throw std::runtime_error("You have had no interaction with any channel. Please express the target.");
 	return (last_interaction.back());
 }
 std::vector<std::string> Client::getInteractions() {

@@ -6,17 +6,21 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:13:34 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/27 12:21:01 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/29 11:26:50 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SERVER_HPP
 # define SERVER_HPP
 
-# include "Client.hpp"
 
 # define MAX_WAITLIST 5
 # define MAX_CLIENT 10
+
+# include "irc.hpp"
+
+	class Channel;
+	class Client;
 
 	class Server {
 		

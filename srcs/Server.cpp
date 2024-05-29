@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/28 14:20:26 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/29 12:23:41 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -239,6 +239,12 @@ void Server::handle_client_input(std::string data_sent, std::vector<Client>::ite
 
 void	Server::msg_to_channel(std::string msg, std::string channel_name, std::vector<Client>::iterator &sender)
 {
+	std::istringstream iss(msg);
+	std::string tmp;
+	iss >> tmp;
+	if (tmp.size() == 0)
+		return;
+	
 	std::string message = irc_time() + "[" + channel_name + "] " + BLUE + sender->getNickname() + RESET + ": " + msg + "\n";
 	bool found = false;
 	for (size_t i = 0; i != all_channels.size(); i++) {

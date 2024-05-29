@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:09:45 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/14 12:01:16 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/29 11:26:33 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,10 @@
 # define GRAY    "\033[37m" // Debug
 # define CYAN    "\033[36m" // Client notif
 # define BLUE    "\033[34m" // Server
+
+# include "Channel.hpp"
+# include "Client.hpp"
+# include "Server.hpp"
 
 void    		parsing_args(char **argv);
 std::string		irc_time();

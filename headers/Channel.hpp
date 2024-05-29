@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/03 10:31:29 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/28 13:55:45 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/29 11:27:15 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,8 @@
 # define CHANNEL_HPP
 
 # include "irc.hpp"
+
+	class Client;
 
 	class Channel {
 		
@@ -28,7 +30,7 @@
 			bool				password_protected;
 			std::string			password;
 			int					user_limit;
-			//std::vector<Client> temp;
+			std::vector<Client> temp;
 
 		public :
 
