@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/03 10:31:29 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/30 10:40:36 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/30 13:34:02 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,9 +22,9 @@
 		private :
 			std::string			name;
 			std::vector<Client>	all_operators;
-			std::vector<int>	all_users;
+			std::vector<Client>	all_users;
 			bool				on_whitelist;
-			std::vector<int>	whitelist;
+			std::vector<Client>	whitelist;
 			bool				topic_restricted;
 			std::string			topic;
 			bool				password_protected;
@@ -34,43 +34,49 @@
 		public :
 
 			/* Constructors, Destructors */
+			Channel();
 			Channel(std::string name, Client oper);
 			~Channel();
+
 
 			/* Methods */
 			bool			operator==(const Channel& other) const;
 			bool			operator==(size_t size) const;
+			Channel&		operator=(const Channel& other);
 
 			/* Accessors */
 			void			setName(std::string name);
 			std::string		getName();
 
-			void			setTopic(std::string newTopic, int client_socket);
+			void			setTopic(std::string newTopic, Client& sender);
 			std::string		getTopic();
-			void			setTopicLimit(bool status, int client_socket);
-			
-			void				setWhitelist(bool status, int client_socket);
-			std::vector<int>	getWhitelist();
-			bool				addToWhitelist(int client_socket);
-			bool				removeToWhitelist(int client_socket);
-			bool				getWhitelistStatus();
-
-			void				setPassword(bool status, std::string password, int client_socket);
-			std::string			getPassword();
-			bool				getPasswordStatus();
+			void			setTopicRestriction(bool status, Client& sender);
+			bool			getTopicRestriction();
 
 			std::vector<Client>&	getAllOperators();
-			void				addClientToOperators(Client client);
-			void				removeClientFromOperators(Client client);
-			void				opUser(bool status, Client target, int sender_socket);
+			void				addClientToOperators(Client& target);
+			void				removeClientFromOperators(Client& client);
+			void				opUser(bool status, Client& target, Client& sender);
+			bool				isUserOp(Client& target);
 
-			std::vector<int>&	getAllUsers();
-			void				addClientToChannel(int client_socket);
-			void				removeClientFromChannel(int client_socket);
+			std::vector<Client>&	getAllUsers();
+			void				addClientToChannel(Client& target);
+			void				removeClientFromChannel(Client& target);
+			bool				isUserInChannel(Client& client);	
 
+			void				setWhitelist(bool status, Client& sender);
+			std::vector<Client>	getWhitelist();
+			bool				addClientToWhitelist(Client& target);
+			bool				removeClientFromWhitelist(Client& target);
+			bool				getWhitelistStatus();
+			bool				isUserOnWhitelist(Client& target);
+
+			void				setPassword(bool status, std::string password, Client& sender);
+			std::string			getPassword();
+			bool				getPasswordStatus();
+			
 			int					getUserLimit();
 			void				setUserLimit(int limit);
-
 	};
 
 #endif

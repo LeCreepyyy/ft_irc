@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:05:32 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/29 12:52:11 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/30 12:52:37 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,13 +20,13 @@
 	class Client {
 		
 		private:
-			std::string				nickname;
-			std::string				ip;
-			int						client_socket;
-			struct sockaddr_in		client_address;
-			socklen_t				client_address_len;
-			std::vector<std::string>	last_interaction;
+			std::string					nickname;
 			std::vector<std::string>	username;
+			std::string					ip;
+			int							client_socket;
+			struct sockaddr_in			client_address;
+			socklen_t					client_address_len;
+			std::vector<Channel>		last_interaction;
 		
 		public:
 
@@ -58,14 +58,10 @@
 			std::string				getIP();
 			void					setIP(std::string x);
 
-			// std::vector<Channel>	getCurrentChannels();
-			// void					addToCurrentChannels(Channel Channel);
-			// void					removeFromCurrentChannels(Channel Channel);
-
-			void					setLastInteraction(std::string channel_name);
-			std::string				getLastInteraction();
-			std::vector<std::string>	getInteractions();
-			void					removeInteraction(std::string channel_name);
+			void					setLastInteraction(Channel& target);
+			Channel&				getLastInteraction();
+			std::vector<Channel>	getAllInteractions();
+			void					removeFromLastInteraction(Channel& target);
 	};
 
 # endif

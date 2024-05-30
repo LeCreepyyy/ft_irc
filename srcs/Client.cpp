@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:09:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/29 13:35:12 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/30 12:53:04 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,23 +32,30 @@ Client::~Client()
 ///////////////
 //  Methods  //
 ///////////////
+
 bool	Client::operator==(const Client& other) const {
 	return(this->client_socket == other.client_socket);
 }
+
 
 
 /////////////////
 //  Accessors  //
 /////////////////
 
+// Socket
 void	Client::setSocket(int socket) {
 	client_socket = socket;
 }
+
 int	Client::getSocket() {
 	return (client_socket);
 }
 
 
+
+
+// Nickname
 void	Client::setNickname(std::string cmd, std::vector<Client> &all_clients) {
 	size_t start = 5;
 	if (!cmd[start])
@@ -70,11 +77,15 @@ void	Client::setNickname(std::string cmd, std::vector<Client> &all_clients) {
 	std::string notif(GREEN "You are now known as " + nickname + ".\n" RESET);
 	send(client_socket, notif.c_str(), strlen(notif.c_str()), MSG_DONTWAIT);
 }
+
 std::string	Client::getNickname() {
 	return (nickname);
 }
 
 
+
+
+// Username
 void	Client::setUsername(std::string cmd) {
 	std::vector<std::string> temp;
 	std::string prompt = &cmd[4];
@@ -95,21 +106,26 @@ void	Client::setUsername(std::string cmd) {
 	std::string notif(GREEN "Username has been set.\n" RESET);
 	send(client_socket, notif.c_str(), strlen(notif.c_str()), MSG_DONTWAIT);
 }
+
 std::vector<std::string>	Client::getUsername() {
 	return (username);
 }
 
 
+
+
+// Address & AddressLen
 void	Client::setAddress(struct sockaddr_in addr) {
 	client_address = addr;
 }
+
 struct sockaddr_in	Client::getAddress() {
 	return (client_address);
 }
+
 struct sockaddr_in &Client::getAddressREF() {
 	return (this->client_address);
 }
-
 
 void Client::setAddressLen(socklen_t addr_len) {
 	client_address_len = addr_len;
@@ -122,29 +138,40 @@ socklen_t &Client::getAddressLenREF() {
 }
 
 
+
+
+// IP
 void Client::setIP(std::string x) {
 	ip = x;
 }
+
 std::string Client::getIP() {
 	return (ip);
 }
 
-void	Client::setLastInteraction(std::string channel_name) {
-	for (std::vector<std::string>::iterator it = last_interaction.begin(); it != last_interaction.end(); it++) {
-		if (*it == channel_name)
+
+
+
+// Last Interaction
+void	Client::setLastInteraction(Channel& target) {
+	for (std::vector<Channel>::iterator it = last_interaction.begin(); it != last_interaction.end(); it++) {
+		if (*it == target)
 			last_interaction.erase(it);
 	}
-	last_interaction.push_back(channel_name);
+	last_interaction.push_back(target);
 }
-std::string Client::getLastInteraction() {
+
+Channel& Client::getLastInteraction() {
 	if (last_interaction.size() == 0)
 		throw std::runtime_error("You have had no interaction with any channel. Please express the target.");
 	return (last_interaction.back());
 }
-std::vector<std::string> Client::getInteractions() {
+
+std::vector<Channel> Client::getAllInteractions() {
 	return (last_interaction);
 }
-void	Client::removeInteraction(std::string channel_name) {
-	std::vector<std::string>::iterator it = std::remove(last_interaction.begin(), last_interaction.end(), channel_name);
+
+void	Client::removeFromLastInteraction(Channel& target) {
+	std::vector<Channel>::iterator it = std::remove(last_interaction.begin(), last_interaction.end(), target);
 	last_interaction.erase(it, last_interaction.end());
 }

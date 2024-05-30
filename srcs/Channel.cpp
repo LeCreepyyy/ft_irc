@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/07 01:42:29 by bgaertne          #+#    #+#             */
-/*   Updated: 2024/05/30 10:44:48 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/30 13:39:44 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,10 @@
 ////////////////////////////////
 //  Constructors, Destructor  //
 ////////////////////////////////
+
+Channel::Channel() {
+	;
+}
 
 Channel::Channel(std::string name, Client oper)
 {
@@ -40,6 +44,7 @@ Channel::~Channel()
 //  Methods  //
 ///////////////
 
+// OPERATORS OVERRIDE
 bool Channel::operator==(const Channel &other) const {
 	return this->name == other.name;
 }
@@ -48,44 +53,63 @@ bool Channel::operator==(const size_t size) const {
 	return (this->all_users.size() == size);
 }
 
+Channel& Channel::operator=(const Channel& other) {
+	if (this != &other) {
+		this->name = other.name;
+		this->all_operators = other.all_operators;
+		this->all_users = other.all_users;
+		this->on_whitelist = other.on_whitelist;
+		this->whitelist = other.whitelist;
+		this->topic_restricted = other.topic_restricted;
+		this->topic = other.topic;
+		this->password_protected = other.password_protected;
+		this->password = other.password;
+		this->user_limit = other.user_limit;
+	}
+	return *this;
+}
+
+
 /////////////////
 //  Accessors  //
 /////////////////
 
+// NAME
 void	Channel::setName(std::string name) {
 	if (name.length() > 199 || name.find('\x07') != std::string::npos || name.find(',') != std::string::npos)
 		throw std::runtime_error("[Error] Improper channel name");
 	else
 		this->name = name;
 }
+
 std::string		Channel::getName() {
 	return this->name;
 }
 
 
-void	Channel::setTopic(std::string newTopic, int client_socket) {
-	bool is_op = false;
-	for (std::vector<int>::iterator it = all_operators.begin(); it != all_operators.end(); it++) {
-		if (*it == client_socket)
-			is_op = true;
-	}
-	if (this->topic_restricted == true && is_op != true)
+
+
+// TOPIC
+void	Channel::setTopic(std::string newTopic, Client& sender) {
+	if (this->topic_restricted == true && !isUserOp(sender))
 		throw std::runtime_error("Channel #" + this->name + ": topic may only be modified by operators.");
-	if (find(this->all_users.begin(), this->all_users.end(), client_socket) == this->all_users.end())
+	if (find(this->all_users.begin(), this->all_users.end(), sender) == this->all_users.end())
 		throw std::runtime_error("You need to be connected to this channel.");
 	this->topic = newTopic + '\n';
 }
+
 std::string		Channel::getTopic() {
 	return this->topic;
 }
-void	Channel::setTopicLimit(bool status, int client_socket) {
+
+void	Channel::setTopicRestriction(bool status, Client& sender) {
 	if (this->topic_restricted == true) {
 		if (status == true)
 			throw std::runtime_error("Channel #" + this->name + ": topic is already limited to operators modification.");
 		else {
 			this->topic_restricted = false;
 			std::string notif = irc_time() + MAGENTA "Channel #" + this->name + ": topic may now be changed by everyone.\n" RESET;
-			send(client_socket, notif.c_str(), notif.size(), MSG_DONTWAIT);
+			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
 	}
 	else {
@@ -94,64 +118,87 @@ void	Channel::setTopicLimit(bool status, int client_socket) {
 		else {
 			this->topic_restricted = true;
 			std::string notif = irc_time() + MAGENTA "Channel #" + this->name + ": topic modification is now limited to operators.\n" RESET;
-			send(client_socket, notif.c_str(), notif.size(), MSG_DONTWAIT);
+			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
 	}
 }
 
-void	Channel::opUser(bool status,Client target, int sender_socket)
-{
+bool	Channel::getTopicRestriction() {
+	return this->topic_restricted;
+}
+
+
+
+
+// USER OPERATORS
+std::vector<Client>&	Channel::getAllOperators() {
+	return this->all_operators;
+}
+
+void	Channel::addClientToOperators(Client& target) {
+	this->all_operators.push_back(target);
+}
+
+void	Channel::removeClientFromOperators(Client& client) {
+	std::vector<Client>::iterator new_end = std::remove(all_operators.begin(), all_operators.end(), client);
+	all_operators.erase(new_end, all_operators.end());
+}
+
+void	Channel::opUser(bool status, Client& target, Client& sender) {
 	std::string notif;
 	if (status == true) {
-		if (find(this->all_operators.begin(), this->all_operators.end(), target) == this->all_operators.end()) {
+		if (!isUserOp(sender)) {
 			this->addClientToOperators(target);
 			notif = MAGENTA "User got promoted to channel operator.\n" RESET;
-			send(sender_socket, notif.c_str(), notif.size(), MSG_DONTWAIT);
+			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
 		else
 			throw std::runtime_error("User is already operator in this channel.");
 	}
 	else
 	{
-		if (find(this->all_operators.begin(), this->all_operators.end(), target) != this->all_operators.end()) {
-			this->removeClientFromOperators(target_socket);
+		if (isUserOp(sender)) {
+			this->removeClientFromOperators(target);
 			notif = MAGENTA "User is no longer operator in this channel.\n" RESET;
-			send(sender_socket, notif.c_str(), notif.size(), MSG_DONTWAIT);
+			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
 		else
 			throw std::runtime_error("User is not operator in this channel.");
 	}
-	
+}
+bool	Channel::isUserOp(Client& target) {
+	if (find(this->all_operators.begin(), this->all_operators.end(), target) != this->all_operators.end())
+		return true;
+	return false;
 }
 
 
-std::vector<Client>&	Channel::getAllOperators() {
-	return this->all_operators;
-}
-void	Channel::addClientToOperators(Client client) {
-	this->all_operators.push_back(client);
-}
-void	Channel::removeClientFromOperators(Client client) {
-	std::vector<Client>::iterator new_end = std::remove(all_operators.begin(), all_operators.end(), client);
-	all_operators.erase(new_end, all_operators.end());
-}
 
 
-std::vector<int>& Channel::getAllUsers() {
+// USERS
+std::vector<Client>& Channel::getAllUsers() {
 	return this->all_users;
 }
-void	Channel::addClientToChannel(int client_socket) {
-	this->all_users.push_back(client_socket);
+
+void	Channel::addClientToChannel(Client& target) {
+	this->all_users.push_back(target);
 }
-void	Channel::removeClientFromChannel(int client_socket) {
-	//removeClientFromOperators(client_socket);
-	std::vector<int>::iterator new_end = std::remove(all_users.begin(), all_users.end(), client_socket);
+
+void	Channel::removeClientFromChannel(Client& target) {
+	std::vector<Client>::iterator new_end = std::remove(all_users.begin(), all_users.end(), target);
 	all_users.erase(new_end, all_users.end());
 }
+bool	Channel::isUserInChannel(Client& target) {
+	if (find(this->all_users.begin(), this->all_users.end(), target) != this->all_users.end())
+			return true;
+		return false;
+}
 
 
-void	Channel::setWhitelist(bool status, int client_socket)
-{
+
+
+// WHITELIST
+void	Channel::setWhitelist(bool status, Client& sender) {
 	if (this->on_whitelist == true)
 	{
 		if (status == true)
@@ -160,7 +207,7 @@ void	Channel::setWhitelist(bool status, int client_socket)
 			this->whitelist.clear();
 			this->on_whitelist = false;
 			std::string notif = irc_time() + MAGENTA "Channel #" + this->name + ": public.\n" RESET;
-			send(client_socket, notif.c_str(), notif.size(), MSG_DONTWAIT);
+			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
 	}
 	else
@@ -168,30 +215,29 @@ void	Channel::setWhitelist(bool status, int client_socket)
 		if (status == false)
 			throw std::runtime_error("Channel #" + this->name + ": already public.");
 		else {
-			this->whitelist.push_back(client_socket);
+			this->whitelist.push_back(sender);
 			this->on_whitelist = true;
 			std::string notif = irc_time() + MAGENTA "Channel #" + this->name + ": invite-only.\n" RESET;
-			send(client_socket, notif.c_str(), notif.size(), MSG_DONTWAIT);
+			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
 	}
 }
-std::vector<int>	Channel::getWhitelist()
-{
+
+std::vector<Client>	Channel::getWhitelist() {
 	return this->whitelist;
 }
-
-
-bool	Channel::addToWhitelist(int client_socket) {
-	for (std::vector<int>::iterator it = whitelist.begin(); it != whitelist.end(); it++) {
-		if (*it == client_socket)
+bool	Channel::addClientToWhitelist(Client& target) {
+	for (std::vector<Client>::iterator it = whitelist.begin(); it != whitelist.end(); it++) {
+		if (*it == target)
 			return (false);
 	}
-	whitelist.push_back(client_socket);
+	whitelist.push_back(target);
 	return (true);
 }
-bool	Channel::removeToWhitelist(int client_socket) {
-	for (std::vector<int>::iterator it = whitelist.begin(); it != whitelist.end(); it++) {
-		if (*it == client_socket) {
+
+bool	Channel::removeClientFromWhitelist(Client& target) {
+	for (std::vector<Client>::iterator it = whitelist.begin(); it != whitelist.end(); it++) {
+		if (*it == target) {
 			whitelist.erase(it);
 			return (true);
 		}
@@ -202,21 +248,30 @@ bool	Channel::getWhitelistStatus() {
 	return (on_whitelist);
 }
 
+bool	Channel::isUserOnWhitelist(Client& target) {
+	if (find(this->whitelist.begin(), this->whitelist.end(), target) != this->whitelist.end())
+			return true;
+		return false;
+}
 
-void	Channel::setPassword(bool status, std::string password, int client_socket) {
+
+
+
+// PASSWORD
+void	Channel::setPassword(bool status, std::string password, Client& sender) {
 	if (this->password_protected == true) {
 		if (status == true) {
 			if (password.empty())
 				throw std::runtime_error("Invalid password.");
 			this->password = password;
 			std::string notif = MAGENTA "Password updated.\n" RESET;
-			send(client_socket, notif.c_str(), notif.size(), MSG_DONTWAIT);
+			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
 		else {
 			this->password_protected = false;
 			this->password = "/";
 			std::string notif = MAGENTA "Channel is no longer protected by a password.\n" RESET;
-			send(client_socket, notif.c_str(), notif.size(), MSG_DONTWAIT);
+			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
 	}
 	else {
@@ -226,25 +281,29 @@ void	Channel::setPassword(bool status, std::string password, int client_socket) 
 			this->password_protected = true;
 			this->password = password;
 			std::string notif = MAGENTA "Channel is now protected by password.\n" RESET;
-			send(client_socket, notif.c_str(), notif.size(), MSG_DONTWAIT);
+			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
 		else
 			throw std::runtime_error("Channel is not protected by password.");
 	}
 }
+
 std::string		Channel::getPassword() {
 	return this->password;
 }
-bool			Channel::getPasswordStatus() {
+
+bool	Channel::getPasswordStatus() {
 	return this->password_protected;
 }
 
 
 
+
+// USER LIMIT
 int		Channel::getUserLimit() {
 	return this->user_limit;
 }
+
 void	Channel::setUserLimit(int limit) {
 	this->user_limit = limit;
 }
-

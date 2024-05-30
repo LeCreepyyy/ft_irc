@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:13:34 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/29 13:05:10 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/30 13:16:23 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,21 +45,23 @@
 			void	start();
 			void	crash(std::string log);
 
-			void	check_password(std::string data_sent, std::vector<Client>::iterator & sender);
-			void	handle_client_input(std::string data_sent, std::vector<Client>::iterator &sender);
-			void	msg_to_channel(std::string msg, std::string channel_name, std::vector<Client>::iterator &sender);
+			void	check_password(std::string data_sent, Client& sender);
+			void	handle_client_input(std::string data_sent, Client& sender);
+			void	msg_to_channel(std::string msg, Channel target, Client& sender);
 
-			void	cmd_join(std::string data_sent, std::vector<Client>::iterator &sender);
-			void	cmd_privmsg(std::string data_sent, std::vector<Client>::iterator &sender);
-			void	cmd_part(std::string data_sent, std::vector<Client>::iterator &sender);
-			void	cmd_msg(std::string data_sent, std::vector<Client>::iterator &sender);
-			void	cmd_kick(std::string data_sent, std::vector<Client>::iterator &sender);
-			void	cmd_mode(std::string data_sent, std::vector<Client>::iterator &sender);
-			void	cmd_invite(std::string data_sent, std::vector<Client>::iterator &sender);
-			void	cmd_topic(std::string data_sent, std::vector<Client>::iterator &sender);
-			void	cmd_help(std::string data_sent, std::vector<Client>::iterator &sender);
+			void	cmd_join(std::string data_sent, Client& sender);
+			void	cmd_privmsg(std::string data_sent, Client& sender);
+			void	cmd_part(std::string data_sent, Client& sender);
+			void	cmd_msg(std::string data_sent, Client& sender);
+			void	cmd_kick(std::string data_sent, Client& sender);
+			void	cmd_mode(std::string data_sent, Client& sender);
+			void	cmd_invite(std::string data_sent, Client& sender);
+			void	cmd_topic(std::string data_sent, Client& sender);
+			void	cmd_help(std::string data_sent, Client& sender);
 
 			/* Accessors */
+
+			Channel&	getChannel(std::string channel_name);
 	};
 
 #endif
