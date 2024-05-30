@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Command.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
+/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/24 10:23:28 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/30 13:51:23 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/05/30 14:25:11 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -291,12 +291,6 @@ void	Server::cmd_part(std::string data_sent, Client& sender)
 	}
 }
 
-void	Server::cmd_help(std::string data_sent, Client& sender)
-{
-	debug("HELP");
-	(void)data_sent;
-	(void)sender;
-}
 
 void	Server::cmd_topic(std::string data_sent, Client& sender)
 {
@@ -393,3 +387,32 @@ void	Server::cmd_mode(std::string data_sent, Client& sender)
 	}
 	throw std::runtime_error("Channel not found.");
 }
+
+
+void	Server::cmd_help(std::string data_sent, Client& sender)
+{
+	std::istringstream iss(&data_sent[5]);
+	std::string arg;
+	iss >> arg;
+
+	send(sender.getSocket(), "\nGlobal command :\n", strlen("Global command :\n"), MSG_DONTROUTE);
+	
+	send(sender.getSocket(), "-> NICK <nickname>\n", strlen("-> NICK <nickname>\n"), MSG_DONTWAIT);
+	send(sender.getSocket(), "-> USER <username> <hostname> <servername> <realname>\n", strlen("-> USER <username> <hostname> <servername> <realname>\n"), MSG_DONTWAIT);
+	send(sender.getSocket(), "-> PRIVMSG <target> <message>\n", strlen("-> PRIVMSG <target> <message>\n"), MSG_DONTWAIT);
+	send(sender.getSocket(), "-> MSG <#channel> <message>\n", strlen("-> MSG <#channel> <message>\n"), MSG_DONTWAIT);
+	send(sender.getSocket(), "-> JOIN <#channel> (password)\n", strlen("-> JOIN <#channel> (password)\n"), MSG_DONTWAIT);
+	send(sender.getSocket(), "-> HELP (commande)\n\n", strlen("-> HELP (commande)\n\n"), MSG_DONTWAIT);
+	
+	send(sender.getSocket(), "Only in channel :\n", strlen("Only in channel :\n"), MSG_DONTROUTE);
+	
+	send(sender.getSocket(), "-> PART (#channel)\n", strlen("-> PART (#channel)\n"), MSG_DONTWAIT);
+	send(sender.getSocket(), "-> INVITE (#channel) <target>\n\n", strlen("-> INVITE (#channel) <target>\n\n"), MSG_DONTWAIT);
+	
+	send(sender.getSocket(), "-Only operator :\n", strlen("-Only operator :\n"), MSG_DONTROUTE);
+	
+	send(sender.getSocket(), "-> KICK (#channel) <target>\n", strlen("-> KICK (#channel) <target>\n"), MSG_DONTWAIT);
+	send(sender.getSocket(), "-> MODE (#channel) <+ or -OPTION>\n", strlen("-> MODE (#channel) <+ or -OPTION>\n"), MSG_DONTWAIT);
+	send(sender.getSocket(), "-> TOPIC (#channel) <message>\n", strlen("-> TOPIC (#channel) <message>\n"), MSG_DONTWAIT);
+}
+
