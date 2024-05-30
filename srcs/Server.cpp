@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/29 13:35:52 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/30 10:34:32 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -143,7 +143,7 @@ void Server::start()
 				try
 				{
 					std::string client_input(buffer, bytesReceived);
-					//check_password(client_input, iter_client);
+					check_password(client_input, iter_client);
 					handle_client_input(client_input, iter_client);
 				}
 				catch (const std::exception &e)
@@ -204,7 +204,6 @@ void Server::handle_client_input(std::string data_sent, std::vector<Client>::ite
 	std::string command;
 	iss >> command;
 
-	// parse client input
 	if (command == "NICK")
 		sender->setNickname(data_sent, all_clients);
 	else if (command == "USER")

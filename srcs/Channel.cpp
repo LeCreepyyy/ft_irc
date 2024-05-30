@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/07 01:42:29 by bgaertne          #+#    #+#             */
-/*   Updated: 2024/05/29 13:07:33 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/30 10:44:48 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 //  Constructors, Destructor  //
 ////////////////////////////////
 
-Channel::Channel(std::string name, int op_socket)
+Channel::Channel(std::string name, Client oper)
 {
 	if (name.length() > 199 || name.find('\x07') != std::string::npos || name.find(',') != std::string::npos)
 		throw std::runtime_error("[Error] Improper channel name");
@@ -26,7 +26,7 @@ Channel::Channel(std::string name, int op_socket)
 	this->name = name;
 	this->user_limit = -1;
 	this->topic = "Undefinied channel topic.\n";
-	this->all_operators.push_back(op_socket);
+	this->all_operators.push_back(oper);
 }
 
 Channel::~Channel()
@@ -99,12 +99,12 @@ void	Channel::setTopicLimit(bool status, int client_socket) {
 	}
 }
 
-void	Channel::opUser(bool status,int target_socket, int sender_socket)
+void	Channel::opUser(bool status,Client target, int sender_socket)
 {
 	std::string notif;
 	if (status == true) {
-		if (find(this->all_operators.begin(), this->all_operators.end(), target_socket) == this->all_operators.end()) {
-			this->addClientToOperators(target_socket);
+		if (find(this->all_operators.begin(), this->all_operators.end(), target) == this->all_operators.end()) {
+			this->addClientToOperators(target);
 			notif = MAGENTA "User got promoted to channel operator.\n" RESET;
 			send(sender_socket, notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
@@ -113,7 +113,7 @@ void	Channel::opUser(bool status,int target_socket, int sender_socket)
 	}
 	else
 	{
-		if (find(this->all_operators.begin(), this->all_operators.end(), target_socket) != this->all_operators.end()) {
+		if (find(this->all_operators.begin(), this->all_operators.end(), target) != this->all_operators.end()) {
 			this->removeClientFromOperators(target_socket);
 			notif = MAGENTA "User is no longer operator in this channel.\n" RESET;
 			send(sender_socket, notif.c_str(), notif.size(), MSG_DONTWAIT);
@@ -125,14 +125,14 @@ void	Channel::opUser(bool status,int target_socket, int sender_socket)
 }
 
 
-std::vector<int>&	Channel::getAllOperators() {
+std::vector<Client>&	Channel::getAllOperators() {
 	return this->all_operators;
 }
-void	Channel::addClientToOperators(int client_socket) {
-	this->all_operators.push_back(client_socket);
+void	Channel::addClientToOperators(Client client) {
+	this->all_operators.push_back(client);
 }
-void	Channel::removeClientFromOperators(int client_socket) {
-	std::vector<int>::iterator new_end = std::remove(all_operators.begin(), all_operators.end(), client_socket);
+void	Channel::removeClientFromOperators(Client client) {
+	std::vector<Client>::iterator new_end = std::remove(all_operators.begin(), all_operators.end(), client);
 	all_operators.erase(new_end, all_operators.end());
 }
 

@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/03 10:31:29 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/29 13:07:39 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/30 10:40:36 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
 		
 		private :
 			std::string			name;
-			std::vector<int>	all_operators;
+			std::vector<Client>	all_operators;
 			std::vector<int>	all_users;
 			bool				on_whitelist;
 			std::vector<int>	whitelist;
@@ -30,12 +30,11 @@
 			bool				password_protected;
 			std::string			password;
 			int					user_limit;
-			std::vector<Client> temp;
 
 		public :
 
 			/* Constructors, Destructors */
-			Channel(std::string name, int op_socket);
+			Channel(std::string name, Client oper);
 			~Channel();
 
 			/* Methods */
@@ -60,10 +59,10 @@
 			std::string			getPassword();
 			bool				getPasswordStatus();
 
-			std::vector<int>&	getAllOperators();
-			void				addClientToOperators(int client_socket);
-			void				removeClientFromOperators(int client_socket);
-			void				opUser(bool status, int target_socket, int sender_socket);
+			std::vector<Client>&	getAllOperators();
+			void				addClientToOperators(Client client);
+			void				removeClientFromOperators(Client client);
+			void				opUser(bool status, Client target, int sender_socket);
 
 			std::vector<int>&	getAllUsers();
 			void				addClientToChannel(int client_socket);
