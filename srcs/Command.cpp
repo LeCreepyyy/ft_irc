@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/24 10:23:28 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/30 14:25:11 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/05/30 14:28:00 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -413,6 +413,6 @@ void	Server::cmd_help(std::string data_sent, Client& sender)
 	
 	send(sender.getSocket(), "-> KICK (#channel) <target>\n", strlen("-> KICK (#channel) <target>\n"), MSG_DONTWAIT);
 	send(sender.getSocket(), "-> MODE (#channel) <+ or -OPTION>\n", strlen("-> MODE (#channel) <+ or -OPTION>\n"), MSG_DONTWAIT);
-	send(sender.getSocket(), "-> TOPIC (#channel) <message>\n", strlen("-> TOPIC (#channel) <message>\n"), MSG_DONTWAIT);
+	send(sender.getSocket(), "-> TOPIC (#channel) <message>\n\n", strlen("-> TOPIC (#channel) <message>\n\n"), MSG_DONTWAIT);
 }
 
