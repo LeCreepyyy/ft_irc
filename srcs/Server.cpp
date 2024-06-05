@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/05 10:23:14 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/05 15:18:31 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -142,20 +142,15 @@ void Server::start() {
 				try
 				{
 					std::string client_input(buffer, bytesReceived);
-					//debug(client_input);
-					check_password(client_input, *iter_client);
-					handle_client_input(client_input, *iter_client);
-					debug(iter_client->getNickname());
-					debug(iter_client->getUsername()[0]);
-					debug(iter_client->getUsername()[1]);
-					debug(iter_client->getUsername()[2]);
-					debug(iter_client->getUsername()[3]);
+					std::vector<std::string> substrings = splitString(client_input, '\n');
+					
+					for (size_t i = 0; i < substrings.size(); ++i) {
+						debug(substrings[i]);
+						handle_client_input(client_input, *iter_client);
+					}
 				}
 				catch (const std::exception &e)
 				{
-					// Any exception thrown in the handling of the input is reported to both server and client
-					// std::string notif(irc_time() + CYAN + iter_client->getNickname() + RESET ": " + RED + e.what() + RESET);
-					// std::cout << notif << std::endl;
 					std::string notif = irc_time() + RED + e.what() + '\n' + RESET;
 					send(iter_client->getSocket(), notif.c_str(), std::strlen(notif.c_str()) + 1, 0);
 				}
@@ -164,7 +159,6 @@ void Server::start() {
 		}
 	}
 }
-
 
 void Server::crash(std::string log) {
 	close(serv_socket);
@@ -176,15 +170,13 @@ void Server::crash(std::string log) {
 void Server::check_password(std::string data_sent, Client& sender) {
 	for (std::vector<Client>::iterator i = pass_list.begin(); i != pass_list.end(); i++) {
 		if (*i == sender) {
-			debug(i->getSocket());
-			debug(sender.getSocket());
 			std::istringstream iss(data_sent);
 			std::string cmd;
 			iss >> cmd;
 			if (sender.getNickname() == "/" && cmd != "NICK")
-				throw std::runtime_error("Choose a Nickname (NICK <nickname>)");
+				throw std::runtime_error("Choose a Nickname.");
 			else if (sender.getNickname() != "/" && sender.getUsername().size() == 0 && cmd != "USER")
-				throw std::runtime_error("Choose a Username (USER <username> <hostname> <servername> <realname>)");
+				throw std::runtime_error("Choose a Username.");
 			return ;
 		}
 	}
@@ -211,6 +203,9 @@ void Server::handle_client_input(std::string data_sent, Client& sender)
 	std::string command;
 	iss >> command;
 
+	if (command == "CAP")
+		cmd_CAP(data_sent, sender);
+	check_password(data_sent, sender);
 	if (command == "NICK")
 		sender.setNickname(data_sent, all_clients);
 	else if (command == "USER")
@@ -233,11 +228,11 @@ void Server::handle_client_input(std::string data_sent, Client& sender)
 		cmd_topic(data_sent, sender);
 	else if (command == "HELP")
 		cmd_help(data_sent, sender);
-	else if (command != "PASS") {
+	else if (command != "PASS" && command != "CAP") {
 		if (sender.getAllInteractions().size())
 			msg_to_channel(data_sent, sender.getLastInteraction(), sender);
 		else
-			throw std::runtime_error("Unrecognized command. Try using 'HELP'");
+			throw std::runtime_error(command.append(": Unrecognized command. Try using 'HELP'"));
 	}
 }
 

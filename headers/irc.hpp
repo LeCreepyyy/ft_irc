@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   irc.hpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:09:45 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/29 11:26:33 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/05 13:39:42 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,8 +44,9 @@
 # include "Client.hpp"
 # include "Server.hpp"
 
-void    		parsing_args(char **argv);
-std::string		irc_time();
+void						parsing_args(char **argv);
+std::string					irc_time();
+std::vector<std::string>	splitString(std::string client_input, char spliter);
 
 template<typename T>
 void debug(T log) {

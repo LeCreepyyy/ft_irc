@@ -6,7 +6,7 @@
 /*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:11:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/24 16:08:45 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/06/05 13:41:29 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,4 +54,23 @@ std::string		irc_time()
 	char str[100];
 	strftime(str, sizeof(str), "[%H:%M] ", localTime);
 	return std::string(str);
+}
+
+std::vector<std::string>	splitString(std::string client_input, char spliter)
+{
+	std::vector<std::string> result;
+	std::string::size_type start = 0;
+	std::string::size_type end = client_input.find(spliter);
+
+	while (end != std::string::npos) {
+		result.push_back(client_input.substr(start, end - start + 1));
+		start = end + 1;
+		end = client_input.find(spliter, start);
+	}
+
+	if (start < client_input.length()) {
+		result.push_back(client_input.substr(start));
+	}
+
+	return result;
 }

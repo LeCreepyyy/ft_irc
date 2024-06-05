@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Command.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/24 10:23:28 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/30 14:28:00 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/05 15:24:01 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -315,6 +315,24 @@ void	Server::cmd_topic(std::string data_sent, Client& sender)
 		}
 	}
 	throw std::runtime_error("Channel not found.");
+}
+
+
+void	Server::cmd_CAP(std::string data_sent, Client& sender)
+{
+	std::istringstream iss(data_sent);
+	std::string subcommand;
+	iss >> subcommand;
+	iss >> subcommand;
+
+	if (subcommand == "LS") {
+		std::string response = "CAP * LS :\n";
+		send(sender.getSocket(), response.c_str(), response.size(), MSG_DONTWAIT);
+		std::cout << "CAP LS responded." << std::endl;
+	}
+	else if (subcommand == "END") {
+		std::cout << "CAP negotiation ended." << std::endl;
+	}
 }
 
 void	Server::cmd_mode(std::string data_sent, Client& sender)

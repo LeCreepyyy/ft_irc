@@ -6,7 +6,7 @@
 /*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:09:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/30 12:53:04 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/06/05 15:20:10 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,8 +100,8 @@ void	Client::setUsername(std::string cmd) {
 		temp.push_back(next_word);
 		args_count++;
 	}
-	if (args_count != 5)
-		throw std::runtime_error("USER <username> <hostname> <servername> <realname>");
+	if (args_count != 4)
+		throw std::runtime_error("Missing arguments. Use: <username> <hostname> <servername> <realname>");
 	username = temp;
 	std::string notif(GREEN "Username has been set.\n" RESET);
 	send(client_socket, notif.c_str(), strlen(notif.c_str()), MSG_DONTWAIT);

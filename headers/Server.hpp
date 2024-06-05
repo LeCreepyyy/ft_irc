@@ -6,7 +6,7 @@
 /*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:13:34 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/30 13:16:23 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/06/05 13:36:51 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,7 @@
 			void	cmd_mode(std::string data_sent, Client& sender);
 			void	cmd_invite(std::string data_sent, Client& sender);
 			void	cmd_topic(std::string data_sent, Client& sender);
+			void	cmd_CAP(std::string data_sent, Client& sender);
 			void	cmd_help(std::string data_sent, Client& sender);
 
 			/* Accessors */
