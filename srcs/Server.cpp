@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/30 14:01:52 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/05 10:23:14 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -142,8 +142,14 @@ void Server::start() {
 				try
 				{
 					std::string client_input(buffer, bytesReceived);
-					//check_password(client_input, *iter_client);
+					//debug(client_input);
+					check_password(client_input, *iter_client);
 					handle_client_input(client_input, *iter_client);
+					debug(iter_client->getNickname());
+					debug(iter_client->getUsername()[0]);
+					debug(iter_client->getUsername()[1]);
+					debug(iter_client->getUsername()[2]);
+					debug(iter_client->getUsername()[3]);
 				}
 				catch (const std::exception &e)
 				{
