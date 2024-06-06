@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Command.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
+/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/24 10:23:28 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/05 15:24:01 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/06/06 14:01:55 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -407,6 +407,12 @@ void	Server::cmd_mode(std::string data_sent, Client& sender)
 }
 
 
+void	Server::cmd_ping(std::string data_sent, Client& sender) {
+	(void)data_sent;
+	(void)sender;
+}
+
+
 void	Server::cmd_help(std::string data_sent, Client& sender)
 {
 	std::istringstream iss(&data_sent[5]);
@@ -420,7 +426,7 @@ void	Server::cmd_help(std::string data_sent, Client& sender)
 	send(sender.getSocket(), "-> PRIVMSG <target> <message>\n", strlen("-> PRIVMSG <target> <message>\n"), MSG_DONTWAIT);
 	send(sender.getSocket(), "-> MSG <#channel> <message>\n", strlen("-> MSG <#channel> <message>\n"), MSG_DONTWAIT);
 	send(sender.getSocket(), "-> JOIN <#channel> (password)\n", strlen("-> JOIN <#channel> (password)\n"), MSG_DONTWAIT);
-	send(sender.getSocket(), "-> HELP (commande)\n\n", strlen("-> HELP (commande)\n\n"), MSG_DONTWAIT);
+	send(sender.getSocket(), "-> HELP\n\n", strlen("-> HELP (commande)\n\n"), MSG_DONTWAIT);
 	
 	send(sender.getSocket(), "Only in channel :\n", strlen("Only in channel :\n"), MSG_DONTROUTE);
 	

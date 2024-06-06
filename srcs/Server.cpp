@@ -3,12 +3,19 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
+/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/05 15:18:31 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/06/06 14:14:08 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+
+/**
+ * Envoyer des infos au server via sont socket
+ * Verif via GPT et d'autres server IRC, TOUTES les commmandes que l'on doit refaire
+ * Rajouter des fonctions pour simplifier la communications entre client et server
+*/
 
 #include "../headers/Server.hpp"
 
@@ -96,7 +103,9 @@ void Server::start() {
 			client.setSocket(clientSocket);
 			client.setIP(inet_ntoa(client.getAddress().sin_addr));
 			all_clients.push_back(client);
-
+			
+			std::string welcome_msg = ":server 001 Welcome to Concorde\r\n";
+			send(client.getSocket(), welcome_msg.c_str(), welcome_msg.size(), MSG_DONTWAIT);
 			std::cout << irc_time() << GREEN << "New connection" << RESET << std::endl;
 		}
 
