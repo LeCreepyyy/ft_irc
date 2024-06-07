@@ -6,13 +6,15 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/07 11:52:25 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/07 14:24:37 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 
 /**
- * Verif via GPT et d'autres server IRC, TOUTES les commmandes que l'on doit refaire
+ * Verif via GPT et d'autres server IRC, TOUTES les commmandes que l'on doit refaire :
+ *  - /msg #e <msg> = PRIVMSG #e <msg> | <msg> = PRIVMSG #current <msg>
+ *  - /user BUG niveau arg
  * Rajouter des fonctions pour simplifier la communications entre client et server (pas sur)
 */
 
@@ -103,7 +105,7 @@ void Server::start() {
 			client.setIP(inet_ntoa(client.getAddress().sin_addr));
 			all_clients.push_back(client);
 			
-			std::string welcome_msg = ":server 001 Welcome to Concorde\r\n";
+			std::string welcome_msg = ":Concorde 001 Welcome to Concorde\r\n";
 			send(client.getSocket(), welcome_msg.c_str(), welcome_msg.size(), MSG_DONTWAIT);
 			std::cout << irc_time() << "New connection" << std::endl;
 		}
@@ -130,15 +132,15 @@ void Server::start() {
 					std::string client_input(buffer, bytesReceived);
 					std::vector<std::string> substrings = splitString(client_input, '\n');
 					
-					for (size_t i = 0; i < substrings.size(); ++i) {
-						debug(substrings[i]);
-						handle_client_input(client_input, *iter_client);
+					for (std::vector<std::string>::iterator i = substrings.begin() ; i < substrings.end(); i++) {
+						debug(*i);
+						handle_client_input(*i, *iter_client);
 					}
 				}
 				catch (const std::exception &e)
 				{
-					std::string notif = irc_time() + e.what() + '\n';
-					send(iter_client->getSocket(), notif.c_str(), std::strlen(notif.c_str()) + 1, 0);
+					std::string notif = irc_time() + e.what() + "\r\n";
+					send(iter_client->getSocket(), notif.c_str(), std::strlen(notif.c_str()), 0);
 				}
 			}
 			++iter_client;
@@ -218,7 +220,7 @@ void Server::handle_client_input(std::string data_sent, Client& sender)
 	iss >> command;
 
 	if (command == "CAP")
-		cmd_CAP(data_sent, sender);
+		return;
 	check_password(data_sent, sender);
 	if (command == "NICK")
 		sender.setNickname(data_sent, all_clients);
@@ -242,6 +244,8 @@ void Server::handle_client_input(std::string data_sent, Client& sender)
 		cmd_topic(data_sent, sender);
 	else if (command == "HELP")
 		cmd_help(data_sent, sender);
+	else if (command == "PING")
+		cmd_ping(data_sent, sender);
 	else if (command != "PASS" && command != "CAP") {
 		if (sender.getAllInteractions().size())
 			msg_to_channel(data_sent, sender.getLastInteraction(), sender);

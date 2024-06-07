@@ -6,11 +6,13 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/24 10:23:28 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/07 11:51:43 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/07 13:25:48 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../headers/Server.hpp"
+
+
 
 void	Server::cmd_invite(std::string data_sent, Client& sender) {
 	std::vector<Client>::iterator target;
@@ -406,11 +408,14 @@ void	Server::cmd_mode(std::string data_sent, Client& sender)
 	throw std::runtime_error("Channel not found.");
 }
 
-/*
+
 void	Server::cmd_ping(std::string data_sent, Client& sender) {
-	(void)data_sent;
-	(void)sender;
-}*/
+	if (!data_sent[5])
+		throw std::runtime_error("Missing arg : PING");
+	data_sent.erase(0, 4);
+	std::string reply_msg = "PONG" + data_sent;
+	send(sender.getSocket(), reply_msg.c_str(), strlen(reply_msg.c_str()), MSG_DONTWAIT);
+}
 
 
 void	Server::cmd_help(std::string data_sent, Client& sender)

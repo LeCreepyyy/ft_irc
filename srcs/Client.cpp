@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:09:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/07 11:50:23 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/07 14:28:53 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,8 @@ int	Client::getSocket() {
 
 // Nickname
 void	Client::setNickname(std::string cmd, std::vector<Client> &all_clients) {
-size_t start = 5;
+	std::string last = nickname;
+	size_t start = 5;
     if (cmd.size() <= start)
         throw std::runtime_error("431 :No nickname given\r\n");
 
@@ -79,7 +80,7 @@ size_t start = 5;
             throw std::runtime_error("433 " + temp + " :Nickname is already in use\r\n");
     }
     nickname = temp;
-    std::string notif(":" + nickname + " NICK " + nickname + "\r\n");
+	std::string notif = RPL_NICK(last, "username[1]", nickname);
     send(client_socket, notif.c_str(), notif.size(), MSG_DONTWAIT);
 }
 
@@ -105,7 +106,7 @@ void	Client::setUsername(std::string cmd) {
 		temp.push_back(next_word);
 		args_count++;
 	}
-	if (args_count != 4)
+	if (args_count < 3)
 		throw std::runtime_error("Missing arguments. Use: <username> <hostname> <servername> <realname>");
 	username = temp;
 	std::string notif("Username has been set.\n");

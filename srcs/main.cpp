@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:11:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/07 11:51:48 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/07 14:11:23 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,7 +63,7 @@ std::vector<std::string>	splitString(std::string client_input, char spliter)
 	std::string::size_type end = client_input.find(spliter);
 
 	while (end != std::string::npos) {
-		result.push_back(client_input.substr(start, end - start + 1));
+		result.push_back(client_input.substr(start, end - start));
 		start = end + 1;
 		end = client_input.find(spliter, start);
 	}
