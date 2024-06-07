@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Command.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
+/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/24 10:23:28 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/07 10:59:21 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/06/07 11:51:43 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -184,9 +184,9 @@ void	Server::cmd_join(std::string data_sent, Client& sender)
 			//sender->addToCurrentChannels(all_channels[i]);			 // adding channel to client's channel list
 			sender.setLastInteraction(all_channels[i]);
 			// Notifying the client
-			std::string	notif = irc_time() + MAGENTA + "You joined a new channel: " + channel_name + '\n' + RESET;
+			std::string	notif = irc_time() + "You joined a new channel: " + channel_name + '\n';
 			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
-			notif = GREEN " I have arrived." RESET;
+			notif = " I have arrived.";
 			msg_to_channel(notif, all_channels[i], sender);
 			return;
 		}
@@ -199,9 +199,9 @@ void	Server::cmd_join(std::string data_sent, Client& sender)
 	all_channels.push_back(newChannel); // pushing newChannel into the all_channels list
 
 	// Notifying the client
-	std::string	notif = irc_time() + MAGENTA + "You created a channel named '" + channel_name + "'\n" + RESET
-					+ irc_time() + MAGENTA + "You now have ADMIN rights in this channel.\n" + RESET
-					+ irc_time() + GREEN + sender.getNickname() + " joined this channel.\n" + RESET;
+	std::string	notif = irc_time() + "You created a channel named '" + channel_name + "'\n"
+					+ irc_time() + "You now have ADMIN rights in this channel.\n"
+					+ irc_time() + sender.getNickname() + " joined this channel.\n";
 	sender.setLastInteraction(newChannel);
 	send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 }
@@ -227,7 +227,7 @@ void	Server::cmd_privmsg(std::string data_sent, Client& sender)
 			Client receiver = all_clients[i];
 			if (message.size() == 0)
 				return;
-			std::string	notif(irc_time() + MAGENTA + sender.getNickname() + " : " + message + "\n" + RESET);
+			std::string	notif(irc_time() + sender.getNickname() + " : " + message + "\n");
 			send(receiver.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 			return;
@@ -276,12 +276,12 @@ void	Server::cmd_part(std::string data_sent, Client& sender)
 		if (it->getName() == channel_name) {
 			it->removeClientFromChannel(sender);
 			sender.removeFromLastInteraction(*it);
-			std::string notif =  YELLOW "You left " + channel_name + ".\n"+ RESET;
+			std::string notif = "You left " + channel_name + ".\n";
 			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 			if (it->getAllUsers().empty()) {
 				it = all_channels.erase(it);
 			} else {
-				notif = YELLOW + sender.getNickname() + " left " + channel_name + "." RESET;
+				notif = sender.getNickname() + " left " + channel_name + ".";
 				msg_to_channel(notif, *it, sender);
 				++it;
 			}
@@ -396,7 +396,7 @@ void	Server::cmd_mode(std::string data_sent, Client& sender)
 					if (static_cast<size_t>(limit) < channel_it->getAllUsers().size())
 						throw std::runtime_error("Too much users in channel to set this limit.");
 				}
-				std::string notif = MAGENTA "Limit was set.\n" RESET;
+				std::string notif = "Limit was set.\n";
 				send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 				return (channel_it->setUserLimit(limit));
 			}

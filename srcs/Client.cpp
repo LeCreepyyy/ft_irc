@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
+/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:09:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/07 11:35:56 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/06/07 11:50:23 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,7 +108,7 @@ void	Client::setUsername(std::string cmd) {
 	if (args_count != 4)
 		throw std::runtime_error("Missing arguments. Use: <username> <hostname> <servername> <realname>");
 	username = temp;
-	std::string notif(GREEN "Username has been set.\n" RESET);
+	std::string notif("Username has been set.\n");
 	send(client_socket, notif.c_str(), strlen(notif.c_str()), MSG_DONTWAIT);
 }
 

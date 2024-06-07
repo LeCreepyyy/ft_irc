@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
+/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/07 01:42:29 by bgaertne          #+#    #+#             */
-/*   Updated: 2024/05/30 13:39:44 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/06/07 11:50:23 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,7 +108,7 @@ void	Channel::setTopicRestriction(bool status, Client& sender) {
 			throw std::runtime_error("Channel #" + this->name + ": topic is already limited to operators modification.");
 		else {
 			this->topic_restricted = false;
-			std::string notif = irc_time() + MAGENTA "Channel #" + this->name + ": topic may now be changed by everyone.\n" RESET;
+			std::string notif = irc_time() + "Channel #" + this->name + ": topic may now be changed by everyone.\n";
 			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
 	}
@@ -117,7 +117,7 @@ void	Channel::setTopicRestriction(bool status, Client& sender) {
 			throw std::runtime_error("Channel #" + this->name + ": topic is already publicly modifiable.");
 		else {
 			this->topic_restricted = true;
-			std::string notif = irc_time() + MAGENTA "Channel #" + this->name + ": topic modification is now limited to operators.\n" RESET;
+			std::string notif = irc_time() + "Channel #" + this->name + ": topic modification is now limited to operators.\n";
 			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
 	}
@@ -149,7 +149,7 @@ void	Channel::opUser(bool status, Client& target, Client& sender) {
 	if (status == true) {
 		if (!isUserOp(sender)) {
 			this->addClientToOperators(target);
-			notif = MAGENTA "User got promoted to channel operator.\n" RESET;
+			notif = "User got promoted to channel operator.\n";
 			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
 		else
@@ -159,7 +159,7 @@ void	Channel::opUser(bool status, Client& target, Client& sender) {
 	{
 		if (isUserOp(sender)) {
 			this->removeClientFromOperators(target);
-			notif = MAGENTA "User is no longer operator in this channel.\n" RESET;
+			notif = "User is no longer operator in this channel.\n";
 			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
 		else
@@ -206,7 +206,7 @@ void	Channel::setWhitelist(bool status, Client& sender) {
 		else {
 			this->whitelist.clear();
 			this->on_whitelist = false;
-			std::string notif = irc_time() + MAGENTA "Channel #" + this->name + ": public.\n" RESET;
+			std::string notif = irc_time() + "Channel #" + this->name + ": public.\n";
 			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
 	}
@@ -217,7 +217,7 @@ void	Channel::setWhitelist(bool status, Client& sender) {
 		else {
 			this->whitelist.push_back(sender);
 			this->on_whitelist = true;
-			std::string notif = irc_time() + MAGENTA "Channel #" + this->name + ": invite-only.\n" RESET;
+			std::string notif = irc_time() + "Channel #" + this->name + ": invite-only.\n";
 			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
 	}
@@ -264,13 +264,13 @@ void	Channel::setPassword(bool status, std::string password, Client& sender) {
 			if (password.empty())
 				throw std::runtime_error("Invalid password.");
 			this->password = password;
-			std::string notif = MAGENTA "Password updated.\n" RESET;
+			std::string notif = "Password updated.\n";
 			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
 		else {
 			this->password_protected = false;
 			this->password = "/";
-			std::string notif = MAGENTA "Channel is no longer protected by a password.\n" RESET;
+			std::string notif = "Channel is no longer protected by a password.\n";
 			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
 	}
@@ -280,7 +280,7 @@ void	Channel::setPassword(bool status, std::string password, Client& sender) {
 				throw std::runtime_error("Invalid password.");
 			this->password_protected = true;
 			this->password = password;
-			std::string notif = MAGENTA "Channel is now protected by password.\n" RESET;
+			std::string notif = "Channel is now protected by password.\n";
 			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
 		else

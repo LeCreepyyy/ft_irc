@@ -6,15 +6,14 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/06 14:14:08 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/07 11:52:25 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 
 /**
- * Envoyer des infos au server via sont socket
  * Verif via GPT et d'autres server IRC, TOUTES les commmandes que l'on doit refaire
- * Rajouter des fonctions pour simplifier la communications entre client et server
+ * Rajouter des fonctions pour simplifier la communications entre client et server (pas sur)
 */
 
 #include "../headers/Server.hpp"
@@ -63,7 +62,7 @@ void Server::start() {
 	if (listen(serv_socket, MAX_WAITLIST) == -1)
 		this->crash("Unable to listen on server socket.");
 
-	std::cout << irc_time() << BLUE << "Server listening on port " << serv_port << RESET << std::endl;
+	std::cout << irc_time() << "Server listening on port " << serv_port << std::endl;
 
 	// Server is now fully configured.
 	// Listening to any events on server/clients sockets endlessly
@@ -106,7 +105,7 @@ void Server::start() {
 			
 			std::string welcome_msg = ":server 001 Welcome to Concorde\r\n";
 			send(client.getSocket(), welcome_msg.c_str(), welcome_msg.size(), MSG_DONTWAIT);
-			std::cout << irc_time() << GREEN << "New connection" << RESET << std::endl;
+			std::cout << irc_time() << "New connection" << std::endl;
 		}
 
 
@@ -120,29 +119,7 @@ void Server::start() {
 
 				// If buffer is empty, it's a disconnection
 				if (bytesReceived <= 0) {
-					std::cout << irc_time() << YELLOW << iter_client->getNickname() << " left the game." << RESET << std::endl;
-
-					// Remove client from pass_list
-					for (std::vector<Client>::iterator i = pass_list.begin(); i != pass_list.end(); ++i) {
-						if (*i == *iter_client) {
-							pass_list.erase(i);
-							break;
-						}
-					}
-
-					// Remove client from all channels, and their whitelists
-					for (std::vector<Channel>::iterator iter_channel = all_channels.begin(); iter_channel != all_channels.end(); ) {
-						iter_channel->removeClientFromWhitelist(*iter_client);
-						iter_channel->removeClientFromChannel(*iter_client);
-						iter_channel->removeClientFromOperators(*iter_client);
-						if (iter_channel->getAllUsers().size() == 0)
-							all_channels.erase(std::remove(all_channels.begin(), all_channels.end(), *iter_channel), all_channels.end());
-						else
-							++iter_channel;
-					}
-
-					// Close the client socket and remove the client from all_clients
-					close(iter_client->getSocket());
+					quit(*iter_client);
 					iter_client = all_clients.erase(iter_client);
 					continue;
 				}
@@ -160,7 +137,7 @@ void Server::start() {
 				}
 				catch (const std::exception &e)
 				{
-					std::string notif = irc_time() + RED + e.what() + '\n' + RESET;
+					std::string notif = irc_time() + e.what() + '\n';
 					send(iter_client->getSocket(), notif.c_str(), std::strlen(notif.c_str()) + 1, 0);
 				}
 			}
@@ -175,6 +152,30 @@ void Server::crash(std::string log) {
 		throw std::runtime_error(log);
 }
 
+void Server::quit(Client& iter_client) {
+	std::cout << irc_time() << iter_client.getNickname() << " left the game." << std::endl;
+	for (std::vector<Client>::iterator i = pass_list.begin(); i != pass_list.end(); ++i) {
+	// Remove client from pass_list
+		if (*i == iter_client) {
+			pass_list.erase(i);
+			break;
+		}
+	}
+
+	for (std::vector<Channel>::iterator iter_channel = all_channels.begin(); iter_channel != all_channels.end(); ) {
+	// Remove client from all channels, and their whitelists
+		iter_channel->removeClientFromWhitelist(iter_client);
+		iter_channel->removeClientFromChannel(iter_client);
+		iter_channel->removeClientFromOperators(iter_client);
+		if (iter_channel->getAllUsers().size() == 0)
+			all_channels.erase(std::remove(all_channels.begin(), all_channels.end(), *iter_channel), all_channels.end());
+		else
+			++iter_channel;
+	}
+
+	// Close the client socket and remove the client from all_clients
+	close(iter_client.getSocket());
+}
 
 void Server::check_password(std::string data_sent, Client& sender) {
 	for (std::vector<Client>::iterator i = pass_list.begin(); i != pass_list.end(); i++) {
@@ -190,17 +191,21 @@ void Server::check_password(std::string data_sent, Client& sender) {
 		}
 	}
 	size_t it = data_sent.find("PASS");
-	if (it == data_sent.npos)
-		throw std::runtime_error("Wrong password, try again.");
+	if (it == data_sent.npos) {
+		send(sender.getSocket(), "Wrong password !", strlen("Wrong password !"), MSG_DONTWAIT);
+		quit(sender);
+	}
 	it += 5;
 	std::istringstream iss(&data_sent[it]);
 	std::string password_sent;
 	iss >> password_sent;
-	if (password_sent != this->serv_password)
-		throw std::runtime_error("Wrong password, try again.");
+	if (password_sent != this->serv_password) {
+		send(sender.getSocket(), "Wrong password !", strlen("Wrong password !"), MSG_DONTWAIT);
+		quit(sender);
+	}
 	//validation
 	pass_list.push_back(sender);
-	std::string notif(GREEN "You are now logged in.\n" RESET);
+	std::string notif("You are now logged in.\n");
 	send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 	std::cout << sender.getIP() << " logged in." << std::endl;
 }
@@ -254,7 +259,7 @@ void	Server::msg_to_channel(std::string msg, Channel target, Client& sender) {
 	if (tmp.size() == 0)
 		return;
 	
-	std::string message = irc_time() + "[" + target.getName() + "] " + BLUE + sender.getNickname() + RESET + ": " + msg + "\n";
+	std::string message = irc_time() + "[" + target.getName() + "] " + sender.getNickname() + ": " + msg + "\n";
 	bool found = false;
 	for (size_t i = 0; i != all_channels.size(); i++) {
 		if (all_channels[i].getName() == target.getName() || all_channels[i].getName() == target.getName() + "\n") {

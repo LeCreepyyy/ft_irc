@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
+/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:13:34 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/05 13:36:51 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/06/07 11:43:33 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@
 			/* Methods */
 			void	start();
 			void	crash(std::string log);
+			void	quit(Client& iter_client);
 
 			void	check_password(std::string data_sent, Client& sender);
 			void	handle_client_input(std::string data_sent, Client& sender);
@@ -59,6 +60,7 @@
 			void	cmd_topic(std::string data_sent, Client& sender);
 			void	cmd_CAP(std::string data_sent, Client& sender);
 			void	cmd_help(std::string data_sent, Client& sender);
+			void	cmd_ping(std::string data_sent, Client& sender);
 
 			/* Accessors */
 

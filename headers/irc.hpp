@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   irc.hpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
+/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:09:45 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/07 11:25:56 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/06/07 11:49:10 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,15 +31,6 @@
 # include <sstream>
 # include <ctime>
 
-# define RESET   "\x033[0m" // Reset
-# define RED     "\x033[31m" // Error
-# define GREEN   "\x033[32m" // Connection
-# define YELLOW  "\x033[33m" // Disconnection
-# define MAGENTA "\x033[35m" // Whispers
-# define GRAY    "\x033[37m" // Debug
-# define CYAN    "\x033[36m" // Client notif
-# define BLUE    "\x033[34m" // Server
-
 # include "Channel.hpp"
 # include "Client.hpp"
 # include "Server.hpp"
@@ -50,7 +41,7 @@ std::vector<std::string>	splitString(std::string client_input, char spliter);
 
 template<typename T>
 void debug(T log) {
-	std::cout << "\033[37m" << "[DEBUG] " << log << RESET << std::endl;
+	std::cout << "[DEBUG] " << log << std::endl;
 }
 
 #endif
