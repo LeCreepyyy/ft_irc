@@ -6,7 +6,7 @@
 /*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:09:45 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/05 13:39:42 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/06/07 11:25:56 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,14 +31,14 @@
 # include <sstream>
 # include <ctime>
 
-# define RESET   "\033[0m" // Reset
-# define RED     "\033[31m" // Error
-# define GREEN   "\033[32m" // Connection
-# define YELLOW  "\033[33m" // Disconnection
-# define MAGENTA "\033[35m" // Whispers
-# define GRAY    "\033[37m" // Debug
-# define CYAN    "\033[36m" // Client notif
-# define BLUE    "\033[34m" // Server
+# define RESET   "\x033[0m" // Reset
+# define RED     "\x033[31m" // Error
+# define GREEN   "\x033[32m" // Connection
+# define YELLOW  "\x033[33m" // Disconnection
+# define MAGENTA "\x033[35m" // Whispers
+# define GRAY    "\x033[37m" // Debug
+# define CYAN    "\x033[36m" // Client notif
+# define BLUE    "\x033[34m" // Server
 
 # include "Channel.hpp"
 # include "Client.hpp"

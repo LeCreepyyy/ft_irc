@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Command.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/24 10:23:28 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/06 14:01:55 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/07 10:59:21 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -406,11 +406,11 @@ void	Server::cmd_mode(std::string data_sent, Client& sender)
 	throw std::runtime_error("Channel not found.");
 }
 
-
+/*
 void	Server::cmd_ping(std::string data_sent, Client& sender) {
 	(void)data_sent;
 	(void)sender;
-}
+}*/
 
 
 void	Server::cmd_help(std::string data_sent, Client& sender)

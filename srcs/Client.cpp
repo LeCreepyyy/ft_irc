@@ -6,7 +6,7 @@
 /*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:09:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/05 15:20:10 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/06/07 11:35:56 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,25 +57,30 @@ int	Client::getSocket() {
 
 // Nickname
 void	Client::setNickname(std::string cmd, std::vector<Client> &all_clients) {
-	size_t start = 5;
-	if (!cmd[start])
-		throw std::runtime_error("Nickname cannot be empty.");
-	size_t end = cmd.find_first_of(" \n", start);
-	if (end == std::string::npos)
-		end = cmd.length();
-	std::string temp = cmd.substr(start, end - start);
-	if (temp.size() < 1)
-		throw std::runtime_error("Nickname cannot be empty.");
-	for (std::vector<Client>::iterator it = all_clients.begin(); it != all_clients.end(); it++)
-	{
-		if (it->nickname == temp)
-			throw std::runtime_error("Nickname already in use. Try another one.");
-	}
-	if (temp[0] == '#')
-		throw std::runtime_error("\"#\" is forbidden.");
-	nickname = temp;
-	std::string notif(GREEN "You are now known as " + nickname + ".\n" RESET);
-	send(client_socket, notif.c_str(), strlen(notif.c_str()), MSG_DONTWAIT);
+size_t start = 5;
+    if (cmd.size() <= start)
+        throw std::runtime_error("431 :No nickname given\r\n");
+
+
+    size_t end = cmd.find_first_of(" \r\n", start);
+    if (end == std::string::npos)
+        end = cmd.length();
+
+    std::string temp = cmd.substr(start, end - start);
+    if (temp.empty())
+        throw std::runtime_error("431 :No nickname given\r\n");
+
+    std::string invalidChars = " ,*?!@.";
+    if (temp[0] == '#' || temp.find_first_of(invalidChars) != std::string::npos)
+    	throw std::runtime_error("432 " + temp + " :Erroneous nickname\r\n");
+
+    for (std::vector<Client>::iterator it = all_clients.begin(); it != all_clients.end(); it++) {
+        if (it->nickname == temp)
+            throw std::runtime_error("433 " + temp + " :Nickname is already in use\r\n");
+    }
+    nickname = temp;
+    std::string notif(":" + nickname + " NICK " + nickname + "\r\n");
+    send(client_socket, notif.c_str(), notif.size(), MSG_DONTWAIT);
 }
 
 std::string	Client::getNickname() {
