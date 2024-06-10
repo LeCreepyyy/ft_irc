@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
+/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:05:32 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/30 12:52:37 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/06/10 11:44:31 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@
 		private:
 			std::string					nickname;
 			std::vector<std::string>	username;
+			std::string					serv_name;
 			std::string					ip;
 			int							client_socket;
 			struct sockaddr_in			client_address;
@@ -38,6 +39,9 @@
 			bool					operator==(const Client& other) const;
 			
 			/* Accessors */
+			void					setServName(std::string servname);
+			std::string				getServName();
+			
 			void					setNickname(std::string cmd, std::vector<Client> &all_clients);
 			std::string				getNickname();
 

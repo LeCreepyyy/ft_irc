@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/07 01:42:29 by bgaertne          #+#    #+#             */
-/*   Updated: 2024/06/07 11:50:23 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/10 14:25:59 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,7 +108,7 @@ void	Channel::setTopicRestriction(bool status, Client& sender) {
 			throw std::runtime_error("Channel #" + this->name + ": topic is already limited to operators modification.");
 		else {
 			this->topic_restricted = false;
-			std::string notif = irc_time() + "Channel #" + this->name + ": topic may now be changed by everyone.\n";
+			std::string notif = "Channel #" + this->name + ": topic may now be changed by everyone.\n";
 			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
 	}
@@ -117,7 +117,7 @@ void	Channel::setTopicRestriction(bool status, Client& sender) {
 			throw std::runtime_error("Channel #" + this->name + ": topic is already publicly modifiable.");
 		else {
 			this->topic_restricted = true;
-			std::string notif = irc_time() + "Channel #" + this->name + ": topic modification is now limited to operators.\n";
+			std::string notif = "Channel #" + this->name + ": topic modification is now limited to operators.\n";
 			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
 	}
@@ -206,7 +206,7 @@ void	Channel::setWhitelist(bool status, Client& sender) {
 		else {
 			this->whitelist.clear();
 			this->on_whitelist = false;
-			std::string notif = irc_time() + "Channel #" + this->name + ": public.\n";
+			std::string notif = "Channel #" + this->name + ": public.\n";
 			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
 	}
@@ -217,7 +217,7 @@ void	Channel::setWhitelist(bool status, Client& sender) {
 		else {
 			this->whitelist.push_back(sender);
 			this->on_whitelist = true;
-			std::string notif = irc_time() + "Channel #" + this->name + ": invite-only.\n";
+			std::string notif = "Channel #" + this->name + ": invite-only.\n";
 			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
 	}

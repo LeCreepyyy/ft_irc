@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/24 10:23:28 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/07 13:25:48 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/10 14:26:13 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -153,7 +153,7 @@ void	Server::cmd_join(std::string data_sent, Client& sender)
 	iss >> password;
 
 	if (channel_name[0] != '#')
-		throw std::runtime_error("Invalid channel name.");
+		throw std::runtime_error(ERR_BADCHANMASK(serv_name, sender.getNickname(), channel_name));
 	channel_name = &channel_name[1];
 	// Looking if the channel already exists
 	for (size_t i = 0; i != all_channels.size(); i++) {
@@ -161,24 +161,24 @@ void	Server::cmd_join(std::string data_sent, Client& sender)
 			// Check if user is already in channel
 			std::vector<Client> users = all_channels[i].getAllUsers();
 			if (std::find(users.begin(), users.end(), sender) != users.end())
-				throw std::runtime_error("You are already connected to this channel.");
+				return;
 		
 			// If channel is limited, check if place is left
 			if (all_channels[i].getUserLimit() > -1)
 				if (all_channels[i].getAllUsers().size() >= static_cast<size_t>(all_channels[i].getUserLimit()))
-					throw std::runtime_error("Channel is full.");
+					throw std::runtime_error(ERR_CHANNELISFULL(serv_name, sender.getNickname(), channel_name));
 
 			// If channel is whitelisted, is the user on the whitelist
 			if (all_channels[i].getWhitelistStatus()) {
 			std::vector<Client> whitelist = all_channels[i].getWhitelist();
 			if (std::find(whitelist.begin(), whitelist.end(), sender) == whitelist.end())
-				throw std::runtime_error("Channel is whitelisted. You need to be invited by a channel operator.");			
+				throw std::runtime_error(ERR_INVITEONLYCHAN(serv_name, sender.getNickname(), channel_name));
 			}
 
 			// if channel is protected by password, look for it in the user input.
 			if (all_channels[i].getPasswordStatus() == true) {
 				if (all_channels[i].getPassword() != password)
-					throw std::runtime_error("Wrong password.");
+					throw std::runtime_error(ERR_BADCHANNELKEY(serv_name, sender.getNickname(), channel_name));
 			}
 			
 			// Joining the channel
@@ -186,10 +186,13 @@ void	Server::cmd_join(std::string data_sent, Client& sender)
 			//sender->addToCurrentChannels(all_channels[i]);			 // adding channel to client's channel list
 			sender.setLastInteraction(all_channels[i]);
 			// Notifying the client
-			std::string	notif = irc_time() + "You joined a new channel: " + channel_name + '\n';
+			std::string	notif = RPL_JOIN(sender.getNickname(), sender.getUsername()[1], channel_name)
+				+ RPL_TOPIC(serv_name, sender.getNickname(), channel_name, sender.getLastInteraction().getTopic());
 			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
-			notif = " I have arrived.";
+
+			notif = RPL_PRIVMSG(sender.getNickname(), sender.getUsername()[0], serv_name, "#" + channel_name, " Joined !");
 			msg_to_channel(notif, all_channels[i], sender);
+			
 			return;
 		}
 	}
@@ -201,9 +204,9 @@ void	Server::cmd_join(std::string data_sent, Client& sender)
 	all_channels.push_back(newChannel); // pushing newChannel into the all_channels list
 
 	// Notifying the client
-	std::string	notif = irc_time() + "You created a channel named '" + channel_name + "'\n"
-					+ irc_time() + "You now have ADMIN rights in this channel.\n"
-					+ irc_time() + sender.getNickname() + " joined this channel.\n";
+	std::string	notif = "You created a channel named '" + channel_name + "'\n"
+					+ "You now have ADMIN rights in this channel.\n"
+					+ sender.getNickname() + " joined this channel.\n";
 	sender.setLastInteraction(newChannel);
 	send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 }
@@ -228,14 +231,14 @@ void	Server::cmd_privmsg(std::string data_sent, Client& sender)
 		{
 			Client receiver = all_clients[i];
 			if (message.size() == 0)
-				return;
-			std::string	notif(irc_time() + sender.getNickname() + " : " + message + "\n");
+				throw std::runtime_error(ERR_NOTEXTTOSEND(serv_name, sender.getNickname()));
+			std::string	notif = RPL_PRIVMSG(sender.getNickname(), sender.getUsername()[0], serv_name, receiver_nick, message);
 			send(receiver.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 			return;
 		}
 	}
-	std::string	notif("No one named " + receiver_nick + " was found.\n");
+	std::string	notif = ERR_NOSUCHNICK(serv_name, sender.getNickname(), receiver_nick);
 	send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 }
 
@@ -271,7 +274,7 @@ void	Server::cmd_part(std::string data_sent, Client& sender)
 	if (channel_name.size() == 0 && sender.getAllInteractions().size())
 		channel_name = "#" + sender.getLastInteraction().getName();
 	else if (channel_name[0] != '#' || sender.getAllInteractions().size() == 0)
-		throw std::runtime_error("Channel not found.");
+		throw std::runtime_error(ERR_NOSUCHCHANNEL(serv_name, sender.getNickname(), channel_name));
 
 	channel_name = &channel_name[1];
 	for (std::vector<Channel>::iterator it = all_channels.begin(); it != all_channels.end();) {
@@ -283,7 +286,7 @@ void	Server::cmd_part(std::string data_sent, Client& sender)
 			if (it->getAllUsers().empty()) {
 				it = all_channels.erase(it);
 			} else {
-				notif = sender.getNickname() + " left " + channel_name + ".";
+				notif = RPL_USERLEFT(sender.getNickname(), sender.getUsername()[0], serv_name, channel_name);
 				msg_to_channel(notif, *it, sender);
 				++it;
 			}

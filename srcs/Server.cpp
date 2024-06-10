@@ -6,15 +6,15 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/07 14:24:37 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/10 14:27:41 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 
 /**
+ * BUG join marche tres mal (ALED)
  * Verif via GPT et d'autres server IRC, TOUTES les commmandes que l'on doit refaire :
- *  - /msg #e <msg> = PRIVMSG #e <msg> | <msg> = PRIVMSG #current <msg>
- *  - /user BUG niveau arg
+ *  - finir les messages
  * Rajouter des fonctions pour simplifier la communications entre client et server (pas sur)
 */
 
@@ -100,13 +100,10 @@ void Server::start() {
 			int clientSocket = accept(serv_socket, (struct sockaddr *)&(client.getAddressREF()), &(client.getAddressLenREF()));
 			if (clientSocket == -1)
 				this->crash("Could not accept connexion");
-
+			client.setServName(serv_name);
 			client.setSocket(clientSocket);
 			client.setIP(inet_ntoa(client.getAddress().sin_addr));
 			all_clients.push_back(client);
-			
-			std::string welcome_msg = ":Concorde 001 Welcome to Concorde\r\n";
-			send(client.getSocket(), welcome_msg.c_str(), welcome_msg.size(), MSG_DONTWAIT);
 			std::cout << irc_time() << "New connection" << std::endl;
 		}
 
@@ -133,13 +130,14 @@ void Server::start() {
 					std::vector<std::string> substrings = splitString(client_input, '\n');
 					
 					for (std::vector<std::string>::iterator i = substrings.begin() ; i < substrings.end(); i++) {
+						std::cout << iter_client->getSocket() << "   ";
 						debug(*i);
 						handle_client_input(*i, *iter_client);
 					}
 				}
 				catch (const std::exception &e)
 				{
-					std::string notif = irc_time() + e.what() + "\r\n";
+					std::string notif = e.what();
 					send(iter_client->getSocket(), notif.c_str(), std::strlen(notif.c_str()), 0);
 				}
 			}
@@ -155,7 +153,7 @@ void Server::crash(std::string log) {
 }
 
 void Server::quit(Client& iter_client) {
-	std::cout << irc_time() << iter_client.getNickname() << " left the game." << std::endl;
+	std::cout << iter_client.getNickname() << " left the game." << std::endl;
 	for (std::vector<Client>::iterator i = pass_list.begin(); i != pass_list.end(); ++i) {
 	// Remove client from pass_list
 		if (*i == iter_client) {
@@ -263,7 +261,7 @@ void	Server::msg_to_channel(std::string msg, Channel target, Client& sender) {
 	if (tmp.size() == 0)
 		return;
 	
-	std::string message = irc_time() + "[" + target.getName() + "] " + sender.getNickname() + ": " + msg + "\n";
+	std::string message = "[" + target.getName() + "] " + sender.getNickname() + ": " + msg + "\n";
 	bool found = false;
 	for (size_t i = 0; i != all_channels.size(); i++) {
 		if (all_channels[i].getName() == target.getName() || all_channels[i].getName() == target.getName() + "\n") {
