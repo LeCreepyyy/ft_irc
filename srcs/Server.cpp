@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/11 14:22:51 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/11 14:23:46 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -253,7 +253,7 @@ void Server::handle_client_input(std::string data_sent, Client& sender)
 }
 
 
-
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Bug proba here
 void	Server::msg_to_channel(std::string msg, Channel target, Client& sender) {
 	std::istringstream iss(msg);
 	std::string tmp;
