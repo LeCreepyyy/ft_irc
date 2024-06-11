@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/07 01:42:29 by bgaertne          #+#    #+#             */
-/*   Updated: 2024/06/11 11:57:06 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/11 13:05:37 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -149,21 +149,21 @@ void	Channel::opUser(bool status, Client& target, Client& sender) {
 	if (status == true) {
 		if (!isUserOp(sender)) {
 			this->addClientToOperators(target);
-			notif = "User got promoted to channel operator.\n";
+			notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "+o");
 			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
 		else
-			throw std::runtime_error("User is already operator in this channel.");
+			throw std::runtime_error(ERR_UNKNOWERROR(sender.getServName(), sender.getNickname(), "User is already operator in this channel."));
 	}
 	else
 	{
 		if (isUserOp(sender)) {
 			this->removeClientFromOperators(target);
-			notif = "User is no longer operator in this channel.\n";
+			notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "-o");
 			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
 		else
-			throw std::runtime_error("User is not operator in this channel.");
+			throw std::runtime_error(ERR_UNKNOWERROR(sender.getServName(), sender.getNickname(), "User is not operator in this channel."));
 	}
 }
 bool	Channel::isUserOp(Client& target) {

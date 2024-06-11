@@ -6,13 +6,15 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/11 11:04:50 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/11 14:22:51 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 
 /**
  * BUG join marche tres mal (ALED)
+ * /ping <arg> truc chelou dessus
+ * revoir tout les throw
  * Verif via GPT et d'autres server IRC, TOUTES les commmandes que l'on doit refaire :
  *  - finir les messages
  * Rajouter des fonctions pour simplifier la communications entre client et server (pas sur)
@@ -232,8 +234,6 @@ void Server::handle_client_input(std::string data_sent, Client& sender)
 		cmd_part(data_sent, sender);
 	else if (command == "KICK")
 		cmd_kick(data_sent, sender);
-	else if (command == "MSG")
-		cmd_msg(data_sent, sender);
 	else if (command == "MODE")
 		cmd_mode(data_sent, sender);
 	else if (command == "INVITE")
@@ -261,7 +261,7 @@ void	Server::msg_to_channel(std::string msg, Channel target, Client& sender) {
 	if (tmp.size() == 0)
 		return;
 	
-	std::string message = "[" + target.getName() + "] " + sender.getNickname() + ": " + msg + "\n";
+	std::string message = RPL_PRIVMSG(sender.getNickname(), sender.getUsername()[0], serv_name, target.getName(), msg);
 	bool found = false;
 	for (size_t i = 0; i != all_channels.size(); i++) {
 		if (all_channels[i].getName() == target.getName() || all_channels[i].getName() == target.getName() + "\n") {
@@ -272,7 +272,7 @@ void	Server::msg_to_channel(std::string msg, Channel target, Client& sender) {
 		}
 	}
 	if (found == false)
-		throw std::runtime_error("No channel found. Message was not sent.");
+		throw std::runtime_error(ERR_NOSUCHCHANNEL(serv_name, sender.getNickname(), target.getName()));
 }
 
 
@@ -287,9 +287,10 @@ Channel&		Server::getChannel(std::string channel_name) {
 	if (channel_name[0] != '#')
 		throw std::runtime_error("Improper channel name.");
 	for (std::vector<Channel>::iterator channel_it = all_channels.begin(); channel_it != all_channels.end(); channel_it++) {
-		if (channel_it->getName() == channel_name)
+		if (channel_it->getName() == &channel_name[1])
 			return (*channel_it);
 	}
+	debug("here");
 	throw std::runtime_error("Channel not found.");
 }
 
@@ -300,5 +301,5 @@ Client&			Server::getClient(std::string client_name) {
 		if (client_it->getNickname() == client_name)
 			return (*client_it);
 	}
-	throw std::runtime_error("User not found.")
+	throw std::runtime_error("User not found.");
 }
