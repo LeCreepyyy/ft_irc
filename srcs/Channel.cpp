@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/07 01:42:29 by bgaertne          #+#    #+#             */
-/*   Updated: 2024/06/10 14:25:59 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/11 11:57:06 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,19 +105,19 @@ std::string		Channel::getTopic() {
 void	Channel::setTopicRestriction(bool status, Client& sender) {
 	if (this->topic_restricted == true) {
 		if (status == true)
-			throw std::runtime_error("Channel #" + this->name + ": topic is already limited to operators modification.");
+			throw std::runtime_error(ERR_UNKNOWERROR(sender.getServName(), sender.getNickname(), "Channel topic is already limited to operators modification."));
 		else {
 			this->topic_restricted = false;
-			std::string notif = "Channel #" + this->name + ": topic may now be changed by everyone.\n";
+			std::string notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "+t");
 			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
 	}
 	else {
 		if (status == false)
-			throw std::runtime_error("Channel #" + this->name + ": topic is already publicly modifiable.");
+			throw std::runtime_error(ERR_UNKNOWERROR(sender.getServName(), sender.getNickname(), "Channel topic is already publicly modifiable."));
 		else {
 			this->topic_restricted = true;
-			std::string notif = "Channel #" + this->name + ": topic modification is now limited to operators.\n";
+			std::string notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "-t");
 			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
 	}
@@ -202,22 +202,22 @@ void	Channel::setWhitelist(bool status, Client& sender) {
 	if (this->on_whitelist == true)
 	{
 		if (status == true)
-			throw std::runtime_error("Channel #" + this->name + ": already invite-only.");
+			throw std::runtime_error(ERR_UNKNOWERROR(sender.getServName(), sender.getNickname(), "Channel already invite-only."));
 		else {
 			this->whitelist.clear();
 			this->on_whitelist = false;
-			std::string notif = "Channel #" + this->name + ": public.\n";
+			std::string notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "+i");
 			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
 	}
 	else
 	{
 		if (status == false)
-			throw std::runtime_error("Channel #" + this->name + ": already public.");
+			throw std::runtime_error(ERR_UNKNOWERROR(sender.getServName(), sender.getNickname(), "Channel already public."));
 		else {
 			this->whitelist.push_back(sender);
 			this->on_whitelist = true;
-			std::string notif = "Channel #" + this->name + ": invite-only.\n";
+			std::string notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "-i");
 			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
 	}
@@ -262,29 +262,29 @@ void	Channel::setPassword(bool status, std::string password, Client& sender) {
 	if (this->password_protected == true) {
 		if (status == true) {
 			if (password.empty())
-				throw std::runtime_error("Invalid password.");
+				throw std::runtime_error(ERR_UNKNOWERROR(sender.getServName(), sender.getNickname(), "Invalid password."));
 			this->password = password;
-			std::string notif = "Password updated.\n";
+			std::string notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "+k");
 			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
 		else {
 			this->password_protected = false;
 			this->password = "/";
-			std::string notif = "Channel is no longer protected by a password.\n";
+			std::string notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "-k");
 			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
 	}
 	else {
 		if (status == true) {
 			if (password.empty())
-				throw std::runtime_error("Invalid password.");
+				throw std::runtime_error(ERR_UNKNOWERROR(sender.getServName(), sender.getNickname(), "Invalid password."));
 			this->password_protected = true;
 			this->password = password;
-			std::string notif = "Channel is now protected by password.\n";
+			std::string notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "+k");
 			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 		}
 		else
-			throw std::runtime_error("Channel is not protected by password.");
+			throw std::runtime_error(ERR_UNKNOWERROR(sender.getServName(), sender.getNickname(), "Already not protected by password."));
 	}
 }
 

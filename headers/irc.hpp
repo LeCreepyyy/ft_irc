@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:09:45 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/10 14:27:01 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/11 11:35:30 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,19 +41,24 @@
 #define ERR_UNKNOWNCOMMAND(source, command)             "421 " + source + " " + command + " :Unknown command"
 
 #define ERR_TOOMANYCHANNELS(source, channel)            "405 " + source + " " + channel + " :You have joined too many channels"
-#define ERR_CHANOPRIVSNEEDED(source, channel)           "482 " + source + " " + channel + " :You're not channel operator"
-
-#define ERR_USERNOTINCHANNEL(source, target, channel) 	"441 " + source + " " + target + " " + channel + " :They aren't on that channel"
 
 #define RPL_NAMREPLY(source, channel, users)            "353 " + source + " = " + channel + " :" + users
 #define RPL_ENDOFNAMES(source, channel)                 "366 " + source + " " + channel + " :End of /NAMES list."
 
 #define RPL_PART(source, channel)                       ":" + source + " PART :" + channel
-#define RPL_PING(source, token)                         ":" + source + " PONG :" + token
 #define RPL_NOTICE(source, target, message)             ":" + source + " NOTICE " + target + " :" + message
 #define RPL_QUIT(source, message)                       ":" + source + " QUIT :Quit: " + message
 #define RPL_KICK(source, channel, target, reason)       ":" + source + " KICK " + channel + " " + target + " :" + reason
-#define RPL_MODE(source, channel, modes, args)          ":" + source + " MODE " + channel + " " + modes + " " + args
+
+// GLOBAL
+/**
+ * @param source <nickname> + <command>
+ */
+#define ERR_NEEDMOREPARAMS(server, source)     		":" + server + " 461 " + source + " :Not enough parameters\r\n"
+#define ERR_UNKNOWERROR(server, nickname, error)	":" + server + " 400 " + nickname + " :" + error + "\r\n"
+
+// PING
+#define PONG(server, message)							":" + server + " PONG :" + message + "\r\n"
 
 // NICK :
 #define RPL_NICK(nickname, hostname, newname)			":" + nickname + "!" + hostname + " NICK :" + newname + "\r\n"
@@ -69,7 +74,6 @@
 #define RPL_CREATIONDATE(server, source)				":" + server + " 003 " + source + " :This server was created not too long ago eh\r\n"
 #define RPL_SERVINFOS(server, source)					":" + server + " 004 " + source + " " + server + " 1.0\r\n"
 #define ERR_ALREADYREGISTERED(server, source)           ":" + server + " 462 " + source + " :You may not register\r\n"
-#define ERR_NEEDMOREPARAMS(server, source, command)     ":" + server + " 461 " + source + " " + command + " :Not enough parameters\r\n"
 
 //JOIN
 #define RPL_JOIN(nickname, hostname, channel)           ":" + nickname + "!" + hostname + " JOIN :#" + channel
@@ -78,7 +82,7 @@
 #define ERR_CHANNELISFULL(server, nickname, channel)    ":" + server + " 471 " + nickname + " #" + channel + " :Cannot join channel (+l)\r\n"
 #define ERR_INVITEONLYCHAN(server, nickname, channel)	":" + server + " 473 " + nickname + " #" + channel + " :Cannot join channel (+i)\r\n"
 #define ERR_BANNEDFROMCHAN(server, nickname, channel)	":" + server + " 474 " + nickname + " #" + channel + " :Cannot join channel (+b)\r\n"
-#define ERR_BADCHANMASK(server, nickname, channel)		":" + server + " 474 " + nickname + " #" + channel + " :Bad Channel Mask\r\n"
+#define ERR_BADCHANMASK(server, nickname, channel)		":" + server + " 476 " + nickname + " #" + channel + " :Bad Channel Mask\r\n"
 
 // PART
 #define RPL_USERLEFT(source, username, host, channel)	":" + source + "!" + username + "@" + host + " PART " + channel + "\r\n"
@@ -92,6 +96,15 @@
 #define ERR_NOTEXTTOSEND(server, source)						":" + server + " 412 " + source + " :No text so send\r\n"
 #define ERR_NOTOPLEVEL(server, source, receiver)				":" + server + " 413 " + source + " " + receiver + " :No toplevel domain specified\r\n"
 #define ERR_WILDTOPLEVEL(server, source, receiver)				":" + server + " 414 " + source + " " + receiver + " :Wildcard in toplevel domain\r\n"
+
+// MODE
+#define RPL_SETMODE(nickname, hostname, channel, mode)			":" + nickname + "!" + hostname + " MODE #" + channel + " " + mode + "\r\n"
+#define RPL_GETMODE(server, nickname, channel, mode_list)		":" + server + " 324 " + nickname + " #" + channel + " " + mode_list + "\r\n"
+#define RPL_COUNTMODE(server, nickname, channel, size)			":" + server + " 329 " + nickname + " #" + channel + " " + size + "\r\n"
+#define ERR_UNKNOWNMODE(server, nickname) 						":" + server + " 472 " + nickname + " & :is unknown mode char to me for #canal\r\n"
+#define ERR_USERNOTINCHANNEL(server, nickname, target, channel) ":" + server + " 441 " + nickname + " " + target + " " + channel + " :They aren't on that channel\r\n"
+#define ERR_CHANOPRIVSNEEDED(server, nickname, channel)			":" + server + " 482 " + nickname + " " + channel + " :You're not channel operator\r\n"
+#define ERR_USERSDONTMATCH(server, nickname)					":" + server + " 502 " + nickname + " :Cannot change mode for other users\r\n"
 
 void						parsing_args(char **argv);
 std::string					irc_time();

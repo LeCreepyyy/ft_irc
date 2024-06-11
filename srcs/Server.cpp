@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/10 14:27:41 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/11 11:04:50 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -291,4 +291,14 @@ Channel&		Server::getChannel(std::string channel_name) {
 			return (*channel_it);
 	}
 	throw std::runtime_error("Channel not found.");
+}
+
+Client&			Server::getClient(std::string client_name) {
+	if (client_name.size() == 0)
+		throw std::runtime_error("Missing client name.");
+	for (std::vector<Client>::iterator client_it = all_clients.begin(); client_it != all_clients.end(); client_it++) {
+		if (client_it->getNickname() == client_name)
+			return (*client_it);
+	}
+	throw std::runtime_error("User not found.")
 }

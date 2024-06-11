@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:09:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/10 12:49:16 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/11 11:02:17 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,7 +119,7 @@ void	Client::setUsername(std::string cmd) {
 		args_count++;
 	}
 	if (args_count < 3)
-		throw std::runtime_error(ERR_NEEDMOREPARAMS(serv_name, nickname, "USER"));
+		throw std::runtime_error(ERR_NEEDMOREPARAMS(serv_name, nickname + " USER"));
 	username = temp;
 	std::string notif = RPL_WELCOME(serv_name, nickname) + RPL_YOURHOSTIS(serv_name, nickname) + RPL_CREATIONDATE(serv_name, nickname) + RPL_SERVINFOS(serv_name, nickname);
 	send(client_socket, notif.c_str(), strlen(notif.c_str()), MSG_DONTWAIT);

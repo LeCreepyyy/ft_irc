@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:13:34 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/07 11:43:33 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/11 11:02:59 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,6 +65,7 @@
 			/* Accessors */
 
 			Channel&	getChannel(std::string channel_name);
+			Client&		getClient(std::string client_name);
 	};
 
 #endif
