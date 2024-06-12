@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
+/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/03 10:31:29 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/05/30 13:34:02 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/06/12 13:50:20 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,9 @@
 
 			/* Methods */
 			bool			operator==(const Channel& other) const;
+			bool			operator!=(const Channel& other) const;
 			bool			operator==(size_t size) const;
+			bool			operator!=(size_t size) const;
 			Channel&		operator=(const Channel& other);
 
 			/* Accessors */

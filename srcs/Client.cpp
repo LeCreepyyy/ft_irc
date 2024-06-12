@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:09:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/11 11:02:17 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/12 13:51:18 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,9 @@ bool	Client::operator==(const Client& other) const {
 	return(this->client_socket == other.client_socket);
 }
 
-
+bool	Client::operator!=(const Client& other) const {
+	return(this->client_socket == other.client_socket);
+}
 
 /////////////////
 //  Accessors  //
@@ -128,7 +130,6 @@ void	Client::setUsername(std::string cmd) {
 std::vector<std::string>	Client::getUsername() {
 	return (username);
 }
-
 
 
 

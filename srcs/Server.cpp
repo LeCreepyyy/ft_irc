@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/11 14:23:46 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/12 14:16:00 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,7 +132,6 @@ void Server::start() {
 					std::vector<std::string> substrings = splitString(client_input, '\n');
 					
 					for (std::vector<std::string>::iterator i = substrings.begin() ; i < substrings.end(); i++) {
-						std::cout << iter_client->getSocket() << "   ";
 						debug(*i);
 						handle_client_input(*i, *iter_client);
 					}
@@ -253,22 +252,22 @@ void Server::handle_client_input(std::string data_sent, Client& sender)
 }
 
 
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Bug proba here
 void	Server::msg_to_channel(std::string msg, Channel target, Client& sender) {
 	std::istringstream iss(msg);
 	std::string tmp;
 	iss >> tmp;
-	if (tmp.size() == 0)
+	if (tmp.empty())
 		return;
 	
-	std::string message = RPL_PRIVMSG(sender.getNickname(), sender.getUsername()[0], serv_name, target.getName(), msg);
+	std::string message = sender.getNickname() + ": " + msg + "\r\n";
 	bool found = false;
 	for (size_t i = 0; i != all_channels.size(); i++) {
 		if (all_channels[i].getName() == target.getName() || all_channels[i].getName() == target.getName() + "\n") {
 			found = true;
 			for (size_t j = 0; j != all_channels[i].getAllUsers().size(); j++) {
-				send(all_channels[i].getAllUsers()[j].getSocket(), message.c_str(), strlen(message.c_str()), MSG_DONTWAIT);
+				send(all_channels[i].getAllUsers()[j].getSocket(), message.c_str(), message.size(), MSG_DONTWAIT);
 			}
+			break ;
 		}
 	}
 	if (found == false)
@@ -281,25 +280,24 @@ void	Server::msg_to_channel(std::string msg, Channel target, Client& sender) {
 //  Accessors  //
 /////////////////
 
-Channel&		Server::getChannel(std::string channel_name) {
+Channel&		Server::getChannel(std::string channel_name, Client& sender) {
 	if (channel_name.size() == 0)
-		throw std::runtime_error("Missing channel name.");
+		throw std::runtime_error(ERR_NEEDMOREPARAMS(serv_name, sender.getNickname()));
 	if (channel_name[0] != '#')
-		throw std::runtime_error("Improper channel name.");
+		throw std::runtime_error(ERR_NOSUCHCHANNEL(serv_name, sender.getNickname(), channel_name));
 	for (std::vector<Channel>::iterator channel_it = all_channels.begin(); channel_it != all_channels.end(); channel_it++) {
 		if (channel_it->getName() == &channel_name[1])
 			return (*channel_it);
 	}
-	debug("here");
-	throw std::runtime_error("Channel not found.");
+	throw std::runtime_error(ERR_NOSUCHCHANNEL(serv_name, sender.getNickname(), channel_name));
 }
 
-Client&			Server::getClient(std::string client_name) {
+Client&			Server::getClient(std::string client_name, Client& sender) {
 	if (client_name.size() == 0)
-		throw std::runtime_error("Missing client name.");
+		throw std::runtime_error(ERR_NEEDMOREPARAMS(serv_name, sender.getNickname()));
 	for (std::vector<Client>::iterator client_it = all_clients.begin(); client_it != all_clients.end(); client_it++) {
 		if (client_it->getNickname() == client_name)
 			return (*client_it);
 	}
-	throw std::runtime_error("User not found.");
+	throw std::runtime_error(ERR_NOSUCHNICK(serv_name, sender.getNickname(), client_name));
 }

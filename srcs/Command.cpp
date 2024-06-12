@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/24 10:23:28 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/11 14:08:52 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/12 14:13:53 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -182,8 +182,7 @@ void	Server::cmd_join(std::string data_sent, Client& sender)
 			}
 			
 			// Joining the channel
-			all_channels[i].addClientToChannel(sender); // adding client to channel's user list
-			//sender->addToCurrentChannels(all_channels[i]);			 // adding channel to client's channel list
+			all_channels[i].addClientToChannel(sender);// adding client to channel's user list
 			sender.setLastInteraction(all_channels[i]);
 			// Notifying the client
 			std::string	notif = RPL_JOIN(sender.getNickname(), sender.getUsername()[1], channel_name)
@@ -200,12 +199,11 @@ void	Server::cmd_join(std::string data_sent, Client& sender)
 	// Channel does not exists, so we create it
 	Channel	newChannel(channel_name, sender);
 	newChannel.addClientToChannel(sender); // adding client to channel's user list
-	//sender->addToCurrentChannels(newChannel); // adding channel to client's channel list
 	all_channels.push_back(newChannel); // pushing newChannel into the all_channels list
+	sender.setLastInteraction(newChannel);
 
 	// Notifying the client
 	std::string	notif = RPL_JOIN(sender.getNickname(), sender.getUsername()[1], newChannel.getName());
-	sender.setLastInteraction(newChannel);
 	send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 }
 
@@ -213,50 +211,35 @@ void	Server::cmd_join(std::string data_sent, Client& sender)
 void	Server::cmd_privmsg(std::string data_sent, Client& sender)
 {
 	std::istringstream	iss(data_sent);
-	std::string			target;
-	int i = 0;
+	std::string			target, command, message;
 	
-	iss >> target;
-	i = target.size() + 1;
-	target.clear();
-	iss >> target;
-	i += target.size() + 1;
+	iss >> command >> target;
+	std::getline(iss, message);
+	size_t pos = message.find_first_not_of(" ");
+    if (pos != std::string::npos) {
+        message = message.substr(pos);
+    }
+	if (message.empty()) {
+        throw std::runtime_error(ERR_NOTEXTTOSEND(serv_name, sender.getNickname()));
+    }
+
 	
-	std::string message = &data_sent[i];
 	if (target[0] == '#') {
-		Channel chan = getChannel(target);
-		if (sender.getAllInteractions().size() && sender.getLastInteraction() == chan) {
+		Channel chan = getChannel(target, sender);
+
+		std::vector<Client> ChanAllUsers = chan.getAllUsers();
+		if (std::find(ChanAllUsers.begin(), ChanAllUsers.end(), sender) != ChanAllUsers.end()) {
 			msg_to_channel(message, chan, sender);
-			return;
+			return;	
+		} else {
+			throw std::runtime_error(ERR_CANNOTSENDTOCHAN(serv_name, sender.getNickname(), chan.getName()));
 		}
-		for (std::vector<Channel>::iterator it = all_channels.begin(); it != all_channels.end(); it++) {
-			if (it->getName() == target) {
-				std::vector<Client> channel_users = it->getAllUsers();
-				if (find(channel_users.begin(), channel_users.end(), sender) != channel_users.end()) {
-					msg_to_channel(message, chan, sender);
-					return;
-				}
-				throw std::runtime_error(ERR_CANNOTSENDTOCHAN(serv_name, sender.getNickname(), chan.getName()));
-			}
-		}
-		throw std::runtime_error(ERR_NOSUCHCHANNEL(serv_name, sender.getNickname(), chan.getName()));
 	}
 	else {
-		for (size_t i = 0; i < all_clients.size(); i++)
-		{
-			if (all_clients[i].getNickname() == target)
-			{
-				Client receiver = all_clients[i];
-				if (message.size() == 0)
-					throw std::runtime_error(ERR_NOTEXTTOSEND(serv_name, sender.getNickname()));
-				std::string	notif = RPL_PRIVMSG(sender.getNickname(), sender.getUsername()[0], serv_name, target, message);
-				send(receiver.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
-				send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
-				return;
-			}
-		}
-		std::string	notif = ERR_NOSUCHNICK(serv_name, sender.getNickname(), target);
-		send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
+		Client cli = getClient(target, sender);
+		std::string notif = RPL_PRIVMSG(sender.getNickname(), sender.getUsername()[0], serv_name, target, message);
+        send(cli.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
+        send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
 	}
 }
 
@@ -302,7 +285,7 @@ void	Server::cmd_topic(std::string data_sent, Client& sender)
 
 	Channel target;
 	if (target_name.size() > 1 && target_name[0] == '#')
-		target = getChannel(target_name);
+		target = getChannel(target_name, sender);
 	else
 		target = sender.getLastInteraction();
 	for (std::vector<Channel>::iterator it = all_channels.begin(); it != all_channels.end(); it++) {
@@ -350,11 +333,11 @@ void	Server::cmd_mode(std::string data_sent, Client& sender)
 	bool	target_is_chan = 0;
 	if (name.size() > 1) {
 		if (name[0] == '#') {
-			target_chan = getChannel(name);
+			target_chan = getChannel(name, sender);
 			target_is_chan = 1;
 		}
 		else {
-			target_cli = getClient(name);
+			target_cli = getClient(name, sender);
 			target_is_chan = 0;
 		}
 	}
@@ -434,7 +417,6 @@ void	Server::cmd_ping(std::string data_sent, Client& sender) {
 		throw std::runtime_error(ERR_NEEDMOREPARAMS(serv_name, "PING"));
 	data_sent.erase(0, 4);
 	std::string reply_msg = PONG(serv_name, data_sent);
-	debug("PONG");
 	send(sender.getSocket(), reply_msg.c_str(), strlen(reply_msg.c_str()), MSG_DONTWAIT);
 }
 

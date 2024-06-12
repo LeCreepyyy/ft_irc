@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:05:32 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/10 11:44:31 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/12 13:50:31 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,7 @@
 
 			/* Methods */
 			bool					operator==(const Client& other) const;
+			bool					operator!=(const Client& other) const;
 			
 			/* Accessors */
 			void					setServName(std::string servname);

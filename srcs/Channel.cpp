@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/07 01:42:29 by bgaertne          #+#    #+#             */
-/*   Updated: 2024/06/11 13:05:37 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/12 13:51:00 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,14 @@ bool Channel::operator==(const Channel &other) const {
 }
 
 bool Channel::operator==(const size_t size) const {
+	return (this->all_users.size() == size);
+}
+
+bool Channel::operator!=(const Channel &other) const {
+	return this->name == other.name;
+}
+
+bool Channel::operator!=(const size_t size) const {
 	return (this->all_users.size() == size);
 }
 
