@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:09:45 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/11 11:35:30 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/13 11:28:07 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,21 +35,6 @@
 # include "Client.hpp"
 # include "Server.hpp"
 
-#define ERR_NOTREGISTERED(source)                       "451 " + source + " :You have not registered"
-#define ERR_PASSWDMISMATCH(source)                      "464 " + source + " :Password is incorrect"
-
-#define ERR_UNKNOWNCOMMAND(source, command)             "421 " + source + " " + command + " :Unknown command"
-
-#define ERR_TOOMANYCHANNELS(source, channel)            "405 " + source + " " + channel + " :You have joined too many channels"
-
-#define RPL_NAMREPLY(source, channel, users)            "353 " + source + " = " + channel + " :" + users
-#define RPL_ENDOFNAMES(source, channel)                 "366 " + source + " " + channel + " :End of /NAMES list."
-
-#define RPL_PART(source, channel)                       ":" + source + " PART :" + channel
-#define RPL_NOTICE(source, target, message)             ":" + source + " NOTICE " + target + " :" + message
-#define RPL_QUIT(source, message)                       ":" + source + " QUIT :Quit: " + message
-#define RPL_KICK(source, channel, target, reason)       ":" + source + " KICK " + channel + " " + target + " :" + reason
-
 // GLOBAL
 /**
  * @param source <nickname> + <command>
@@ -76,7 +61,7 @@
 #define ERR_ALREADYREGISTERED(server, source)           ":" + server + " 462 " + source + " :You may not register\r\n"
 
 //JOIN
-#define RPL_JOIN(nickname, hostname, channel)           ":" + nickname + "!" + hostname + " JOIN :#" + channel
+#define RPL_JOIN(nickname, hostname, channel)           ":" + nickname + "!" + hostname + " JOIN :#" + channel + "\r\n"
 #define RPL_TOPIC(server, nickname, channel, topic)		":" + server + " 332 " + nickname + " #" + channel + " :" + topic + "\r\n"
 #define ERR_BADCHANNELKEY(server, nickname, channel)    ":" + server + " 475 " + nickname + " #" + channel + " :Cannot join channel (+k)\r\n"
 #define ERR_CHANNELISFULL(server, nickname, channel)    ":" + server + " 471 " + nickname + " #" + channel + " :Cannot join channel (+l)\r\n"
@@ -109,10 +94,11 @@
 void						parsing_args(char **argv);
 std::string					irc_time();
 std::vector<std::string>	splitString(std::string client_input, char spliter);
+void						d_send(Client& receiver, std::string message);
 
 template<typename T>
 void debug(T log) {
-	std::cout << "[DEBUG] " << log << std::endl;
+	std::cout << "++> " << log << std::endl;
 }
 
 #endif

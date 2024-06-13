@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/24 10:23:28 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/12 14:13:53 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/13 13:52:59 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,7 @@ void	Server::cmd_invite(std::string data_sent, Client& sender) {
 	if (channel->getWhitelistStatus() == true)
 		channel->addClientToWhitelist(*target);
 	std::string message = "You has been invited on : " + channel->getName() + "\n";
-	send(target->getSocket(), message.c_str(), message.size(), MSG_DONTWAIT);
+	d_send(*target, message);
 }
 
 /**
@@ -136,7 +136,7 @@ void	Server::cmd_kick(std::string data_sent, Client& sender) {
 			channel->removeClientFromOperators(*target);
 			cmd_part("PART " + channel_name, *target);
 			std::string message = "You have been kicked of : " + channel->getName() + "\n";
-			send(target->getSocket(), message.c_str(), message.size(), MSG_DONTWAIT);
+			d_send(*target, message);
 			return ;
 		}
 	}
@@ -187,7 +187,7 @@ void	Server::cmd_join(std::string data_sent, Client& sender)
 			// Notifying the client
 			std::string	notif = RPL_JOIN(sender.getNickname(), sender.getUsername()[1], channel_name)
 				+ RPL_TOPIC(serv_name, sender.getNickname(), channel_name, sender.getLastInteraction().getTopic());
-			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
+			d_send(sender, notif);
 
 			notif = RPL_PRIVMSG(sender.getNickname(), sender.getUsername()[0], serv_name, "#" + channel_name, " Joined !");
 			msg_to_channel(notif, all_channels[i], sender);
@@ -204,7 +204,7 @@ void	Server::cmd_join(std::string data_sent, Client& sender)
 
 	// Notifying the client
 	std::string	notif = RPL_JOIN(sender.getNickname(), sender.getUsername()[1], newChannel.getName());
-	send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
+	d_send(sender, notif);
 }
 
 
@@ -229,6 +229,7 @@ void	Server::cmd_privmsg(std::string data_sent, Client& sender)
 
 		std::vector<Client> ChanAllUsers = chan.getAllUsers();
 		if (std::find(ChanAllUsers.begin(), ChanAllUsers.end(), sender) != ChanAllUsers.end()) {
+			std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << message << std::endl;
 			msg_to_channel(message, chan, sender);
 			return;	
 		} else {
@@ -238,8 +239,8 @@ void	Server::cmd_privmsg(std::string data_sent, Client& sender)
 	else {
 		Client cli = getClient(target, sender);
 		std::string notif = RPL_PRIVMSG(sender.getNickname(), sender.getUsername()[0], serv_name, target, message);
-        send(cli.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
-        send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
+		d_send(cli, notif);
+        d_send(sender, notif);
 	}
 }
 
@@ -260,7 +261,7 @@ void	Server::cmd_part(std::string data_sent, Client& sender)
 			it->removeClientFromChannel(sender);
 			sender.removeFromLastInteraction(*it);
 			std::string notif = "You left " + channel_name + ".\n";
-			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
+			d_send(sender, notif);
 			if (it->getAllUsers().empty()) {
 				it = all_channels.erase(it);
 			} else {
@@ -291,7 +292,7 @@ void	Server::cmd_topic(std::string data_sent, Client& sender)
 	for (std::vector<Channel>::iterator it = all_channels.begin(); it != all_channels.end(); it++) {
 		if (*it == target) {
 			if (topic.empty())
-				send(sender.getSocket(), it->getTopic().c_str(), it->getTopic().size(), MSG_DONTWAIT);
+				d_send(sender, it->getTopic());
 			else
 				it->setTopic(topic, sender);
 			return;
@@ -310,7 +311,7 @@ void	Server::cmd_CAP(std::string data_sent, Client& sender)
 
 	if (subcommand == "LS") {
 		std::string response = "CAP * LS :\n";
-		send(sender.getSocket(), response.c_str(), response.size(), MSG_DONTWAIT);
+		d_send(sender, response);
 		std::cout << "CAP LS responded." << std::endl;
 	}
 	else if (subcommand == "END") {
@@ -393,7 +394,7 @@ void	Server::cmd_mode(std::string data_sent, Client& sender)
 							throw std::runtime_error(ERR_UNKNOWERROR(serv_name, sender.getNickname(), "Too much users in channel to set this limit."));
 					}
 					std::string notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], channel_it->getName(), "+l");
-					send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
+					d_send(sender, notif);
 					return (channel_it->setUserLimit(limit));
 				}
 				throw std::runtime_error("Invalid option in MODE command.");
@@ -417,7 +418,7 @@ void	Server::cmd_ping(std::string data_sent, Client& sender) {
 		throw std::runtime_error(ERR_NEEDMOREPARAMS(serv_name, "PING"));
 	data_sent.erase(0, 4);
 	std::string reply_msg = PONG(serv_name, data_sent);
-	send(sender.getSocket(), reply_msg.c_str(), strlen(reply_msg.c_str()), MSG_DONTWAIT);
+	d_send(sender, reply_msg);
 }
 
 
@@ -427,24 +428,24 @@ void	Server::cmd_help(std::string data_sent, Client& sender)
 	std::string arg;
 	iss >> arg;
 
-	send(sender.getSocket(), "\nGlobal command :\n", strlen("Global command :\n"), MSG_DONTROUTE);
+	d_send(sender, "\nGlobal command :\n");
 	
-	send(sender.getSocket(), "-> NICK <nickname>\n", strlen("-> NICK <nickname>\n"), MSG_DONTWAIT);
-	send(sender.getSocket(), "-> USER <username> <hostname> <servername> <realname>\n", strlen("-> USER <username> <hostname> <servername> <realname>\n"), MSG_DONTWAIT);
-	send(sender.getSocket(), "-> PRIVMSG <target> <message>\n", strlen("-> PRIVMSG <target> <message>\n"), MSG_DONTWAIT);
-	send(sender.getSocket(), "-> MSG <#channel> <message>\n", strlen("-> MSG <#channel> <message>\n"), MSG_DONTWAIT);
-	send(sender.getSocket(), "-> JOIN <#channel> (password)\n", strlen("-> JOIN <#channel> (password)\n"), MSG_DONTWAIT);
-	send(sender.getSocket(), "-> HELP\n\n", strlen("-> HELP (commande)\n\n"), MSG_DONTWAIT);
+	d_send(sender, "-> NICK <nickname>\n");
+	d_send(sender, "-> USER <username> <hostname> <servername> <realname>\n");
+	d_send(sender, "-> PRIVMSG <target> <message>\n");
+	d_send(sender, "-> MSG <#channel> <message>\n");
+	d_send(sender, "-> JOIN <#channel> (password)\n");
+	d_send(sender, "-> HELP\n\n");
 	
-	send(sender.getSocket(), "Only in channel :\n", strlen("Only in channel :\n"), MSG_DONTROUTE);
+	d_send(sender, "Only in channel :\n");
 	
-	send(sender.getSocket(), "-> PART (#channel)\n", strlen("-> PART (#channel)\n"), MSG_DONTWAIT);
-	send(sender.getSocket(), "-> INVITE (#channel) <target>\n\n", strlen("-> INVITE (#channel) <target>\n\n"), MSG_DONTWAIT);
+	d_send(sender, "-> PART (#channel)\n");
+	d_send(sender, "-> INVITE (#channel) <target>\n\n");
 	
-	send(sender.getSocket(), "-Only operator :\n", strlen("-Only operator :\n"), MSG_DONTROUTE);
+	d_send(sender, "-Only operator :\n");
 	
-	send(sender.getSocket(), "-> KICK (#channel) <target>\n", strlen("-> KICK (#channel) <target>\n"), MSG_DONTWAIT);
-	send(sender.getSocket(), "-> MODE (#channel) <+ or -OPTION>\n", strlen("-> MODE (#channel) <+ or -OPTION>\n"), MSG_DONTWAIT);
-	send(sender.getSocket(), "-> TOPIC (#channel) <message>\n\n", strlen("-> TOPIC (#channel) <message>\n\n"), MSG_DONTWAIT);
+	d_send(sender, "-> KICK (#channel) <target>\n");
+	d_send(sender, "-> MODE (#channel) <+ or -OPTION>\n");
+	d_send(sender, "-> TOPIC (#channel) <message>\n\n");
 }
 

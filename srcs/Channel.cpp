@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/07 01:42:29 by bgaertne          #+#    #+#             */
-/*   Updated: 2024/06/12 13:51:00 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/13 11:17:40 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,7 +117,7 @@ void	Channel::setTopicRestriction(bool status, Client& sender) {
 		else {
 			this->topic_restricted = false;
 			std::string notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "+t");
-			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
+			d_send(sender, notif);
 		}
 	}
 	else {
@@ -126,7 +126,7 @@ void	Channel::setTopicRestriction(bool status, Client& sender) {
 		else {
 			this->topic_restricted = true;
 			std::string notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "-t");
-			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
+			d_send(sender, notif);
 		}
 	}
 }
@@ -158,7 +158,7 @@ void	Channel::opUser(bool status, Client& target, Client& sender) {
 		if (!isUserOp(sender)) {
 			this->addClientToOperators(target);
 			notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "+o");
-			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
+			d_send(sender, notif);
 		}
 		else
 			throw std::runtime_error(ERR_UNKNOWERROR(sender.getServName(), sender.getNickname(), "User is already operator in this channel."));
@@ -168,7 +168,7 @@ void	Channel::opUser(bool status, Client& target, Client& sender) {
 		if (isUserOp(sender)) {
 			this->removeClientFromOperators(target);
 			notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "-o");
-			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
+			d_send(sender, notif);
 		}
 		else
 			throw std::runtime_error(ERR_UNKNOWERROR(sender.getServName(), sender.getNickname(), "User is not operator in this channel."));
@@ -215,7 +215,7 @@ void	Channel::setWhitelist(bool status, Client& sender) {
 			this->whitelist.clear();
 			this->on_whitelist = false;
 			std::string notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "+i");
-			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
+			d_send(sender, notif);
 		}
 	}
 	else
@@ -226,7 +226,7 @@ void	Channel::setWhitelist(bool status, Client& sender) {
 			this->whitelist.push_back(sender);
 			this->on_whitelist = true;
 			std::string notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "-i");
-			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
+			d_send(sender, notif);
 		}
 	}
 }
@@ -273,13 +273,13 @@ void	Channel::setPassword(bool status, std::string password, Client& sender) {
 				throw std::runtime_error(ERR_UNKNOWERROR(sender.getServName(), sender.getNickname(), "Invalid password."));
 			this->password = password;
 			std::string notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "+k");
-			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
+			d_send(sender, notif);
 		}
 		else {
 			this->password_protected = false;
 			this->password = "/";
 			std::string notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "-k");
-			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
+			d_send(sender, notif);
 		}
 	}
 	else {
@@ -289,7 +289,7 @@ void	Channel::setPassword(bool status, std::string password, Client& sender) {
 			this->password_protected = true;
 			this->password = password;
 			std::string notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "+k");
-			send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
+			d_send(sender, notif);
 		}
 		else
 			throw std::runtime_error(ERR_UNKNOWERROR(sender.getServName(), sender.getNickname(), "Already not protected by password."));

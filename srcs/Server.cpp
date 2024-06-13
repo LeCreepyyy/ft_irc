@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/12 14:16:00 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/13 14:50:04 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,7 +139,7 @@ void Server::start() {
 				catch (const std::exception &e)
 				{
 					std::string notif = e.what();
-					send(iter_client->getSocket(), notif.c_str(), std::strlen(notif.c_str()), 0);
+					d_send(*iter_client, notif);
 				}
 			}
 			++iter_client;
@@ -193,7 +193,7 @@ void Server::check_password(std::string data_sent, Client& sender) {
 	}
 	size_t it = data_sent.find("PASS");
 	if (it == data_sent.npos) {
-		send(sender.getSocket(), "Wrong password !", strlen("Wrong password !"), MSG_DONTWAIT);
+		d_send(sender, "Wrong password !");
 		quit(sender);
 	}
 	it += 5;
@@ -201,13 +201,13 @@ void Server::check_password(std::string data_sent, Client& sender) {
 	std::string password_sent;
 	iss >> password_sent;
 	if (password_sent != this->serv_password) {
-		send(sender.getSocket(), "Wrong password !", strlen("Wrong password !"), MSG_DONTWAIT);
+		d_send(sender, "Wrong password !");
 		quit(sender);
 	}
 	//validation
 	pass_list.push_back(sender);
 	std::string notif("You are now logged in.\n");
-	send(sender.getSocket(), notif.c_str(), notif.size(), MSG_DONTWAIT);
+	d_send(sender, notif);
 	std::cout << sender.getIP() << " logged in." << std::endl;
 }
 
@@ -247,7 +247,7 @@ void Server::handle_client_input(std::string data_sent, Client& sender)
 		if (sender.getAllInteractions().size())
 			msg_to_channel(data_sent, sender.getLastInteraction(), sender);
 		else
-			throw std::runtime_error(command.append(": Unrecognized command. Try using 'HELP'"));
+			throw std::runtime_error(ERR_UNKNOWERROR(serv_name, sender.getNickname(), "Unrecognized command. Try using 'HELP'"));
 	}
 }
 
@@ -259,13 +259,13 @@ void	Server::msg_to_channel(std::string msg, Channel target, Client& sender) {
 	if (tmp.empty())
 		return;
 	
-	std::string message = sender.getNickname() + ": " + msg + "\r\n";
+	std::string message = RPL_PRIVMSG(sender.getNickname(), sender.getUsername()[0], serv_name, target.getName(), msg);
 	bool found = false;
 	for (size_t i = 0; i != all_channels.size(); i++) {
 		if (all_channels[i].getName() == target.getName() || all_channels[i].getName() == target.getName() + "\n") {
 			found = true;
 			for (size_t j = 0; j != all_channels[i].getAllUsers().size(); j++) {
-				send(all_channels[i].getAllUsers()[j].getSocket(), message.c_str(), message.size(), MSG_DONTWAIT);
+				d_send(all_channels[i].getAllUsers()[j], message);
 			}
 			break ;
 		}
@@ -301,3 +301,5 @@ Client&			Server::getClient(std::string client_name, Client& sender) {
 	}
 	throw std::runtime_error(ERR_NOSUCHNICK(serv_name, sender.getNickname(), client_name));
 }
+
+

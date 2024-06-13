@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:09:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/12 13:51:18 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/13 11:15:58 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,7 +93,7 @@ void	Client::setNickname(std::string cmd, std::vector<Client> &all_clients) {
 	if (last == "/")
 		return;
 	std::string notif = RPL_NICK(last, username[1], nickname);
-    send(client_socket, notif.c_str(), notif.size(), MSG_DONTWAIT);
+    d_send(*this, notif);
 }
 
 std::string	Client::getNickname() {
@@ -124,7 +124,7 @@ void	Client::setUsername(std::string cmd) {
 		throw std::runtime_error(ERR_NEEDMOREPARAMS(serv_name, nickname + " USER"));
 	username = temp;
 	std::string notif = RPL_WELCOME(serv_name, nickname) + RPL_YOURHOSTIS(serv_name, nickname) + RPL_CREATIONDATE(serv_name, nickname) + RPL_SERVINFOS(serv_name, nickname);
-	send(client_socket, notif.c_str(), strlen(notif.c_str()), MSG_DONTWAIT);
+	d_send(*this, notif);
 }
 
 std::vector<std::string>	Client::getUsername() {
