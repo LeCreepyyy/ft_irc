@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:09:45 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/13 11:28:07 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/14 15:17:31 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,9 @@
 #define ERR_ALREADYREGISTERED(server, source)           ":" + server + " 462 " + source + " :You may not register\r\n"
 
 //JOIN
-#define RPL_JOIN(nickname, hostname, channel)           ":" + nickname + "!" + hostname + " JOIN :#" + channel + "\r\n"
+#define RPL_JOIN(nickname, username, hostname, channel) ":" + nickname + "!" + username + "@" + hostname + " JOIN :#" + channel + "\r\n"
+#define RPL_NAMREPLY(server, source, channel, names)	":" + server + " 353 " + source + " = #" + channel + " :" + names + "\r\n";
+#define RPL_ENDOFNAMES(server, source, channel)			":" + server + " 366 " + source + " #" + channel + " :End of /NAMES list.\r\n"
 #define RPL_TOPIC(server, nickname, channel, topic)		":" + server + " 332 " + nickname + " #" + channel + " :" + topic + "\r\n"
 #define ERR_BADCHANNELKEY(server, nickname, channel)    ":" + server + " 475 " + nickname + " #" + channel + " :Cannot join channel (+k)\r\n"
 #define ERR_CHANNELISFULL(server, nickname, channel)    ":" + server + " 471 " + nickname + " #" + channel + " :Cannot join channel (+l)\r\n"
@@ -70,9 +72,9 @@
 #define ERR_BADCHANMASK(server, nickname, channel)		":" + server + " 476 " + nickname + " #" + channel + " :Bad Channel Mask\r\n"
 
 // PART
-#define RPL_USERLEFT(source, username, host, channel)	":" + source + "!" + username + "@" + host + " PART " + channel + "\r\n"
-#define ERR_NOSUCHCHANNEL(server, source, channel)		":" + server + " 403 " + source + " " + channel + ":No such channel\r\n"
-#define ERR_NOTONCHANNEL(server, source, channel)		":" + server + " 442 " + source + " " + channel + ":You're not on that channel\r\n"
+#define RPL_USERLEFT(source, username, host, channel)	":" + source + "!" + username + "@" + host + " PART #" + channel + "\r\n"
+#define ERR_NOSUCHCHANNEL(server, source, channel)		":" + server + " 403 " + source + " #" + channel + ":No such channel\r\n"
+#define ERR_NOTONCHANNEL(server, source, channel)		":" + server + " 442 " + source + " #" + channel + ":You're not on that channel\r\n"
 
 // PRIVMSG
 #define RPL_PRIVMSG(source, username, host, receiver, message)	":" + source + "!" + username + "@" + host + " PRIVMSG " + receiver + " :" + message + "\r\n"
@@ -85,11 +87,16 @@
 // MODE
 #define RPL_SETMODE(nickname, hostname, channel, mode)			":" + nickname + "!" + hostname + " MODE #" + channel + " " + mode + "\r\n"
 #define RPL_GETMODE(server, nickname, channel, mode_list)		":" + server + " 324 " + nickname + " #" + channel + " " + mode_list + "\r\n"
+#define RPL_BANLIST(server, nickname, channel)					":" + server + " 368 " + nickname + " #" + channel + " :End of channel ban list.\r\n"
 #define RPL_COUNTMODE(server, nickname, channel, size)			":" + server + " 329 " + nickname + " #" + channel + " " + size + "\r\n"
 #define ERR_UNKNOWNMODE(server, nickname) 						":" + server + " 472 " + nickname + " & :is unknown mode char to me for #canal\r\n"
 #define ERR_USERNOTINCHANNEL(server, nickname, target, channel) ":" + server + " 441 " + nickname + " " + target + " " + channel + " :They aren't on that channel\r\n"
-#define ERR_CHANOPRIVSNEEDED(server, nickname, channel)			":" + server + " 482 " + nickname + " " + channel + " :You're not channel operator\r\n"
+#define ERR_CHANOPRIVSNEEDED(server, nickname, channel)			":" + server + " 482 " + nickname + " #" + channel + " :You're not channel operator\r\n"
 #define ERR_USERSDONTMATCH(server, nickname)					":" + server + " 502 " + nickname + " :Cannot change mode for other users\r\n"
+
+// WHO
+#define RPL_WHOREPLY(server, nickname, channel, username, hostname, isOp, realname) ":" + server + " 352 " + nickname + " " + channel + " " + username + " " + hostname + " " + server + " " + nickname + " H" + isOp + " :0 " +  realname + "\r\n"
+#define RPL_ENDOFWHO(server, nickname, channel)										":" + server + " 315 " + nickname + " " + channel + " :End of /WHO list.\r\n"
 
 void						parsing_args(char **argv);
 std::string					irc_time();
@@ -98,7 +105,7 @@ void						d_send(Client& receiver, std::string message);
 
 template<typename T>
 void debug(T log) {
-	std::cout << "++> " << log << std::endl;
+	std::cout << "<< " << log << std::endl;
 }
 
 #endif

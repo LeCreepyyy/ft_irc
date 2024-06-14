@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/03 10:31:29 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/12 13:50:20 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/14 14:54:24 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,8 @@
 			Channel&		operator=(const Channel& other);
 
 			/* Accessors */
+			std::string		getModes();
+			
 			void			setName(std::string name);
 			std::string		getName();
 
@@ -79,6 +81,9 @@
 			
 			int					getUserLimit();
 			void				setUserLimit(int limit);
+
+			std::string			getListOfNames();
+			bool				isOP(Client& client);
 	};
 
 #endif

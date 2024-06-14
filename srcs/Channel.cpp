@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/07 01:42:29 by bgaertne          #+#    #+#             */
-/*   Updated: 2024/06/13 11:17:40 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/14 14:58:12 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,6 +81,20 @@ Channel& Channel::operator=(const Channel& other) {
 /////////////////
 //  Accessors  //
 /////////////////
+
+// MODE
+std::string	Channel::getModes() {
+	std::string mode_list = "+";
+	if (on_whitelist)
+		mode_list += "i";
+	if (topic_restricted)
+		mode_list += "t";
+	if (user_limit > 0)
+		mode_list += "l";
+	if (password_protected)
+		mode_list += "k";
+	return (mode_list);
+}
 
 // NAME
 void	Channel::setName(std::string name) {
@@ -314,4 +328,35 @@ int		Channel::getUserLimit() {
 
 void	Channel::setUserLimit(int limit) {
 	this->user_limit = limit;
+}
+
+// LIST OF NAMES
+std::string			Channel::getListOfNames() {
+	std::vector<Client> users = all_users;
+	std::vector<Client> ops = all_operators;
+	std::string names;
+	
+	for (std::vector<Client>::iterator ops_it = ops.begin(); ops_it != ops.end(); ops_it++) {
+		for (std::vector<Client>::iterator users_it = users.begin(); users_it != users.end(); ) {
+			if (*users_it == *ops_it) {
+				users_it = users.erase(users_it);
+				break;
+			}
+			else
+				++users_it;
+		}
+	}
+
+	for (std::vector<Client>::iterator ops_it = ops.begin(); ops_it != ops.end(); ops_it++)
+		names += "@" + ops_it->getNickname() + " ";
+	for (std::vector<Client>::iterator users_it = users.begin(); users_it != users.end(); users_it++)
+		names += users_it->getNickname() + " ";
+	return (names);
+}
+
+bool	Channel::isOP(Client& client) {
+	for (std::vector<Client>::iterator it = all_operators.begin(); it != all_operators.end(); it++)
+		if (client == *it)
+			return true;
+	return false;
 }

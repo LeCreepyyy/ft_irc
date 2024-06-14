@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:11:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/13 11:12:47 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/14 13:38:14 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,6 +76,6 @@ std::vector<std::string>	splitString(std::string client_input, char spliter)
 }
 
 void	d_send(Client& receiver, std::string message) {
-	std::cout << receiver.getSocket() << ":" << message << std::endl;
+	std::cout << ">> " << message << std::endl;
 	send(receiver.getSocket(), message.c_str(), message.size(), MSG_DONTWAIT);
 }

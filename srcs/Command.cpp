@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/24 10:23:28 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/13 13:52:59 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/14 15:21:20 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -161,7 +161,7 @@ void	Server::cmd_join(std::string data_sent, Client& sender)
 			// Check if user is already in channel
 			std::vector<Client> users = all_channels[i].getAllUsers();
 			if (std::find(users.begin(), users.end(), sender) != users.end())
-				return;
+				throw std::runtime_error(ERR_UNKNOWERROR(serv_name, sender.getNickname(), "You already joined this channel"));
 		
 			// If channel is limited, check if place is left
 			if (all_channels[i].getUserLimit() > -1)
@@ -185,11 +185,15 @@ void	Server::cmd_join(std::string data_sent, Client& sender)
 			all_channels[i].addClientToChannel(sender);// adding client to channel's user list
 			sender.setLastInteraction(all_channels[i]);
 			// Notifying the client
-			std::string	notif = RPL_JOIN(sender.getNickname(), sender.getUsername()[1], channel_name)
-				+ RPL_TOPIC(serv_name, sender.getNickname(), channel_name, sender.getLastInteraction().getTopic());
+			
+			std::string	notif = RPL_JOIN(sender.getNickname(), sender.getUsername()[0], sender.getUsername()[1], channel_name);
+			std::string	notif2 = RPL_NAMREPLY(serv_name, sender.getNickname(), channel_name, all_channels[i].getListOfNames())
+			std::string	notif3 = RPL_ENDOFNAMES(serv_name, sender.getNickname(), channel_name);
 			d_send(sender, notif);
+			d_send(sender, notif2);
+			d_send(sender, notif3);
 
-			notif = RPL_PRIVMSG(sender.getNickname(), sender.getUsername()[0], serv_name, "#" + channel_name, " Joined !");
+			notif = " Joined !";
 			msg_to_channel(notif, all_channels[i], sender);
 			
 			return;
@@ -203,8 +207,15 @@ void	Server::cmd_join(std::string data_sent, Client& sender)
 	sender.setLastInteraction(newChannel);
 
 	// Notifying the client
-	std::string	notif = RPL_JOIN(sender.getNickname(), sender.getUsername()[1], newChannel.getName());
+	std::string	notif = RPL_JOIN(sender.getNickname(), sender.getUsername()[0], sender.getUsername()[1], channel_name);
+	std::string	notif2 = RPL_NAMREPLY(serv_name, sender.getNickname(), channel_name, newChannel.getListOfNames())
+	std::string	notif3 = RPL_ENDOFNAMES(serv_name, sender.getNickname(), channel_name);
 	d_send(sender, notif);
+	d_send(sender, notif2);
+	d_send(sender, notif3);
+
+	notif = " Joined !";
+	msg_to_channel(notif, newChannel, sender);
 }
 
 
@@ -222,14 +233,13 @@ void	Server::cmd_privmsg(std::string data_sent, Client& sender)
 	if (message.empty()) {
         throw std::runtime_error(ERR_NOTEXTTOSEND(serv_name, sender.getNickname()));
     }
+	message = &message[1];
 
-	
 	if (target[0] == '#') {
 		Channel chan = getChannel(target, sender);
 
 		std::vector<Client> ChanAllUsers = chan.getAllUsers();
 		if (std::find(ChanAllUsers.begin(), ChanAllUsers.end(), sender) != ChanAllUsers.end()) {
-			std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << message << std::endl;
 			msg_to_channel(message, chan, sender);
 			return;	
 		} else {
@@ -240,7 +250,6 @@ void	Server::cmd_privmsg(std::string data_sent, Client& sender)
 		Client cli = getClient(target, sender);
 		std::string notif = RPL_PRIVMSG(sender.getNickname(), sender.getUsername()[0], serv_name, target, message);
 		d_send(cli, notif);
-        d_send(sender, notif);
 	}
 }
 
@@ -260,7 +269,7 @@ void	Server::cmd_part(std::string data_sent, Client& sender)
 		if (it->getName() == channel_name) {
 			it->removeClientFromChannel(sender);
 			sender.removeFromLastInteraction(*it);
-			std::string notif = "You left " + channel_name + ".\n";
+			std::string notif = RPL_USERLEFT(sender.getNickname(), sender.getUsername()[0], serv_name, channel_name);
 			d_send(sender, notif);
 			if (it->getAllUsers().empty()) {
 				it = all_channels.erase(it);
@@ -348,9 +357,15 @@ void	Server::cmd_mode(std::string data_sent, Client& sender)
 		target_chan = sender.getLastInteraction();
 	}
 
+	if (option.empty()) {
+		throw std::runtime_error(RPL_GETMODE(serv_name, sender.getNickname(), target_chan.getName(), target_chan.getModes()));
+	}
+
 	if (target_is_chan == 1) {
 		for (std::vector<Channel>::iterator channel_it = all_channels.begin(); channel_it != all_channels.end(); channel_it++) {
 			if (*channel_it == target_chan) {
+				if (option == "b")
+					throw std::runtime_error(RPL_BANLIST(serv_name, sender.getNickname(), channel_it->getName()));
 				bool is_op = false;
 				for (std::vector<Client>::iterator operator_it = channel_it->getAllOperators().begin(); operator_it != channel_it->getAllOperators().end(); operator_it++)
 					if (*operator_it == sender)
@@ -421,6 +436,22 @@ void	Server::cmd_ping(std::string data_sent, Client& sender) {
 	d_send(sender, reply_msg);
 }
 
+void	Server::cmd_who(std::string data_sent, Client& sender) {
+	std::istringstream iss(&data_sent[3]);
+	std::string channel;
+	iss >> channel;
+
+	debug(channel);
+	std::string notif;
+	Channel chan = getChannel(channel, sender);
+	std::string op_string = "";
+	if (chan.isOP(sender))
+		op_string += "@";
+	notif = RPL_WHOREPLY(serv_name, sender.getNickname(), channel, sender.getUsername()[0], sender.getUsername()[1], op_string, sender.getUsername()[3]);
+	d_send(sender, notif);
+	notif = RPL_ENDOFWHO(serv_name, sender.getNickname(), channel);
+	d_send(sender, notif);
+}
 
 void	Server::cmd_help(std::string data_sent, Client& sender)
 {

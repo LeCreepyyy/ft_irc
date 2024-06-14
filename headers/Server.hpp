@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:13:34 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/12 14:06:13 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/14 15:11:01 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,6 @@
 			void	cmd_join(std::string data_sent, Client& sender);
 			void	cmd_privmsg(std::string data_sent, Client& sender);
 			void	cmd_part(std::string data_sent, Client& sender);
-			void	cmd_msg(std::string data_sent, Client& sender);
 			void	cmd_kick(std::string data_sent, Client& sender);
 			void	cmd_mode(std::string data_sent, Client& sender);
 			void	cmd_invite(std::string data_sent, Client& sender);
@@ -62,6 +61,7 @@
 			void	cmd_CAP(std::string data_sent, Client& sender);
 			void	cmd_help(std::string data_sent, Client& sender);
 			void	cmd_ping(std::string data_sent, Client& sender);
+			void	cmd_who(std::string data_sent, Client& sender);
 
 			/* Accessors */
 

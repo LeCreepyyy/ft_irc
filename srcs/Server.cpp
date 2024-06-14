@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/13 14:50:04 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/14 15:15:37 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -243,6 +243,8 @@ void Server::handle_client_input(std::string data_sent, Client& sender)
 		cmd_help(data_sent, sender);
 	else if (command == "PING")
 		cmd_ping(data_sent, sender);
+	else if (command == "WHO")
+		cmd_who(data_sent, sender);
 	else if (command != "PASS" && command != "CAP") {
 		if (sender.getAllInteractions().size())
 			msg_to_channel(data_sent, sender.getLastInteraction(), sender);
@@ -259,13 +261,14 @@ void	Server::msg_to_channel(std::string msg, Channel target, Client& sender) {
 	if (tmp.empty())
 		return;
 	
-	std::string message = RPL_PRIVMSG(sender.getNickname(), sender.getUsername()[0], serv_name, target.getName(), msg);
+	std::string message = RPL_PRIVMSG(sender.getNickname(), sender.getUsername()[0], serv_name, "#" + target.getName(), msg);
 	bool found = false;
 	for (size_t i = 0; i != all_channels.size(); i++) {
 		if (all_channels[i].getName() == target.getName() || all_channels[i].getName() == target.getName() + "\n") {
 			found = true;
 			for (size_t j = 0; j != all_channels[i].getAllUsers().size(); j++) {
-				d_send(all_channels[i].getAllUsers()[j], message);
+				if (all_channels[i].getAllUsers()[j].getSocket() != sender.getSocket())
+					d_send(all_channels[i].getAllUsers()[j], message);
 			}
 			break ;
 		}
