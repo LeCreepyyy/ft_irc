@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/24 10:23:28 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/14 15:21:20 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/14 15:25:27 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -274,7 +274,7 @@ void	Server::cmd_part(std::string data_sent, Client& sender)
 			if (it->getAllUsers().empty()) {
 				it = all_channels.erase(it);
 			} else {
-				notif = RPL_USERLEFT(sender.getNickname(), sender.getUsername()[0], serv_name, channel_name);
+				notif = " left this channel.";
 				msg_to_channel(notif, *it, sender);
 				++it;
 			}
