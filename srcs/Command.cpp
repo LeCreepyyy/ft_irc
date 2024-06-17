@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/24 10:23:28 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/14 15:25:27 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/17 14:00:063 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -478,5 +478,17 @@ void	Server::cmd_help(std::string data_sent, Client& sender)
 	d_send(sender, "-> KICK (#channel) <target>\n");
 	d_send(sender, "-> MODE (#channel) <+ or -OPTION>\n");
 	d_send(sender, "-> TOPIC (#channel) <message>\n\n");
+}
+
+void	Server::cmd_quit(std::string data_sent, Client& sender)
+{
+	std::vector<Channel> allInteractions = sender.getAllInteractions();
+	for (std::vector<Channel>::iterator chan_it = allInteractions.begin(); chan_it != allInteractions.end(); chan_it++)
+	{
+		cmd_to_channel(RPL_QUIT(sender.getNickname(), sender.getUsername()[0], sender.getUsername()[1], &data_sent[5]), *chan_it, sender);
+		std::string part_str = "PART " + chan_it->getName();
+		cmd_part(part_str, sender);
+	}
+	quit(sender);
 }
 

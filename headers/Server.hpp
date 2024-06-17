@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:13:34 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/14 15:11:01 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/17 14:01:10 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@
 			void	check_password(std::string data_sent, Client& sender);
 			void	handle_client_input(std::string data_sent, Client& sender);
 			void	msg_to_channel(std::string msg, Channel target, Client& sender);
+			void	cmd_to_channel(std::string cmd, Channel target, Client& sender);
 
 			void	cmd_join(std::string data_sent, Client& sender);
 			void	cmd_privmsg(std::string data_sent, Client& sender);
@@ -62,6 +63,7 @@
 			void	cmd_help(std::string data_sent, Client& sender);
 			void	cmd_ping(std::string data_sent, Client& sender);
 			void	cmd_who(std::string data_sent, Client& sender);
+			void	cmd_quit(std::string data_sent, Client& sender);
 
 			/* Accessors */
 

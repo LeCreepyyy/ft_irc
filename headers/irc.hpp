@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:09:45 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/14 15:17:31 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/17 13:24:13 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,6 +76,9 @@
 #define ERR_NOSUCHCHANNEL(server, source, channel)		":" + server + " 403 " + source + " #" + channel + ":No such channel\r\n"
 #define ERR_NOTONCHANNEL(server, source, channel)		":" + server + " 442 " + source + " #" + channel + ":You're not on that channel\r\n"
 
+// QUIT
+#define RPL_QUIT(nickname, username, host, msg)				":" + nickname + "!" + host + "@" + host + " QUIT :" + msg + "\r\n"
+
 // PRIVMSG
 #define RPL_PRIVMSG(source, username, host, receiver, message)	":" + source + "!" + username + "@" + host + " PRIVMSG " + receiver + " :" + message + "\r\n"
 #define ERR_NOSUCHNICK(server, source, receiver)				":" + server + " 401 " + source + " " + receiver + " :No such nick/channel\r\n"
@@ -102,6 +105,7 @@ void						parsing_args(char **argv);
 std::string					irc_time();
 std::vector<std::string>	splitString(std::string client_input, char spliter);
 void						d_send(Client& receiver, std::string message);
+std::string					clean_message(const std::string& message);
 
 template<typename T>
 void debug(T log) {

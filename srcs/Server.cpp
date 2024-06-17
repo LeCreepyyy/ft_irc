@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/14 15:15:37 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/17 14:05:28 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,7 +121,6 @@ void Server::start() {
 				// If buffer is empty, it's a disconnection
 				if (bytesReceived <= 0) {
 					quit(*iter_client);
-					iter_client = all_clients.erase(iter_client);
 					continue;
 				}
 
@@ -159,6 +158,7 @@ void Server::quit(Client& iter_client) {
 	// Remove client from pass_list
 		if (*i == iter_client) {
 			pass_list.erase(i);
+			
 			break;
 		}
 	}
@@ -176,6 +176,7 @@ void Server::quit(Client& iter_client) {
 
 	// Close the client socket and remove the client from all_clients
 	close(iter_client.getSocket());
+	all_clients.erase(find(all_clients.begin(), all_clients.end(), iter_client));
 }
 
 void Server::check_password(std::string data_sent, Client& sender) {
@@ -221,12 +222,19 @@ void Server::handle_client_input(std::string data_sent, Client& sender)
 	if (command == "CAP")
 		return;
 	check_password(data_sent, sender);
-	if (command == "NICK")
+	if (command == "NICK") {
+		std::string lastname = sender.getNickname();
 		sender.setNickname(data_sent, all_clients);
+		std::vector<Channel> lastiter = sender.getAllInteractions();
+		for (std::vector<Channel>::iterator it = lastiter.begin(); it != lastiter.end(); it++)
+			cmd_to_channel(lastname + " is now known as: " + sender.getNickname(), *it, sender);
+	}
 	else if (command == "USER")
 		sender.setUsername(data_sent);
 	else if (command == "JOIN")
 		cmd_join(data_sent, sender);
+	else if (command == "QUIT")
+		cmd_quit(data_sent, sender);
 	else if (command == "PRIVMSG")
 		cmd_privmsg(data_sent, sender);
 	else if (command == "PART")
@@ -247,7 +255,7 @@ void Server::handle_client_input(std::string data_sent, Client& sender)
 		cmd_who(data_sent, sender);
 	else if (command != "PASS" && command != "CAP") {
 		if (sender.getAllInteractions().size())
-			msg_to_channel(data_sent, sender.getLastInteraction(), sender);
+			cmd_to_channel(data_sent, sender.getLastInteraction(), sender);
 		else
 			throw std::runtime_error(ERR_UNKNOWERROR(serv_name, sender.getNickname(), "Unrecognized command. Try using 'HELP'"));
 	}
@@ -268,7 +276,7 @@ void	Server::msg_to_channel(std::string msg, Channel target, Client& sender) {
 			found = true;
 			for (size_t j = 0; j != all_channels[i].getAllUsers().size(); j++) {
 				if (all_channels[i].getAllUsers()[j].getSocket() != sender.getSocket())
-					d_send(all_channels[i].getAllUsers()[j], message);
+					d_send(all_channels[i].getAllUsers()[j], clean_message(message));
 			}
 			break ;
 		}
@@ -276,6 +284,30 @@ void	Server::msg_to_channel(std::string msg, Channel target, Client& sender) {
 	if (found == false)
 		throw std::runtime_error(ERR_NOSUCHCHANNEL(serv_name, sender.getNickname(), target.getName()));
 }
+
+
+void	Server::cmd_to_channel(std::string cmd_reply, Channel target, Client& sender) {
+	std::istringstream iss(cmd_reply);
+	std::string tmp;
+	iss >> tmp;
+	if (tmp.empty())
+		return;
+	
+	bool found = false;
+	for (size_t i = 0; i != all_channels.size(); i++) {
+		if (all_channels[i].getName() == target.getName() || all_channels[i].getName() == target.getName() + "\n") {
+			found = true;
+			for (size_t j = 0; j != all_channels[i].getAllUsers().size(); j++) {
+				if (all_channels[i].getAllUsers()[j].getSocket() != sender.getSocket())
+					d_send(all_channels[i].getAllUsers()[j], clean_message(cmd_reply));
+			}
+			break ;
+		}
+	}
+	if (found == false)
+		throw std::runtime_error(ERR_NOSUCHCHANNEL(serv_name, sender.getNickname(), target.getName()));
+}
+
 
 
 
