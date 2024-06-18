@@ -93,7 +93,7 @@ void	Server::cmd_kick(std::string data_sent, Client& sender) {
 
 	if (channel_name[0] != '#') {
 		if (!sender.getAllInteractions().size())
-			throw std::runtime_error("Incorrect channel name.");
+			throw std::runtime_error(ERR_NOSUCHNICK(serv_name, sender.getNickname(), channel_name));
 		target_nickname = channel_name;
 		channel_name = "#" + sender.getLastInteraction().getName();
 	}
@@ -105,7 +105,7 @@ void	Server::cmd_kick(std::string data_sent, Client& sender) {
 		}
 	}
 	if (channel == all_channels.end())
-		throw std::runtime_error("Channel not found.");
+		throw std::runtime_error(ERR_NOSUCHCHANNEL(serv_name, sender.getNickname(), &channel_name[1]));
 
 	std::vector<Client> op_list = channel->getAllOperators();
 	std::vector<Client>::iterator op_it;
@@ -114,12 +114,14 @@ void	Server::cmd_kick(std::string data_sent, Client& sender) {
 			break ;
 	}
 	if (op_it == op_list.end())
-		throw std::runtime_error("You are not operator on this channel.");
+		throw std::runtime_error(ERR_CHANOPRIVSNEEDED(serv_name, sender.getNickname(), &channel_name[1]));
 
+	std::string comment;
 	if (target_nickname == "#") {
 		std::istringstream iss(&data_sent[6 + channel_name.size()]);
 		std::string new_target;
 		iss >> new_target;
+		comment = &data_sent[6 + channel_name.size() + new_target.size()];
 		target_nickname = new_target;
 	}
 	for (target = all_clients.begin(); target !=  all_clients.end(); target++) {
@@ -127,7 +129,7 @@ void	Server::cmd_kick(std::string data_sent, Client& sender) {
 			break;
 	}
 	if (target == all_clients.end())
-		throw std::runtime_error("Target does not exist");
+		throw std::runtime_error(ERR_USERNOTINCHANNEL(serv_name, sender.getNickname(), target_nickname, channel_name));
 	
 	std::vector<Client> channelAllUser = channel->getAllUsers();
 	for (std::vector<Client>::iterator it = channelAllUser.begin(); it != channelAllUser.end(); it++) {
@@ -135,12 +137,13 @@ void	Server::cmd_kick(std::string data_sent, Client& sender) {
 			channel->removeClientFromWhitelist(*target);
 			channel->removeClientFromOperators(*target);
 			cmd_part("PART " + channel_name, *target);
-			std::string message = "You have been kicked of : " + channel->getName() + "\n";
+			std::string message = RPL_KICK(sender.getNickname(), sender.getUsername()[0], sender.getUsername()[1], channel_name, target_nickname, comment);
+			cmd_to_channel(message, *channel, sender);
 			d_send(*target, message);
 			return ;
 		}
 	}
-	throw std::runtime_error("Target is not connected to " + channel_name);
+	throw std::runtime_error(ERR_USERNOTINCHANNEL(serv_name, sender.getNickname(), target_nickname, channel_name));
 
 }
 
@@ -261,7 +264,7 @@ void	Server::cmd_part(std::string data_sent, Client& sender)
 
 	if (channel_name.size() == 0 && sender.getAllInteractions().size())
 		channel_name = "#" + sender.getLastInteraction().getName();
-	else if (channel_name[0] != '#' || sender.getAllInteractions().size() == 0)
+	else if (channel_name.size() == 0 && sender.getAllInteractions().size() == 0)
 		throw std::runtime_error(ERR_NOSUCHCHANNEL(serv_name, sender.getNickname(), channel_name));
 
 	channel_name = &channel_name[1];
@@ -300,8 +303,10 @@ void	Server::cmd_topic(std::string data_sent, Client& sender)
 		target = sender.getLastInteraction();
 	for (std::vector<Channel>::iterator it = all_channels.begin(); it != all_channels.end(); it++) {
 		if (*it == target) {
-			if (topic.empty())
-				d_send(sender, it->getTopic());
+			if (topic.empty()) {
+				std::string msg = RPL_TOPIC(sender.getNickname(), sender.getUsername()[0], sender.getUsername()[1], target.getName(), target.getTopic());
+				d_send(sender, msg);
+			}
 			else
 				it->setTopic(topic, sender);
 			return;
@@ -430,7 +435,7 @@ void	Server::cmd_mode(std::string data_sent, Client& sender)
 
 void	Server::cmd_ping(std::string data_sent, Client& sender) {
 	if (!data_sent[5])
-		throw std::runtime_error(ERR_NEEDMOREPARAMS(serv_name, "PING"));
+		throw std::runtime_error(ERR_NEEDMOREPARAMS(serv_name, sender.getNickname() + " PING"));
 	data_sent.erase(0, 4);
 	std::string reply_msg = PONG(serv_name, data_sent);
 	d_send(sender, reply_msg);
@@ -453,42 +458,28 @@ void	Server::cmd_who(std::string data_sent, Client& sender) {
 	d_send(sender, notif);
 }
 
-void	Server::cmd_help(std::string data_sent, Client& sender)
+void	Server::cmd_help(Client& sender)
 {
-	std::istringstream iss(&data_sent[5]);
-	std::string arg;
-	iss >> arg;
-
-	d_send(sender, "\nGlobal command :\n");
+	std::string nickname = sender.getNickname();
+	std::string username = sender.getUsername()[0];
+	std::string hostname = sender.getUsername()[1];
+	d_send(sender, RPL_HELPSTART(nickname, username, hostname));
 	
-	d_send(sender, "-> NICK <nickname>\n");
-	d_send(sender, "-> USER <username> <hostname> <servername> <realname>\n");
-	d_send(sender, "-> PRIVMSG <target> <message>\n");
-	d_send(sender, "-> MSG <#channel> <message>\n");
-	d_send(sender, "-> JOIN <#channel> (password)\n");
-	d_send(sender, "-> HELP\n\n");
-	
-	d_send(sender, "Only in channel :\n");
-	
-	d_send(sender, "-> PART (#channel)\n");
-	d_send(sender, "-> INVITE (#channel) <target>\n\n");
-	
-	d_send(sender, "-Only operator :\n");
-	
-	d_send(sender, "-> KICK (#channel) <target>\n");
-	d_send(sender, "-> MODE (#channel) <+ or -OPTION>\n");
-	d_send(sender, "-> TOPIC (#channel) <message>\n\n");
+	d_send(sender, RPL_HELPTXT(nickname, username, hostname, "NICK", "/nick <nickname>" ));
+	d_send(sender, RPL_HELPTXT(nickname, username, hostname, "PRIVMSG", "/privmsg <target> <message>"));
+	d_send(sender, RPL_HELPTXT(nickname, username, hostname, "JOIN", "/join <#channel> [password]"));	
+	d_send(sender, RPL_HELPTXT(nickname, username, hostname, "PART", "/part [#channel]"));
+	d_send(sender, RPL_HELPTXT(nickname, username, hostname, "INVITE", "/invite [#channel] <target>"));
+	d_send(sender, RPL_HELPTXT(nickname, username, hostname, "KICK", "/kick [#channel] <target>"));
+	d_send(sender, RPL_HELPTXT(nickname, username, hostname, "MODE", "/mode [#channel] <+|- OPTION>"));
+	d_send(sender, RPL_HELPTXT(nickname, username, hostname, "TOPIC", "/topic [#channel] <topic>"));
+	d_send(sender, RPL_ENDOFHELP(nickname, username, hostname));
 }
 
 void	Server::cmd_quit(std::string data_sent, Client& sender)
 {
 	std::vector<Channel> allInteractions = sender.getAllInteractions();
 	for (std::vector<Channel>::iterator chan_it = allInteractions.begin(); chan_it != allInteractions.end(); chan_it++)
-	{
 		cmd_to_channel(RPL_QUIT(sender.getNickname(), sender.getUsername()[0], sender.getUsername()[1], &data_sent[5]), *chan_it, sender);
-		std::string part_str = "PART " + chan_it->getName();
-		cmd_part(part_str, sender);
-	}
-	quit(sender);
 }
 

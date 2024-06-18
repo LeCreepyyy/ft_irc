@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/07 01:42:29 by bgaertne          #+#    #+#             */
-/*   Updated: 2024/06/14 14:58:12 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/18 14:26:49 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,9 +114,7 @@ std::string		Channel::getName() {
 // TOPIC
 void	Channel::setTopic(std::string newTopic, Client& sender) {
 	if (this->topic_restricted == true && !isUserOp(sender))
-		throw std::runtime_error("Channel #" + this->name + ": topic may only be modified by operators.");
-	if (find(this->all_users.begin(), this->all_users.end(), sender) == this->all_users.end())
-		throw std::runtime_error("You need to be connected to this channel.");
+		throw std::runtime_error(ERR_CHANOPRIVSNEEDED(sender.getServName(), sender.getNickname(), name));
 	this->topic = newTopic + '\n';
 }
 
