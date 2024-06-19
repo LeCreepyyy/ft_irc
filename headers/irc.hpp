@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   irc.hpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:09:45 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/18 14:25:40 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/19 12:53:44 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,9 @@
 #define ERR_UNKNOWERROR(server, nickname, error)	":" + server + " 400 " + nickname + " :" + error + "\r\n"
 
 /// RPL COMMAND
+
+// invite
+#define RPL_INVITING(server, nickname, target, channel) ":" + server + " 341 " + nickname + " " + target + " " + channel
 
 // pong
 #define PONG(server, message)							":" + server + " PONG :" + message + "\r\n"
@@ -92,6 +95,9 @@
 #define RPL_KICK(nickname, username, hostname, channel, target, comment)	":" + nickname + "!" + username + "@" + hostname + " KICK " + channel + " " + target + " :" + comment + "\r\n"
 
 /// ERROR
+
+// invite
+#define ERR_USERONCHANNEL(server, nickname, target, channel)	":" + server + " 443 " + nickname + " " + target + " " + channel + " :is already on channel\r\n"
 
 //nickname
 #define ERR_NICKNAMEINUSE(server, nickname, newname)            ":" + server + " 433 " + nickname + " " + newname + " :Nickname is already in use\r\n"

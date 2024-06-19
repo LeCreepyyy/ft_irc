@@ -23,7 +23,7 @@ void	Server::cmd_invite(std::string data_sent, Client& sender) {
 	
 	if (channel_name[0] != '#') {
 		if (!sender.getAllInteractions().size())
-			throw std::runtime_error("Incorrect channnel name.");
+			throw std::runtime_error(ERR_NEEDMOREPARAMS(sender.getServName(), sender.getNickname()));
 		target_nickname = channel_name;
 		channel_name = "#" + sender.getLastInteraction().getName();
 	}
@@ -35,7 +35,7 @@ void	Server::cmd_invite(std::string data_sent, Client& sender) {
 		}
 	}
 	if (channel == all_channels.end())
-		throw std::runtime_error("Channel not found.");
+		throw std::runtime_error(ERR_NOSUCHCHANNEL(sender.getServName(), sender.getNickname(), channel_name));
 
 	if (channel->getWhitelistStatus() == true) {
 		std::vector<Client> op_list = channel->getAllOperators();
@@ -45,7 +45,7 @@ void	Server::cmd_invite(std::string data_sent, Client& sender) {
 				break ;
 		}
 		if (op_it == op_list.end())
-			throw std::runtime_error("You are not operator on this channel.");
+			throw std::runtime_error(ERR_CHANOPRIVSNEEDED(sender.getServName(), sender.getNickname(), channel_name));
 	}
 
 	if (target_nickname == "#") {
@@ -59,22 +59,21 @@ void	Server::cmd_invite(std::string data_sent, Client& sender) {
 			break;
 	}
 	if (target == all_clients.end())
-		throw std::runtime_error("Target does not exist");
+		throw std::runtime_error(ERR_NOSUCHNICK(sender.getServName(), sender.getNickname(), target_nickname));
 
 	std::vector<Client> channelAllUser = channel->getAllUsers();
 	for (std::vector<Client>::iterator it = channelAllUser.begin(); it != channelAllUser.end(); it++) {
 		if (*it == *target)
-			throw std::runtime_error("Target is already on this channel.");
+			throw std::runtime_error(ERR_USERONCHANNEL(sender.getServName(), sender.getNickname(), target_nickname, channel_name));
 	}
 
 	if (channel->getUserLimit() > -1)
 		if (channel->getAllUsers().size() >= static_cast<size_t>(channel->getUserLimit()))
-			throw std::runtime_error("Channel is full.");
+			throw std::runtime_error(ERR_CHANNELISFULL(sender.getServName(), sender.getNickname(), channel_name));
 	
 	if (channel->getWhitelistStatus() == true)
 		channel->addClientToWhitelist(*target);
-	std::string message = "You has been invited on : " + channel->getName() + "\n";
-	d_send(*target, message);
+	d_send(*target, RPL_INVITING(sender.getServName(), sender.getNickname(), target_nickname, channel_name));
 }
 
 /**
@@ -144,7 +143,6 @@ void	Server::cmd_kick(std::string data_sent, Client& sender) {
 		}
 	}
 	throw std::runtime_error(ERR_USERNOTINCHANNEL(serv_name, sender.getNickname(), target_nickname, channel_name));
-
 }
 
 void	Server::cmd_join(std::string data_sent, Client& sender)
@@ -312,7 +310,7 @@ void	Server::cmd_topic(std::string data_sent, Client& sender)
 			return;
 		}
 	}
-	throw std::runtime_error("Channel not found.");
+	throw std::runtime_error(ERR_NOSUCHCHANNEL(sender.getServName(), sender.getNickname(),target_name));
 }
 
 
