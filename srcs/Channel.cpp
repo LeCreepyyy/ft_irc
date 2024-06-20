@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/07 01:42:29 by bgaertne          #+#    #+#             */
-/*   Updated: 2024/06/18 14:26:49 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/20 13:36:18 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,7 +115,7 @@ std::string		Channel::getName() {
 void	Channel::setTopic(std::string newTopic, Client& sender) {
 	if (this->topic_restricted == true && !isUserOp(sender))
 		throw std::runtime_error(ERR_CHANOPRIVSNEEDED(sender.getServName(), sender.getNickname(), name));
-	this->topic = newTopic + '\n';
+	this->topic = newTopic;;
 }
 
 std::string		Channel::getTopic() {

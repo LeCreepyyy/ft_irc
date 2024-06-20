@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:11:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/17 13:24:26 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/20 13:50:33 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,12 +75,16 @@ std::vector<std::string>	splitString(std::string client_input, char spliter)
 	return result;
 }
 
-std::string clean_message(const std::string& message) {
+std::string		clean_message(const std::string& message) {
+	std::istringstream iss(message);
 	std::string result;
-	for (size_t i = 0; i < message.length(); ++i) {
-		if (isprint(message[i])) {
-			result += message[i];
-		}
+	while (1) {
+		std::string word;
+		iss >> word;
+		if (word.empty())
+			break ;
+		result += word;
+		result += " ";
 	}
 	return result;
 }

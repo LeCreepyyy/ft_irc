@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/18 14:04:46 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/20 13:39:26 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -268,7 +268,9 @@ void	Server::msg_to_channel(std::string msg, Channel target, Client& sender) {
 	iss >> tmp;
 	if (tmp.empty())
 		return;
-	
+
+	msg = clean_message(msg);
+
 	std::string message = RPL_PRIVMSG(sender.getNickname(), sender.getUsername()[0], serv_name, "#" + target.getName(), msg);
 	bool found = false;
 	for (size_t i = 0; i != all_channels.size(); i++) {

@@ -415,7 +415,7 @@ void	Server::cmd_mode(std::string data_sent, Client& sender)
 					d_send(sender, notif);
 					return (channel_it->setUserLimit(limit));
 				}
-				throw std::runtime_error("Invalid option in MODE command.");
+				throw std::runtime_error(ERR_UNKNOWERROR(serv_name, sender.getNickname(), "Invalid option in MODE command."));
 			}
 		}
 	}
@@ -427,7 +427,7 @@ void	Server::cmd_mode(std::string data_sent, Client& sender)
 			}
 		}
 	}
-	throw std::runtime_error("Target not found.");
+	throw std::runtime_error(ERR_UNKNOWERROR(serv_name, sender.getNickname(), "Target not found."));
 }
 
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   irc.hpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
+/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:09:45 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/19 12:53:44 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/06/20 13:50:23 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@
 /// RPL COMMAND
 
 // invite
-#define RPL_INVITING(server, nickname, target, channel) ":" + server + " 341 " + nickname + " " + target + " " + channel
+#define RPL_INVITING(server, nickname, target, channel) ":" + server + " 341 " + nickname + " " + target + " " + channel + "\r\n"
 
 // pong
 #define PONG(server, message)							":" + server + " PONG :" + message + "\r\n"
