@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:09:45 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/20 13:50:23 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/20 14:06:14 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,8 @@
 #define RPL_ENDOFNAMES(server, source, channel)			":" + server + " 366 " + source + " #" + channel + " :End of /NAMES list.\r\n"
 
 //topic
-#define RPL_TOPIC(nickname, username, hostname, channel, topic)	":" + nickname + "!" + username + "@" + hostname + " 332 " + nickname + " " + channel + " :" + topic + "\r\n"
+#define RPL_TOPIC(nickname, username, hostname, channel, topic)			":" + nickname + "!" + username + "@" + hostname + " 332 " + nickname + " " + channel + " :" + topic + "\r\n"
+#define RPL_NEWTOPICSET(nickname, username, hostname, channel, topic)	":" + nickname + "!" + username + "@" + hostname + " TOPIC #" + channel + " :" + topic + "\r\n"
 
 //part
 #define RPL_USERLEFT(source, username, host, channel)	":" + source + "!" + username + "@" + host + " PART #" + channel + "\r\n"

@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/20 13:39:26 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/20 14:24:18 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -290,11 +290,13 @@ void	Server::msg_to_channel(std::string msg, Channel target, Client& sender) {
 void	Server::cmd_to_channel(std::string msg, Channel target, Client& sender) {
 	bool found = false;
 	for (size_t i = 0; i != all_channels.size(); i++) {
+		debug("AAA");
 		if (all_channels[i].getName() == target.getName() || all_channels[i].getName() == target.getName() + "\n") {
+			debug("BBB");
 			found = true;
 			for (size_t j = 0; j != all_channels[i].getAllUsers().size(); j++) {
-				if (all_channels[i].getAllUsers()[j].getSocket() != sender.getSocket())
-					d_send(all_channels[i].getAllUsers()[j], msg);
+				debug("CCC");
+				d_send(all_channels[i].getAllUsers()[j], msg);
 			}
 			break ;
 		}

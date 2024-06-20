@@ -305,8 +305,10 @@ void	Server::cmd_topic(std::string data_sent, Client& sender)
 				std::string msg = RPL_TOPIC(sender.getNickname(), sender.getUsername()[0], sender.getUsername()[1], target.getName(), target.getTopic());
 				d_send(sender, msg);
 			}
-			else
+			else {
 				it->setTopic(topic, sender);
+				cmd_to_channel(RPL_NEWTOPICSET(sender.getNickname(), sender.getUsername()[0], sender.getUsername()[1], it->getName(), topic), *it, sender);
+			}
 			return;
 		}
 	}
