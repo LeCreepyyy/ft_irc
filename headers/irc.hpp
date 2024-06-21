@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:09:45 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/21 11:31:34 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/21 12:47:15 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,9 @@
 
 // pong
 #define PONG(server, message)							":" + server + " PONG :" + message + "\r\n"
+
+// notice
+#define RPL_NOTICE(server, nickname, target, message)	":" + server + " 301 " + nickname + " " + target + " :" + message + "\r\n"
 
 //nick
 #define RPL_NICK(nickname, hostname, newname)			":" + nickname + "!" + hostname + " NICK :" + newname + "\r\n"

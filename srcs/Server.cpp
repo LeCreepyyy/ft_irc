@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/21 10:54:51 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/21 13:05:39 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -235,6 +235,8 @@ void Server::handle_client_input(std::string data_sent, Client& sender)
 		cmd_join(data_sent, sender);
 	else if (command == "QUIT")
 		cmd_quit(data_sent, sender);
+	else if (command == "NOTICE")
+		cmd_notice(data_sent, sender);
 	else if (command == "PRIVMSG")
 		cmd_privmsg(data_sent, sender);
 	else if (command == "PART")

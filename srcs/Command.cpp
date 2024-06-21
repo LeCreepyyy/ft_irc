@@ -242,7 +242,7 @@ void	Server::cmd_privmsg(std::string data_sent, Client& sender)
 			msg_to_channel(message, chan, sender);
 			return;	
 		} else {
-			throw std::runtime_error(ERR_CANNOTSENDTOCHAN(serv_name, sender.getNickname(), chan.getName()));
+			throw std::runtime_error(ERR_CANNOTSENDTOCHAN(serv_name, sender.getNickname(), "#" + chan.getName()));
 		}
 	}
 	else {
@@ -441,6 +441,20 @@ void	Server::cmd_ping(std::string data_sent, Client& sender) {
 	data_sent.erase(0, 4);
 	std::string reply_msg = PONG(serv_name, data_sent);
 	d_send(sender, reply_msg);
+}
+
+void	Server::cmd_notice(std::string data_sent, Client& sender) {
+	std::istringstream iss(&data_sent[6]);
+	std::string target_name;
+	iss >> target_name;
+
+	if (target_name.empty())
+		throw std::runtime_error(ERR_NEEDMOREPARAMS(sender.getServName(), sender.getNickname() + " NOTICE"));
+	std::string message = clean_message(&data_sent[6 + target_name.size()]);
+	if (target_name[0] == '#')
+		cmd_to_channel(RPL_NOTICE(sender.getServName(), sender.getNickname(), target_name, message), getChannel(target_name, sender), sender);
+	else
+		d_send(getClient(target_name, sender), RPL_NOTICE(sender.getServName(), sender.getNickname(), target_name, message));
 }
 
 void	Server::cmd_who(std::string data_sent, Client& sender) {

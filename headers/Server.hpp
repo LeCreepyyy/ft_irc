@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:13:34 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/20 13:38:50 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/21 12:48:27 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,7 @@
 			void	cmd_ping(std::string data_sent, Client& sender);
 			void	cmd_who(std::string data_sent, Client& sender);
 			void	cmd_quit(std::string data_sent, Client& sender);
+			void	cmd_notice(std::string data_sent, Client& sender);
 
 			/* Accessors */
 
