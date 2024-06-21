@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:09:45 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/20 14:06:14 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/21 10:00:13 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,8 +116,8 @@
 #define ERR_INVITEONLYCHAN(server, nickname, channel)	":" + server + " 473 " + nickname + " #" + channel + " :Cannot join channel (+i)\r\n"
 #define ERR_BANNEDFROMCHAN(server, nickname, channel)	":" + server + " 474 " + nickname + " #" + channel + " :Cannot join channel (+b)\r\n"
 #define ERR_BADCHANMASK(server, nickname, channel)		":" + server + " 476 " + nickname + " #" + channel + " :Bad Channel Mask\r\n"
-#define ERR_NOSUCHCHANNEL(server, source, channel)		":" + server + " 403 " + source + " #" + channel + ":No such channel\r\n"
-#define ERR_NOTONCHANNEL(server, source, channel)		":" + server + " 442 " + source + " #" + channel + ":You're not on that channel\r\n"
+#define ERR_NOSUCHCHANNEL(server, source, channel)		":" + server + " 403 " + source + " " + channel + " :No such channel\r\n"
+#define ERR_NOTONCHANNEL(server, source, channel)		":" + server + " 442 " + source + " #" + channel + " :You're not on that channel\r\n"
 
 
 //message to channel

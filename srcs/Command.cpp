@@ -292,13 +292,16 @@ void	Server::cmd_topic(std::string data_sent, Client& sender)
 	std::string target_name;
 	std::string topic;
 	iss >> target_name;
-	iss >> topic;
+	if (target_name.empty())
+		throw std::runtime_error(ERR_NEEDMOREPARAMS(serv_name, sender.getNickname() + " TOPIC"));
+
+	topic = clean_message(&data_sent[6 + target_name.size()]);
 
 	Channel target;
 	if (target_name.size() > 1 && target_name[0] == '#')
 		target = getChannel(target_name, sender);
 	else
-		target = sender.getLastInteraction();
+		throw std::runtime_error(ERR_NOSUCHCHANNEL(serv_name, sender.getNickname(), target_name));
 	for (std::vector<Channel>::iterator it = all_channels.begin(); it != all_channels.end(); it++) {
 		if (*it == target) {
 			if (topic.empty()) {
