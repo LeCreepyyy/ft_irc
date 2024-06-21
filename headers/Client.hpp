@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:05:32 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/14 13:16:59 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/21 10:51:45 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@
 			void					setServName(std::string servname);
 			std::string				getServName();
 			
-			void					setNickname(std::string cmd, std::vector<Client> &all_clients);
+			std::string				setNickname(std::string cmd, std::vector<Client> &all_clients);
 			std::string				getNickname();
 
 			void					setUsername(std::string username);

@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:09:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/20 11:39:30 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/21 10:54:01 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,7 @@ std::string				Client::getServName() {
 }
 
 
-void	Client::setNickname(std::string cmd, std::vector<Client> &all_clients) {
+std::string	Client::setNickname(std::string cmd, std::vector<Client> &all_clients) {
 	std::string last = nickname;
 	size_t start = 5;
     if (cmd.size() <= start)
@@ -90,10 +90,9 @@ void	Client::setNickname(std::string cmd, std::vector<Client> &all_clients) {
             throw std::runtime_error(ERR_NICKNAMEINUSE(serv_name, last, temp));
     }
     nickname = temp;
-	if (last == "/")
-		return;
-	std::string notif = RPL_NICK(last, username[1], nickname);
-    d_send(*this, notif);
+	// if (last == "/")
+	// 	return (last);
+	return (last);
 }
 
 std::string	Client::getNickname() {

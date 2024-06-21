@@ -120,7 +120,7 @@ void	Server::cmd_kick(std::string data_sent, Client& sender) {
 		std::istringstream iss(&data_sent[6 + channel_name.size()]);
 		std::string new_target;
 		iss >> new_target;
-		comment = &data_sent[6 + channel_name.size() + new_target.size()];
+		comment = clean_message(&data_sent[6 + channel_name.size() + new_target.size()]);
 		target_nickname = new_target;
 	}
 	for (target = all_clients.begin(); target !=  all_clients.end(); target++) {
@@ -483,6 +483,6 @@ void	Server::cmd_quit(std::string data_sent, Client& sender)
 {
 	std::vector<Channel> allInteractions = sender.getAllInteractions();
 	for (std::vector<Channel>::iterator chan_it = allInteractions.begin(); chan_it != allInteractions.end(); chan_it++)
-		cmd_to_channel(RPL_QUIT(sender.getNickname(), sender.getUsername()[0], sender.getUsername()[1], &data_sent[5]), *chan_it, sender);
+		cmd_to_channel(RPL_QUIT(sender.getNickname(), sender.getUsername()[0], sender.getUsername()[1], clean_message(&data_sent[5])), *chan_it, sender);
 }
 

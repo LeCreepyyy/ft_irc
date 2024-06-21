@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/21 10:11:32 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/21 10:54:51 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -224,10 +224,10 @@ void Server::handle_client_input(std::string data_sent, Client& sender)
 	check_password(data_sent, sender);
 	if (command == "NICK") {
 		std::string lastname = sender.getNickname();
-		sender.setNickname(data_sent, all_clients);
+		std::string oldnick = sender.setNickname(data_sent, all_clients);
 		std::vector<Channel> lastiter = sender.getAllInteractions();
 		for (std::vector<Channel>::iterator it = lastiter.begin(); it != lastiter.end(); it++)
-			msg_to_channel(lastname + " is now known as: " + sender.getNickname(), *it, sender);
+			cmd_to_channel(RPL_NICK(oldnick, sender.getUsername()[1], sender.getNickname()), *it, sender);
 	}
 	else if (command == "USER")
 		sender.setUsername(data_sent);
