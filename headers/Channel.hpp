@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/03 10:31:29 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/14 14:54:24 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/21 11:14:00 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,6 +56,7 @@
 			std::string		getTopic();
 			void			setTopicRestriction(bool status, Client& sender);
 			bool			getTopicRestriction();
+			std::string		rplTopic(Client& sender);
 
 			std::vector<Client>&	getAllOperators();
 			void				addClientToOperators(Client& target);

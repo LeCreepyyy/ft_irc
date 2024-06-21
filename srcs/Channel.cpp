@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/07 01:42:29 by bgaertne          #+#    #+#             */
-/*   Updated: 2024/06/20 14:06:50 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/21 11:32:42 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,6 @@ Channel::Channel(std::string name, Client oper)
 	this->password_protected = false;
 	this->name = name;
 	this->user_limit = -1;
-	this->topic = "Undefinied channel topic.\n";
 	this->all_operators.push_back(oper);
 }
 
@@ -128,7 +127,7 @@ void	Channel::setTopicRestriction(bool status, Client& sender) {
 			throw std::runtime_error(ERR_UNKNOWERROR(sender.getServName(), sender.getNickname(), "Channel topic is already limited to operators modification."));
 		else {
 			this->topic_restricted = false;
-			std::string notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "+t");
+			std::string notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "-t");
 			d_send(sender, notif);
 		}
 	}
@@ -137,7 +136,7 @@ void	Channel::setTopicRestriction(bool status, Client& sender) {
 			throw std::runtime_error(ERR_UNKNOWERROR(sender.getServName(), sender.getNickname(), "Channel topic is already publicly modifiable."));
 		else {
 			this->topic_restricted = true;
-			std::string notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "-t");
+			std::string notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "+t");
 			d_send(sender, notif);
 		}
 	}
@@ -147,7 +146,11 @@ bool	Channel::getTopicRestriction() {
 	return this->topic_restricted;
 }
 
-
+std::string Channel::rplTopic(Client& sender) {
+	if(topic.size() == 0)
+		return (RPL_NOTOPIC(sender.getServName(), sender.getNickname(), "#" + name));
+	return (RPL_TOPIC(sender.getNickname(), sender.getUsername()[0], sender.getUsername()[1], name, topic));
+}
 
 
 // USER OPERATORS
@@ -226,7 +229,7 @@ void	Channel::setWhitelist(bool status, Client& sender) {
 		else {
 			this->whitelist.clear();
 			this->on_whitelist = false;
-			std::string notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "+i");
+			std::string notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "-i");
 			d_send(sender, notif);
 		}
 	}
@@ -237,7 +240,7 @@ void	Channel::setWhitelist(bool status, Client& sender) {
 		else {
 			this->whitelist.push_back(sender);
 			this->on_whitelist = true;
-			std::string notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "-i");
+			std::string notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "+i");
 			d_send(sender, notif);
 		}
 	}

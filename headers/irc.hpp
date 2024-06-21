@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:09:45 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/21 10:49:34 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/21 11:31:34 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,13 +66,14 @@
 
 //topic
 #define RPL_TOPIC(nickname, username, hostname, channel, topic)			":" + nickname + "!" + username + "@" + hostname + " 332 " + nickname + " " + channel + " :" + topic + "\r\n"
+#define RPL_NOTOPIC(server, nickname, channel)							":" + server + " 331 " + nickname + " " + channel + " :No topic is set\r\n"
 #define RPL_NEWTOPICSET(nickname, username, hostname, channel, topic)	":" + nickname + "!" + username + "@" + hostname + " TOPIC #" + channel + " :" + topic + "\r\n"
 
 //part
 #define RPL_USERLEFT(source, username, host, channel)	":" + source + "!" + username + "@" + host + " PART #" + channel + "\r\n"
 
 //quit
-#define RPL_QUIT(nickname, username, host, msg)				":" + nickname + "!" + username + "@" + host + " QUIT :" + msg + "\r\n"
+#define RPL_QUIT(nickname, username, host, msg)				":" + nickname + "!" + username + "@" + host + " QUIT " + msg + "\r\n"
 
 //privmsg
 #define RPL_PRIVMSG(source, username, host, receiver, message)	":" + source + "!" + username + "@" + host + " PRIVMSG " + receiver + " :" + message + "\r\n"

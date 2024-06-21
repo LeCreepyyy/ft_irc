@@ -188,14 +188,13 @@ void	Server::cmd_join(std::string data_sent, Client& sender)
 			// Notifying the client
 			
 			std::string	notif = RPL_JOIN(sender.getNickname(), sender.getUsername()[0], sender.getUsername()[1], channel_name);
-			std::string	notif2 = RPL_NAMREPLY(serv_name, sender.getNickname(), channel_name, all_channels[i].getListOfNames())
-			std::string	notif3 = RPL_ENDOFNAMES(serv_name, sender.getNickname(), channel_name);
-			d_send(sender, notif);
+			cmd_to_channel(notif, all_channels[i], sender);
+			std::string notif2 = all_channels[i].rplTopic(sender);
+			std::string	notif3 = RPL_NAMREPLY(serv_name, sender.getNickname(), channel_name, all_channels[i].getListOfNames())
+			std::string	notif4 = RPL_ENDOFNAMES(serv_name, sender.getNickname(), channel_name);
 			d_send(sender, notif2);
 			d_send(sender, notif3);
-
-			notif = " Joined !";
-			msg_to_channel(notif, all_channels[i], sender);
+			d_send(sender, notif4);
 			
 			return;
 		}
@@ -209,14 +208,13 @@ void	Server::cmd_join(std::string data_sent, Client& sender)
 
 	// Notifying the client
 	std::string	notif = RPL_JOIN(sender.getNickname(), sender.getUsername()[0], sender.getUsername()[1], channel_name);
-	std::string	notif2 = RPL_NAMREPLY(serv_name, sender.getNickname(), channel_name, newChannel.getListOfNames())
-	std::string	notif3 = RPL_ENDOFNAMES(serv_name, sender.getNickname(), channel_name);
-	d_send(sender, notif);
+	cmd_to_channel(notif, newChannel, sender);
+	std::string notif2 = newChannel.rplTopic(sender);
+	std::string	notif3 = RPL_NAMREPLY(serv_name, sender.getNickname(), channel_name, newChannel.getListOfNames())
+	std::string	notif4 = RPL_ENDOFNAMES(serv_name, sender.getNickname(), channel_name);
 	d_send(sender, notif2);
 	d_send(sender, notif3);
-
-	notif = " Joined !";
-	msg_to_channel(notif, newChannel, sender);
+	d_send(sender, notif4);
 }
 
 
@@ -296,6 +294,7 @@ void	Server::cmd_topic(std::string data_sent, Client& sender)
 		throw std::runtime_error(ERR_NEEDMOREPARAMS(serv_name, sender.getNickname() + " TOPIC"));
 
 	topic = clean_message(&data_sent[6 + target_name.size()]);
+	topic = &topic[1];
 
 	Channel target;
 	if (target_name.size() > 1 && target_name[0] == '#')
@@ -305,7 +304,7 @@ void	Server::cmd_topic(std::string data_sent, Client& sender)
 	for (std::vector<Channel>::iterator it = all_channels.begin(); it != all_channels.end(); it++) {
 		if (*it == target) {
 			if (topic.empty()) {
-				std::string msg = RPL_TOPIC(sender.getNickname(), sender.getUsername()[0], sender.getUsername()[1], target.getName(), target.getTopic());
+				std::string msg = target.rplTopic(sender);
 				d_send(sender, msg);
 			}
 			else {
