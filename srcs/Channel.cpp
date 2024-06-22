@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/07 01:42:29 by bgaertne          #+#    #+#             */
-/*   Updated: 2024/06/21 11:32:42 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/22 15:49:29 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -327,7 +327,11 @@ int		Channel::getUserLimit() {
 	return this->user_limit;
 }
 
-void	Channel::setUserLimit(int limit) {
+void	Channel::setUserLimit(int limit, Client& sender) {
+	if (limit < 1 || limit > 99)
+		throw std::runtime_error(ERR_UNKNOWERROR(sender.getServName() , sender.getNickname(), "Invalid limit. (>0 && <99)"));
+	if (static_cast<size_t>(limit) < this->getAllUsers().size())
+		throw std::runtime_error(ERR_UNKNOWERROR(sender.getServName() , sender.getNickname(), "Too much users in channel to set this limit."));
 	this->user_limit = limit;
 }
 

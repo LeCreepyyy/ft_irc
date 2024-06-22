@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/03 10:31:29 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/21 11:14:00 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/22 15:48:40 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,7 +81,7 @@
 			bool				getPasswordStatus();
 			
 			int					getUserLimit();
-			void				setUserLimit(int limit);
+			void				setUserLimit(int limit, Client& sender);
 
 			std::string			getListOfNames();
 			bool				isOP(Client& client);

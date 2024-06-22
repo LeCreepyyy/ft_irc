@@ -76,12 +76,8 @@ void	Server::cmd_invite(std::string data_sent, Client& sender) {
 	d_send(*target, RPL_INVITING(sender.getServName(), sender.getNickname(), target_nickname, channel_name));
 }
 
-/**
- * I keep # at begin of the channel name
-*/
-void	Server::cmd_kick(std::string data_sent, Client& sender) {
 
-	// data_sent ex: KICK (<#Channel Name>) <Client Nickname> [why]
+void	Server::cmd_kick(std::string data_sent, Client& sender) {
 
 	std::vector<Client>::iterator target;
 	std::string	target_nickname = "#";
@@ -217,7 +213,6 @@ void	Server::cmd_join(std::string data_sent, Client& sender)
 	d_send(sender, notif4);
 }
 
-
 void	Server::cmd_privmsg(std::string data_sent, Client& sender)
 {
 	std::istringstream	iss(data_sent);
@@ -283,7 +278,6 @@ void	Server::cmd_part(std::string data_sent, Client& sender)
 	}
 }
 
-
 void	Server::cmd_topic(std::string data_sent, Client& sender)
 {
 	std::istringstream iss(&data_sent[6]);
@@ -317,7 +311,6 @@ void	Server::cmd_topic(std::string data_sent, Client& sender)
 	throw std::runtime_error(ERR_NOSUCHCHANNEL(sender.getServName(), sender.getNickname(),target_name));
 }
 
-
 void	Server::cmd_CAP(std::string data_sent, Client& sender)
 {
 	std::istringstream iss(data_sent);
@@ -338,100 +331,84 @@ void	Server::cmd_CAP(std::string data_sent, Client& sender)
 void	Server::cmd_mode(std::string data_sent, Client& sender)
 {
 	std::istringstream iss(&data_sent[5]);
-	std::string name;
-	std::string option;
-	std::string second_target;
-	iss >> name;
-	iss >> option;
-	iss >> second_target;
+	std::string target, options, args;
+	iss >> target >> options;
 
-	Channel target_chan;
-	Client target_cli;
-	bool	target_is_chan = 0;
-	if (name.size() > 1) {
-		if (name[0] == '#') {
-			target_chan = getChannel(name, sender);
-			target_is_chan = 1;
-		}
-		else {
-			target_cli = getClient(name, sender);
-			target_is_chan = 0;
-		}
-	}
-	else {
-		second_target = option;
-		option = name;
-		target_chan = sender.getLastInteraction();
-	}
+	Channel target_channel;
+	Client target_client;
 
-	if (option.empty()) {
-		throw std::runtime_error(RPL_GETMODE(serv_name, sender.getNickname(), target_chan.getName(), target_chan.getModes()));
-	}
+	int option_sign;
+	if (options[0] == '+')
+		option_sign = 1;
+	else if (options[0] == '-')
+		option_sign = 0;
 
-	if (target_is_chan == 1) {
-		for (std::vector<Channel>::iterator channel_it = all_channels.begin(); channel_it != all_channels.end(); channel_it++) {
-			if (*channel_it == target_chan) {
-				if (option == "b")
-					throw std::runtime_error(RPL_BANLIST(serv_name, sender.getNickname(), channel_it->getName()));
-				bool is_op = false;
-				for (std::vector<Client>::iterator operator_it = channel_it->getAllOperators().begin(); operator_it != channel_it->getAllOperators().end(); operator_it++)
-					if (*operator_it == sender)
-						is_op = true;
-				if (is_op == false)
-					throw std::runtime_error(ERR_CHANOPRIVSNEEDED(serv_name, sender.getNickname(), channel_it->getName()));
-				if (option == "+i")
-					return (channel_it->setWhitelist(true, sender));
-				if (option == "-i")
-					return (channel_it->setWhitelist(false, sender));
-				if (option == "+t")
-					return (channel_it->setTopicRestriction(true, sender));
-				if (option == "-t")
-					return (channel_it->setTopicRestriction(false, sender));
-				if (option == "+k")
-					return (channel_it->setPassword(true, second_target, sender));
-				if (option == "-k")
-					return (channel_it->setPassword(false, "/", sender));
-				if (option == "+o" || option == "-o") {
-					std::vector<Client>::iterator it;
-					for (it = this->all_clients.begin() ; it != this->all_clients.end() ; it++) {
-						if (it->getNickname() == second_target) {
-							if (option == "+o")
-								return (channel_it->opUser(true, *it, sender));
-							else if (option == "-o")
-								return (channel_it->opUser(false, *it, sender));
-						}
-					}
-					throw std::runtime_error(ERR_USERNOTINCHANNEL(serv_name, sender.getNickname(), it->getNickname(), channel_it->getName()));
+	if (target.size() > 0 && target[0] == '#') {
+		target_channel = getChannel(target, sender);
+		int i = 0;
+		while (options[++i]) {
+			if (option_sign == 1) {
+				if (options[i] == 'b')
+					throw std::runtime_error(RPL_BANLIST(serv_name, sender.getNickname(), target_channel.getName()));
+			}
+			if (target_channel.isUserOp(sender) == false)
+				throw std::runtime_error(ERR_CHANOPRIVSNEEDED(serv_name, sender.getNickname(), target_channel.getName()));
+			if (option_sign == 1) {
+				if (options[i] == 'i')
+					target_channel.setWhitelist(true, sender);
+				else if (options[i] == 't')
+					target_channel.setTopicRestriction(true, sender);
+				else if (options[i] == 'k') {
+					iss >> args;
+					target_channel.setPassword(true, args, sender);
 				}
-				if (option == "+l" || option == "-l")
-				{
+				else if (options[i] == 'o') {
+					iss >> args;
+					target_channel.opUser(true, getClient(args, sender), sender);
+				}
+				else if (options[i] == 'l') {
 					int limit = -1;
-					if (option == "+l") {
-						if (second_target.empty())
-							throw std::runtime_error(ERR_UNKNOWERROR(serv_name, sender.getNickname(), "Invalid limit. (>0 && <99)"));
-						limit = atoi(second_target.c_str());
-						if (limit <= 0 || limit > 99)
-							throw std::runtime_error(ERR_UNKNOWERROR(serv_name, sender.getNickname(), "Invalid limit. (>0 && <99)"));
-						if (static_cast<size_t>(limit) < channel_it->getAllUsers().size())
-							throw std::runtime_error(ERR_UNKNOWERROR(serv_name, sender.getNickname(), "Too much users in channel to set this limit."));
-					}
-					std::string notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], channel_it->getName(), "+l");
-					d_send(sender, notif);
-					return (channel_it->setUserLimit(limit));
+					iss >> args;
+					if (!args.empty())
+						limit = atoi(args.c_str());
+					target_channel.setUserLimit(limit, sender);
 				}
-				throw std::runtime_error(ERR_UNKNOWERROR(serv_name, sender.getNickname(), "Invalid option in MODE command."));
+				else 
+					throw std::runtime_error(ERR_UNKNOWERROR(serv_name, sender.getNickname(), "Invalid option in MODE command."));
+			}
+			if (option_sign == 0) { // '-'
+				if (options[i] == 'i')
+					target_channel.setWhitelist(false, sender);
+				else if (options[i] == 't')
+					target_channel.setTopicRestriction(false, sender);
+				else if (options[i] == 'k') {
+					target_channel.setPassword(false, "/", sender);
+				}
+				else if (options[i] == 'o') {
+					iss >> args;
+					target_channel.opUser(false, getClient(args, sender), sender);
+				}
+				else if (options[i] == 'l') {
+					target_channel.setUserLimit(-1, sender);
+				}
+				else 
+					throw std::runtime_error(ERR_UNKNOWERROR(serv_name, sender.getNickname(), "Invalid option in MODE command."));
+
 			}
 		}
 	}
 	else {
-		for (std::vector<Client>::iterator client_it = all_clients.begin(); client_it != all_clients.end(); client_it++) {
-			if (*client_it == target_cli) {
-				if (option == "+i")
+		target_client == getClient(target, sender);
+		int i = 0;
+		while (options[++i]) {
+			if (option_sign == 0)
+				throw std::runtime_error(ERR_UNKNOWERROR(serv_name, sender.getNickname(), "Invalid option in MODE command."));
+			if (option_sign == 1) {
+				if (options[i] == 'i')
 					throw std::runtime_error(ERR_USERSDONTMATCH(serv_name, sender.getNickname()));
 			}
 		}
 	}
-	throw std::runtime_error(ERR_UNKNOWERROR(serv_name, sender.getNickname(), "Target not found."));
 }
 
 
