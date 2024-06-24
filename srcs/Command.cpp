@@ -251,6 +251,7 @@ void	Server::cmd_part(std::string data_sent, Client& sender)
 {
 	std::istringstream iss(&data_sent[5]);
 	std::string channel_name;
+	std::string message;
 	iss >> channel_name;
 
 	if (channel_name.size() == 0 && sender.getAllInteractions().size())
@@ -258,18 +259,18 @@ void	Server::cmd_part(std::string data_sent, Client& sender)
 	else if (channel_name.size() == 0 && sender.getAllInteractions().size() == 0)
 		throw std::runtime_error(ERR_NOSUCHCHANNEL(serv_name, sender.getNickname(), channel_name));
 
+	message = clean_message(&data_sent[5 + channel_name.size()]);
 	channel_name = &channel_name[1];
 	for (std::vector<Channel>::iterator it = all_channels.begin(); it != all_channels.end();) {
 		if (it->getName() == channel_name) {
 			it->removeClientFromChannel(sender);
 			sender.removeFromLastInteraction(*it);
-			std::string notif = RPL_USERLEFT(sender.getNickname(), sender.getUsername()[0], serv_name, channel_name);
+			std::string notif = RPL_USERLEFT(sender.getNickname(), sender.getUsername()[0], serv_name, channel_name, message);
 			d_send(sender, notif);
 			if (it->getAllUsers().empty()) {
 				it = all_channels.erase(it);
 			} else {
-				notif = " left this channel.";
-				msg_to_channel(notif, *it, sender);
+				cmd_to_channel(notif, *it, sender);
 				++it;
 			}
 		} else {
@@ -346,6 +347,8 @@ void	Server::cmd_mode(std::string data_sent, Client& sender)
 	if (target.size() > 0 && target[0] == '#') {
 		target_channel = getChannel(target, sender);
 		int i = 0;
+		if (options.empty()) 
+			throw std::runtime_error(RPL_GETMODE(serv_name, sender.getNickname(), target_channel.getName(), target_channel.getModes()));
 		while (options[++i]) {
 			if (option_sign == 1) {
 				if (options[i] == 'b')
@@ -376,7 +379,7 @@ void	Server::cmd_mode(std::string data_sent, Client& sender)
 				else 
 					throw std::runtime_error(ERR_UNKNOWERROR(serv_name, sender.getNickname(), "Invalid option in MODE command."));
 			}
-			if (option_sign == 0) { // '-'
+			if (option_sign == 0) {
 				if (options[i] == 'i')
 					target_channel.setWhitelist(false, sender);
 				else if (options[i] == 't')
@@ -397,8 +400,8 @@ void	Server::cmd_mode(std::string data_sent, Client& sender)
 			}
 		}
 	}
-	else {
-		target_client == getClient(target, sender);
+	else if (target.size() > 0) {
+		target_client = getClient(target, sender);
 		int i = 0;
 		while (options[++i]) {
 			if (option_sign == 0)
@@ -409,6 +412,8 @@ void	Server::cmd_mode(std::string data_sent, Client& sender)
 			}
 		}
 	}
+	else
+		throw std::runtime_error(ERR_NEEDMOREPARAMS(serv_name, sender.getNickname()));
 }
 
 

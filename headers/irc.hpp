@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:09:45 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/21 12:47:15 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/24 13:52:21 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,7 @@
 #define RPL_NEWTOPICSET(nickname, username, hostname, channel, topic)	":" + nickname + "!" + username + "@" + hostname + " TOPIC #" + channel + " :" + topic + "\r\n"
 
 //part
-#define RPL_USERLEFT(source, username, host, channel)	":" + source + "!" + username + "@" + host + " PART #" + channel + "\r\n"
+#define RPL_USERLEFT(source, username, host, channel, message)	":" + source + "!" + username + "@" + host + " PART #" + channel + " " + message + "\r\n"
 
 //quit
 #define RPL_QUIT(nickname, username, host, msg)				":" + nickname + "!" + username + "@" + host + " QUIT " + msg + "\r\n"

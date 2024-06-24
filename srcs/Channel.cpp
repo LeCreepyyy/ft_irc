@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
+/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/07 01:42:29 by bgaertne          #+#    #+#             */
-/*   Updated: 2024/06/22 15:49:29 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/06/24 13:40:48 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,18 +123,14 @@ std::string		Channel::getTopic() {
 
 void	Channel::setTopicRestriction(bool status, Client& sender) {
 	if (this->topic_restricted == true) {
-		if (status == true)
-			throw std::runtime_error(ERR_UNKNOWERROR(sender.getServName(), sender.getNickname(), "Channel topic is already limited to operators modification."));
-		else {
+		if (status == false) {
 			this->topic_restricted = false;
 			std::string notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "-t");
 			d_send(sender, notif);
 		}
 	}
 	else {
-		if (status == false)
-			throw std::runtime_error(ERR_UNKNOWERROR(sender.getServName(), sender.getNickname(), "Channel topic is already publicly modifiable."));
-		else {
+		if (status == true) {
 			this->topic_restricted = true;
 			std::string notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "+t");
 			d_send(sender, notif);
@@ -175,8 +171,6 @@ void	Channel::opUser(bool status, Client& target, Client& sender) {
 			notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "+o");
 			d_send(sender, notif);
 		}
-		else
-			throw std::runtime_error(ERR_UNKNOWERROR(sender.getServName(), sender.getNickname(), "User is already operator in this channel."));
 	}
 	else
 	{
@@ -185,8 +179,6 @@ void	Channel::opUser(bool status, Client& target, Client& sender) {
 			notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "-o");
 			d_send(sender, notif);
 		}
-		else
-			throw std::runtime_error(ERR_UNKNOWERROR(sender.getServName(), sender.getNickname(), "User is not operator in this channel."));
 	}
 }
 bool	Channel::isUserOp(Client& target) {
@@ -224,9 +216,7 @@ bool	Channel::isUserInChannel(Client& target) {
 void	Channel::setWhitelist(bool status, Client& sender) {
 	if (this->on_whitelist == true)
 	{
-		if (status == true)
-			throw std::runtime_error(ERR_UNKNOWERROR(sender.getServName(), sender.getNickname(), "Channel already invite-only."));
-		else {
+		if (status == false) {
 			this->whitelist.clear();
 			this->on_whitelist = false;
 			std::string notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "-i");
@@ -235,9 +225,7 @@ void	Channel::setWhitelist(bool status, Client& sender) {
 	}
 	else
 	{
-		if (status == false)
-			throw std::runtime_error(ERR_UNKNOWERROR(sender.getServName(), sender.getNickname(), "Channel already public."));
-		else {
+		if (status == true) {
 			this->whitelist.push_back(sender);
 			this->on_whitelist = true;
 			std::string notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "+i");
@@ -306,8 +294,6 @@ void	Channel::setPassword(bool status, std::string password, Client& sender) {
 			std::string notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "+k");
 			d_send(sender, notif);
 		}
-		else
-			throw std::runtime_error(ERR_UNKNOWERROR(sender.getServName(), sender.getNickname(), "Already not protected by password."));
 	}
 }
 
