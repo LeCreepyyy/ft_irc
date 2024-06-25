@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:13:34 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/21 12:48:27 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/25 14:17:31 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@
 			struct sockaddr_in			serv_address;
 			std::vector<Channel>		all_channels;
 			std::vector<Client> 		all_clients;
+			fd_set monitored;
 
 
 		public :

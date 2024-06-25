@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/21 13:05:39 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/25 14:24:07 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,6 @@ void Server::start() {
 
 	// Preparing storage for client sockets
 	std::vector<int> client_sockets;
-	fd_set monitored;
 	int maxFd;
 
 	while (true)
@@ -175,8 +174,9 @@ void Server::quit(Client& iter_client) {
 	}
 
 	// Close the client socket and remove the client from all_clients
-	all_clients.erase(find(all_clients.begin(), all_clients.end(), iter_client));
 	close(iter_client.getSocket());
+	//FD_CLR(iter_client, &monitored);
+	all_clients.erase(find(all_clients.begin(), all_clients.end(), iter_client));
 }
 
 void Server::check_password(std::string data_sent, Client& sender) {
