@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/07 01:42:29 by bgaertne          #+#    #+#             */
-/*   Updated: 2024/06/24 13:40:48 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/25 13:22:49 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -166,7 +166,7 @@ void	Channel::removeClientFromOperators(Client& client) {
 void	Channel::opUser(bool status, Client& target, Client& sender) {
 	std::string notif;
 	if (status == true) {
-		if (!isUserOp(sender)) {
+		if (isUserOp(sender)) {
 			this->addClientToOperators(target);
 			notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "+o");
 			d_send(sender, notif);
@@ -217,6 +217,7 @@ void	Channel::setWhitelist(bool status, Client& sender) {
 	if (this->on_whitelist == true)
 	{
 		if (status == false) {
+			debug("WHITELIST OFF");
 			this->whitelist.clear();
 			this->on_whitelist = false;
 			std::string notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "-i");
@@ -226,6 +227,7 @@ void	Channel::setWhitelist(bool status, Client& sender) {
 	else
 	{
 		if (status == true) {
+			debug("WHITELIST ON");
 			this->whitelist.push_back(sender);
 			this->on_whitelist = true;
 			std::string notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "+i");

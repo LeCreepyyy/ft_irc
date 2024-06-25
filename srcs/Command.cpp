@@ -167,9 +167,12 @@ void	Server::cmd_join(std::string data_sent, Client& sender)
 
 			// If channel is whitelisted, is the user on the whitelist
 			if (all_channels[i].getWhitelistStatus()) {
-			std::vector<Client> whitelist = all_channels[i].getWhitelist();
-			if (std::find(whitelist.begin(), whitelist.end(), sender) == whitelist.end())
-				throw std::runtime_error(ERR_INVITEONLYCHAN(serv_name, sender.getNickname(), channel_name));
+				debug("THIS CHANNEL IS WHITELISTED");
+				std::vector<Client> whitelist = all_channels[i].getWhitelist();
+				if (std::find(whitelist.begin(), whitelist.end(), sender) == whitelist.end()) {
+					debug("YOU ARE NOT ON THE WHITELIST");
+					throw std::runtime_error(ERR_INVITEONLYCHAN(serv_name, sender.getNickname(), channel_name));
+				}
 			}
 
 			// if channel is protected by password, look for it in the user input.
@@ -329,108 +332,32 @@ void	Server::cmd_CAP(std::string data_sent, Client& sender)
 	}
 }
 
-void	Server::cmd_mode(std::string data_sent, Client& sender)
-{
-	std::istringstream iss(&data_sent[5]);
-	std::string target, options, args;
-	iss >> target >> options;
-
-	Channel target_channel;
-	Client target_client;
-
-	int option_sign;
-	if (options[0] == '+')
-		option_sign = 1;
-	else if (options[0] == '-')
-		option_sign = 0;
-
-	if (target.size() > 0 && target[0] == '#') {
-		target_channel = getChannel(target, sender);
-		int i = 0;
-		if (options.empty()) 
-			throw std::runtime_error(RPL_GETMODE(serv_name, sender.getNickname(), target_channel.getName(), target_channel.getModes()));
-		while (options[++i]) {
-			if (option_sign == 1) {
-				if (options[i] == 'b')
-					throw std::runtime_error(RPL_BANLIST(serv_name, sender.getNickname(), target_channel.getName()));
-			}
-			if (target_channel.isUserOp(sender) == false)
-				throw std::runtime_error(ERR_CHANOPRIVSNEEDED(serv_name, sender.getNickname(), target_channel.getName()));
-			if (option_sign == 1) {
-				if (options[i] == 'i')
-					target_channel.setWhitelist(true, sender);
-				else if (options[i] == 't')
-					target_channel.setTopicRestriction(true, sender);
-				else if (options[i] == 'k') {
-					iss >> args;
-					target_channel.setPassword(true, args, sender);
-				}
-				else if (options[i] == 'o') {
-					iss >> args;
-					target_channel.opUser(true, getClient(args, sender), sender);
-				}
-				else if (options[i] == 'l') {
-					int limit = -1;
-					iss >> args;
-					if (!args.empty())
-						limit = atoi(args.c_str());
-					target_channel.setUserLimit(limit, sender);
-				}
-				else 
-					throw std::runtime_error(ERR_UNKNOWERROR(serv_name, sender.getNickname(), "Invalid option in MODE command."));
-			}
-			if (option_sign == 0) {
-				if (options[i] == 'i')
-					target_channel.setWhitelist(false, sender);
-				else if (options[i] == 't')
-					target_channel.setTopicRestriction(false, sender);
-				else if (options[i] == 'k') {
-					target_channel.setPassword(false, "/", sender);
-				}
-				else if (options[i] == 'o') {
-					iss >> args;
-					target_channel.opUser(false, getClient(args, sender), sender);
-				}
-				else if (options[i] == 'l') {
-					target_channel.setUserLimit(-1, sender);
-				}
-				else 
-					throw std::runtime_error(ERR_UNKNOWERROR(serv_name, sender.getNickname(), "Invalid option in MODE command."));
-
-			}
-		}
-	}
-	else if (target.size() > 0) {
-		target_client = getClient(target, sender);
-		int i = 0;
-		while (options[++i]) {
-			if (option_sign == 0)
-				throw std::runtime_error(ERR_UNKNOWERROR(serv_name, sender.getNickname(), "Invalid option in MODE command."));
-			if (option_sign == 1) {
-				if (options[i] == 'i')
-					throw std::runtime_error(ERR_USERSDONTMATCH(serv_name, sender.getNickname()));
-			}
-		}
-	}
-	else
-		throw std::runtime_error(ERR_NEEDMOREPARAMS(serv_name, sender.getNickname()));
-}
-
 void	Server::cmd_mode(std::string data_sent, Client& sender) {
 	std::istringstream iss(&data_sent[5]);
 	std::string target, options, args;
 	iss >> target >> options;
-	if (target.empty() || options.size() == 1)
+	if (target.empty())
 		throw std::runtime_error(ERR_NEEDMOREPARAMS(serv_name, sender.getNickname() + " MODE"));
 
 	if (target[0] != '#')
-		throw std::runtime_error(ERR_UNKNOWERROR(serv_name, sender.getNickname(), "Cannot set mode on user"));
-	Channel channel = getChannel(target, sender);
+		throw std::runtime_error(ERR_USERSDONTMATCH(serv_name, sender.getNickname()));
 
-	if (options.empty())
-		d_send(sender, RPL_GETMODE(serv_name, sender.getNickname(), channel.getName(), channel.getModes()));
+	std::vector<Channel>::iterator channel;
+	for (channel = all_channels.begin(); channel != all_channels.end(); ++channel) {
+		if (channel->getName() == &target[1])
+			break;
+	}
+	if (channel == all_channels.end())
+		return;
+
+	if (options.empty()) {
+		d_send(sender, RPL_GETMODE(serv_name, sender.getNickname(), channel->getName(), channel->getModes()));
+		return;
+	}
 
 	bool option_sign;
+	if (options[0] != '+' && options[0] != '-')
+		throw std::runtime_error(ERR_NEEDMOREPARAMS(serv_name, sender.getNickname() + " MODE"));
 	if (options[0] == '+')
 		option_sign = true;
 	else
@@ -444,22 +371,22 @@ void	Server::cmd_mode(std::string data_sent, Client& sender) {
 				continue;
 		}
 		if (options[i] == 'i')
-			channel.setWhitelist(option_sign, sender);
+			channel->setWhitelist(option_sign, sender);
 		if (options[i] == 't')
-			channel.setTopicRestriction(option_sign, sender);
+			channel->setTopicRestriction(option_sign, sender);
 		if (options[i] == 'k') {
 			if (option_sign == false)
 				args = "/";
-			channel.setPassword(option_sign, args, sender);
+			channel->setPassword(option_sign, args, sender);
 		}
 		if (options[i] == 'o')
-			channel.opUser(option_sign, getClient(args, sender), sender);
+			channel->opUser(option_sign, getClient(args, sender), sender);
 		if (options[i] == 'l') {
 			int limit = -1;
 			if (option_sign == true) {
 				limit = atoi(args.c_str());
 			}
-			channel.setUserLimit(limit, sender);
+			channel->setUserLimit(limit, sender);
 		}
 	}
 }
