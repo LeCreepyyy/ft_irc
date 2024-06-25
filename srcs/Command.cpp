@@ -416,6 +416,54 @@ void	Server::cmd_mode(std::string data_sent, Client& sender)
 		throw std::runtime_error(ERR_NEEDMOREPARAMS(serv_name, sender.getNickname()));
 }
 
+void	Server::cmd_mode(std::string data_sent, Client& sender) {
+	std::istringstream iss(&data_sent[5]);
+	std::string target, options, args;
+	iss >> target >> options;
+	if (target.empty() || options.size() == 1)
+		throw std::runtime_error(ERR_NEEDMOREPARAMS(serv_name, sender.getNickname() + " MODE"));
+
+	if (target[0] != '#')
+		throw std::runtime_error(ERR_UNKNOWERROR(serv_name, sender.getNickname(), "Cannot set mode on user"));
+	Channel channel = getChannel(target, sender);
+
+	if (options.empty())
+		d_send(sender, RPL_GETMODE(serv_name, sender.getNickname(), channel.getName(), channel.getModes()));
+
+	bool option_sign;
+	if (options[0] == '+')
+		option_sign = true;
+	else
+		option_sign = false;
+
+	int i = 0;
+	while (options[++i]) {
+		if ((options[i] == 'k' || options[i] == 'o' || options[i] == 'l')) {
+			iss >> args;
+			if (args.empty())
+				continue;
+		}
+		if (options[i] == 'i')
+			channel.setWhitelist(option_sign, sender);
+		if (options[i] == 't')
+			channel.setTopicRestriction(option_sign, sender);
+		if (options[i] == 'k') {
+			if (option_sign == false)
+				args = "/";
+			channel.setPassword(option_sign, args, sender);
+		}
+		if (options[i] == 'o')
+			channel.opUser(option_sign, getClient(args, sender), sender);
+		if (options[i] == 'l') {
+			int limit = -1;
+			if (option_sign == true) {
+				limit = atoi(args.c_str());
+			}
+			channel.setUserLimit(limit, sender);
+		}
+	}
+}
+
 
 void	Server::cmd_ping(std::string data_sent, Client& sender) {
 	if (!data_sent[5])
