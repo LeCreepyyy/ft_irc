@@ -3,13 +3,12 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/25 14:24:07 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/26 16:12:04 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
 
 /**
  * BUG join marche tres mal (ALED)
@@ -18,7 +17,7 @@
  * Verif via GPT et d'autres server IRC, TOUTES les commmandes que l'on doit refaire :
  *  - finir les messages
  * Rajouter des fonctions pour simplifier la communications entre client et server (pas sur)
-*/
+ */
 
 #include "../headers/Server.hpp"
 
@@ -34,19 +33,17 @@ Server::Server(std::string name, std::string password, int port)
 	std::memset(&serv_address, 0, sizeof(serv_address));
 }
 
-
 Server::~Server()
 {
 	;
 }
 
-
-
 ///////////////
 //  Methods  //
 ///////////////
 
-void Server::start() {
+void Server::start()
+{
 	// Creating the server's socket
 	serv_socket = socket(AF_INET, SOCK_STREAM, 0);
 	if (serv_socket == -1)
@@ -71,55 +68,71 @@ void Server::start() {
 	// Server is now fully configured.
 	// Listening to any events on server/clients sockets endlessly
 
-	// Preparing storage for client sockets
-	std::vector<int> client_sockets;
-	int maxFd;
+	// Preparing storage for pollfd
+	std::vector<pollfd> poll_fds;
+	pollfd server_pollfd;
+	server_pollfd.fd = serv_socket;
+	server_pollfd.events = POLLIN;
+	poll_fds.push_back(server_pollfd);
 
 	while (true)
 	{
-		// Clear the fd_set
-		FD_ZERO(&monitored);
-		// (re)Adding the server socket in the fd_set
-		FD_SET(serv_socket, &monitored);
-		maxFd = serv_socket;
-
-		// (re)Adding each client socket in the fd_set
-		for (std::vector<Client>::iterator it = all_clients.begin(); it != all_clients.end(); ++it) {
-			int clientSocket = it->getSocket();
-			FD_SET(clientSocket, &monitored);
-			maxFd = std::max(maxFd, clientSocket);
+		// Call poll() to monitor the sockets
+		int poll_count = poll(&poll_fds[0], poll_fds.size(), -1);
+		if (poll_count == -1)
+		{
+			this->crash("Poll() exception");
 		}
 
-		// Watch out for any events happening on any sockets stored in the fd_set
-		if ((select(maxFd + 1, &monitored, NULL, NULL, NULL) < 0) && (errno != EINTR))
-			this->crash("Select() exception");
-
-		// Event occured on the server socket : its a new client connection
-		if (FD_ISSET(serv_socket, &monitored)) {
-			// Accepting new client connexion, then storing the new client in the 'clients' vector
+		// Check for events on the server socket (new client connection)
+		if (poll_fds[0].revents & POLLIN)
+		{
+			// Accepting new client connection, then storing the new client in the 'clients' vector
 			Client client;
 			int clientSocket = accept(serv_socket, (struct sockaddr *)&(client.getAddressREF()), &(client.getAddressLenREF()));
 			if (clientSocket == -1)
-				this->crash("Could not accept connexion");
+				this->crash("Could not accept connection");
 			client.setServName(serv_name);
 			client.setSocket(clientSocket);
 			client.setIP(inet_ntoa(client.getAddress().sin_addr));
 			all_clients.push_back(client);
+
+			// Add the new client socket to the poll_fds vector
+			pollfd client_pollfd;
+			client_pollfd.fd = clientSocket;
+			client_pollfd.events = POLLIN;
+			poll_fds.push_back(client_pollfd);
+
 			std::cout << irc_time() << "New connection" << std::endl;
 		}
 
-
-		// Event occured on a client socket : either a disconnection, or a text input
-		for (std::vector<Client>::iterator iter_client = all_clients.begin(); iter_client != all_clients.end();)
+		// Check for events on client sockets
+		for (std::vector<pollfd>::iterator it = poll_fds.begin() + 1; it != poll_fds.end(); ++it)
 		{
-			if (FD_ISSET(iter_client->getSocket(), &monitored)) {
+			if (it->revents & POLLIN)
+			{
+				// Find the corresponding client
+				std::vector<Client>::iterator client_it;
+				for (client_it = all_clients.begin(); client_it != all_clients.end(); ++client_it) {
+					if (client_it->getSocket() == it->fd)
+						break;
+				}
+				// client not found
+				if (client_it == all_clients.end())
+					continue;
+
 				// Receiving data from client, using a buffer
 				char buffer[1024];
-				int bytesReceived = recv(iter_client->getSocket(), buffer, 1024, 0);
+				int bytesReceived = recv(client_it->getSocket(), buffer, 1024, 0);
 
 				// If buffer is empty, it's a disconnection
-				if (bytesReceived <= 0) {
-					quit(*iter_client);
+				if (bytesReceived <= 0)
+				{
+					quit(*client_it);
+					// Remove the client socket from poll_fds
+					it = poll_fds.erase(it);
+					if (it == poll_fds.end())
+						break;
 					continue;
 				}
 
@@ -128,42 +141,47 @@ void Server::start() {
 				{
 					std::string client_input(buffer, bytesReceived);
 					std::vector<std::string> substrings = splitString(client_input, '\n');
-					
-					for (std::vector<std::string>::iterator i = substrings.begin() ; i < substrings.end(); i++) {
+
+					for (std::vector<std::string>::iterator i = substrings.begin(); i < substrings.end(); ++i)
+					{
 						debug(*i);
-						handle_client_input(*i, *iter_client);
+						handle_client_input(*i, *client_it);
 					}
 				}
 				catch (const std::exception &e)
 				{
 					std::string notif = e.what();
-					d_send(*iter_client, notif);
+					d_send(*client_it, notif);
 				}
 			}
-			++iter_client;
 		}
 	}
 }
 
-void Server::crash(std::string log) {
+void Server::crash(std::string log)
+{
 	close(serv_socket);
 	if (log.length() != 0)
 		throw std::runtime_error(log);
 }
 
-void Server::quit(Client& iter_client) {
+void Server::quit(Client &iter_client)
+{
 	std::cout << iter_client.getNickname() << " left the game." << std::endl;
-	for (std::vector<Client>::iterator i = pass_list.begin(); i != pass_list.end(); ++i) {
-	// Remove client from pass_list
-		if (*i == iter_client) {
+	for (std::vector<Client>::iterator i = pass_list.begin(); i != pass_list.end(); ++i)
+	{
+		// Remove client from pass_list
+		if (*i == iter_client)
+		{
 			pass_list.erase(i);
-			
+
 			break;
 		}
 	}
 
-	for (std::vector<Channel>::iterator iter_channel = all_channels.begin(); iter_channel != all_channels.end(); ) {
-	// Remove client from all channels, and their whitelists
+	for (std::vector<Channel>::iterator iter_channel = all_channels.begin(); iter_channel != all_channels.end();)
+	{
+		// Remove client from all channels, and their whitelists
 		iter_channel->removeClientFromWhitelist(iter_client);
 		iter_channel->removeClientFromChannel(iter_client);
 		iter_channel->removeClientFromOperators(iter_client);
@@ -175,13 +193,16 @@ void Server::quit(Client& iter_client) {
 
 	// Close the client socket and remove the client from all_clients
 	close(iter_client.getSocket());
-	//FD_CLR(iter_client, &monitored);
+	// FD_CLR(iter_client, &monitored);
 	all_clients.erase(find(all_clients.begin(), all_clients.end(), iter_client));
 }
 
-void Server::check_password(std::string data_sent, Client& sender) {
-	for (std::vector<Client>::iterator i = pass_list.begin(); i != pass_list.end(); i++) {
-		if (*i == sender) {
+void Server::check_password(std::string data_sent, Client &sender)
+{
+	for (std::vector<Client>::iterator i = pass_list.begin(); i != pass_list.end(); i++)
+	{
+		if (*i == sender)
+		{
 			std::istringstream iss(data_sent);
 			std::string cmd;
 			iss >> cmd;
@@ -189,31 +210,35 @@ void Server::check_password(std::string data_sent, Client& sender) {
 				throw std::runtime_error("Choose a Nickname.");
 			else if (sender.getNickname() != "/" && sender.getUsername().size() == 0 && cmd != "USER")
 				throw std::runtime_error("Choose a Username.");
-			return ;
+			return;
 		}
 	}
+
 	size_t it = data_sent.find("PASS");
-	if (it == data_sent.npos) {
+	if (it == data_sent.npos)
+	{
 		d_send(sender, "Wrong password !");
 		quit(sender);
+		return;
 	}
 	it += 5;
 	std::istringstream iss(&data_sent[it]);
 	std::string password_sent;
 	iss >> password_sent;
-	if (password_sent != this->serv_password) {
+	if (password_sent != this->serv_password)
+	{
 		d_send(sender, "Wrong password !");
 		quit(sender);
+		return;
 	}
-	//validation
+	// validation
 	pass_list.push_back(sender);
 	std::string notif("You are now logged in.\n");
 	d_send(sender, notif);
 	std::cout << sender.getIP() << " logged in." << std::endl;
 }
 
-
-void Server::handle_client_input(std::string data_sent, Client& sender)
+void Server::handle_client_input(std::string data_sent, Client &sender)
 {
 	std::istringstream iss(data_sent);
 	std::string command;
@@ -222,7 +247,8 @@ void Server::handle_client_input(std::string data_sent, Client& sender)
 	if (command == "CAP")
 		return;
 	check_password(data_sent, sender);
-	if (command == "NICK") {
+	if (command == "NICK")
+	{
 		std::string lastname = sender.getNickname();
 		std::string oldnick = sender.setNickname(data_sent, all_clients);
 		std::vector<Channel> lastiter = sender.getAllInteractions();
@@ -255,7 +281,8 @@ void Server::handle_client_input(std::string data_sent, Client& sender)
 		cmd_ping(data_sent, sender);
 	else if (command == "WHO")
 		cmd_who(data_sent, sender);
-	else if (command != "PASS" && command != "CAP") {
+	else if (command != "PASS" && command != "CAP")
+	{
 		if (sender.getAllInteractions().size())
 			msg_to_channel(data_sent, sender.getLastInteraction(), sender);
 		else
@@ -263,8 +290,8 @@ void Server::handle_client_input(std::string data_sent, Client& sender)
 	}
 }
 
-
-void	Server::msg_to_channel(std::string msg, Channel target, Client& sender) {
+void Server::msg_to_channel(std::string msg, Channel target, Client &sender)
+{
 	std::istringstream iss(msg);
 	std::string tmp;
 	iss >> tmp;
@@ -275,29 +302,36 @@ void	Server::msg_to_channel(std::string msg, Channel target, Client& sender) {
 
 	std::string message = RPL_PRIVMSG(sender.getNickname(), sender.getUsername()[0], serv_name, "#" + target.getName(), msg);
 	bool found = false;
-	for (size_t i = 0; i != all_channels.size(); i++) {
-		if (all_channels[i].getName() == target.getName() || all_channels[i].getName() == target.getName() + "\n") {
+	for (size_t i = 0; i != all_channels.size(); i++)
+	{
+		if (all_channels[i].getName() == target.getName() || all_channels[i].getName() == target.getName() + "\n")
+		{
 			found = true;
-			for (size_t j = 0; j != all_channels[i].getAllUsers().size(); j++) {
+			for (size_t j = 0; j != all_channels[i].getAllUsers().size(); j++)
+			{
 				if (all_channels[i].getAllUsers()[j].getSocket() != sender.getSocket())
 					d_send(all_channels[i].getAllUsers()[j], message);
 			}
-			break ;
+			break;
 		}
 	}
 	if (found == false)
 		throw std::runtime_error(ERR_NOSUCHCHANNEL(serv_name, sender.getNickname(), target.getName()));
 }
 
-void	Server::cmd_to_channel(std::string msg, Channel target, Client& sender) {
+void Server::cmd_to_channel(std::string msg, Channel target, Client &sender)
+{
 	bool found = false;
-	for (size_t i = 0; i != all_channels.size(); i++) {
-		if (all_channels[i].getName() == target.getName() || all_channels[i].getName() == target.getName() + "\n") {
+	for (size_t i = 0; i != all_channels.size(); i++)
+	{
+		if (all_channels[i].getName() == target.getName() || all_channels[i].getName() == target.getName() + "\n")
+		{
 			found = true;
-			for (size_t j = 0; j != all_channels[i].getAllUsers().size(); j++) {
+			for (size_t j = 0; j != all_channels[i].getAllUsers().size(); j++)
+			{
 				d_send(all_channels[i].getAllUsers()[j], msg);
 			}
-			break ;
+			break;
 		}
 	}
 	if (found == false)
@@ -308,26 +342,28 @@ void	Server::cmd_to_channel(std::string msg, Channel target, Client& sender) {
 //  Accessors  //
 /////////////////
 
-Channel&		Server::getChannel(std::string channel_name, Client& sender) {
+Channel &Server::getChannel(std::string channel_name, Client &sender)
+{
 	if (channel_name.size() == 0)
 		throw std::runtime_error(ERR_NEEDMOREPARAMS(serv_name, sender.getNickname()));
 	if (channel_name[0] != '#')
 		throw std::runtime_error(ERR_NOSUCHCHANNEL(serv_name, sender.getNickname(), channel_name));
-	for (std::vector<Channel>::iterator channel_it = all_channels.begin(); channel_it != all_channels.end(); channel_it++) {
+	for (std::vector<Channel>::iterator channel_it = all_channels.begin(); channel_it != all_channels.end(); channel_it++)
+	{
 		if (channel_it->getName() == &channel_name[1])
 			return (*channel_it);
 	}
 	throw std::runtime_error(ERR_NOSUCHCHANNEL(serv_name, sender.getNickname(), channel_name));
 }
 
-Client&			Server::getClient(std::string client_name, Client& sender) {
+Client &Server::getClient(std::string client_name, Client &sender)
+{
 	if (client_name.size() == 0)
 		throw std::runtime_error(ERR_NEEDMOREPARAMS(serv_name, sender.getNickname()));
-	for (std::vector<Client>::iterator client_it = all_clients.begin(); client_it != all_clients.end(); client_it++) {
+	for (std::vector<Client>::iterator client_it = all_clients.begin(); client_it != all_clients.end(); client_it++)
+	{
 		if (client_it->getNickname() == client_name)
 			return (*client_it);
 	}
 	throw std::runtime_error(ERR_NOSUCHNICK(serv_name, sender.getNickname(), client_name));
 }
-
-
