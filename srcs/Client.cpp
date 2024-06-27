@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:09:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/21 10:54:01 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/27 14:29:27 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 Client::Client()
 {
 	nickname = "/";
+	registered = false;
 }
 
 
@@ -54,8 +55,12 @@ int	Client::getSocket() {
 	return (client_socket);
 }
 
-
-
+void	Client::setRegistered(bool status) {
+	this->registered = status;
+}
+bool	Client::getRegistered() {
+	return this->registered;
+}
 
 // Nickname
 void					Client::setServName(std::string servname) {
@@ -90,8 +95,11 @@ std::string	Client::setNickname(std::string cmd, std::vector<Client> &all_client
             throw std::runtime_error(ERR_NICKNAMEINUSE(serv_name, last, temp));
     }
     nickname = temp;
-	// if (last == "/")
-	// 	return (last);
+	if (this->registered == false && this->nickname != "/" && this->username.size() > 0) {
+		this->registered = true;
+		std::string notif = RPL_WELCOME(serv_name, this->nickname) + RPL_YOURHOSTIS(serv_name, this->nickname) + RPL_CREATIONDATE(serv_name, this->nickname) + RPL_SERVINFOS(serv_name, this->nickname);
+		d_send(*this, notif);
+	}
 	return (last);
 }
 
@@ -122,8 +130,11 @@ void	Client::setUsername(std::string cmd) {
 	if (args_count < 3)
 		throw std::runtime_error(ERR_NEEDMOREPARAMS(serv_name, nickname + " USER"));
 	username = temp;
-	std::string notif = RPL_WELCOME(serv_name, nickname) + RPL_YOURHOSTIS(serv_name, nickname) + RPL_CREATIONDATE(serv_name, nickname) + RPL_SERVINFOS(serv_name, nickname);
-	d_send(*this, notif);
+	if (this->registered == false && this->nickname != "/" && this->username.size() > 0) {
+		this->registered = true;
+		std::string notif = RPL_WELCOME(serv_name, this->nickname) + RPL_YOURHOSTIS(serv_name, this->nickname) + RPL_CREATIONDATE(serv_name, this->nickname) + RPL_SERVINFOS(serv_name, this->nickname);
+		d_send(*this, notif);
+	}
 }
 
 std::vector<std::string>	Client::getUsername() {
@@ -193,3 +204,4 @@ void	Client::removeFromLastInteraction(Channel& target) {
 	std::vector<Channel>::iterator it = std::remove(last_interaction.begin(), last_interaction.end(), target);
 	last_interaction.erase(it, last_interaction.end());
 }
+

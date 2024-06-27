@@ -456,3 +456,21 @@ void	Server::cmd_quit(std::string data_sent, Client& sender)
 		cmd_to_channel(RPL_QUIT(sender.getNickname(), sender.getUsername()[0], sender.getUsername()[1], clean_message(&data_sent[5])), *chan_it, sender);
 }
 
+void	Server::cmd_nick(std::string data_sent, Client& sender) {
+	std::string lastname = sender.getNickname();
+	std::string oldnick = sender.setNickname(data_sent, all_clients);
+	std::vector<Channel> lastiter = sender.getAllInteractions();
+	std::vector<Client> h_clients;
+
+	for (std::vector<Channel>::iterator it = lastiter.begin(); it != lastiter.end(); it++) {
+		// for (std::vector<Client>::iterator tmp = it->getAllUsers().begin(); tmp != it->getAllUsers().end(); tmp++) {
+		// 	debug(it->getAllUsers().size());
+		// 	if (find(h_clients.begin(), h_clients.end(), *tmp) == h_clients.end()) {
+		// 		d_send(*tmp, RPL_NICK(oldnick, sender.getUsername()[1], sender.getNickname()));
+		// 		h_clients.push_back(*tmp);
+		// 	}
+		// }
+		cmd_to_channel(RPL_NICK(oldnick, sender.getUsername()[1], sender.getNickname()), *it, sender);
+	}
+}
+

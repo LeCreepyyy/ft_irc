@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
+/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/26 16:12:04 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/06/27 14:27:24 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -206,10 +206,8 @@ void Server::check_password(std::string data_sent, Client &sender)
 			std::istringstream iss(data_sent);
 			std::string cmd;
 			iss >> cmd;
-			if (sender.getNickname() == "/" && cmd != "NICK")
-				throw std::runtime_error("Choose a Nickname.");
-			else if (sender.getNickname() != "/" && sender.getUsername().size() == 0 && cmd != "USER")
-				throw std::runtime_error("Choose a Username.");
+			if ((sender.getNickname() == "/" || sender.getUsername().size() == 0) && (cmd != "NICK" && cmd != "USER"))
+				throw std::runtime_error("Choose a Nickname and Username.\r\n");
 			return;
 		}
 	}
@@ -217,7 +215,7 @@ void Server::check_password(std::string data_sent, Client &sender)
 	size_t it = data_sent.find("PASS");
 	if (it == data_sent.npos)
 	{
-		d_send(sender, "Wrong password !");
+		d_send(sender, "Wrong password !\r\n");
 		quit(sender);
 		return;
 	}
@@ -227,7 +225,7 @@ void Server::check_password(std::string data_sent, Client &sender)
 	iss >> password_sent;
 	if (password_sent != this->serv_password)
 	{
-		d_send(sender, "Wrong password !");
+		d_send(sender, "Wrong password !\r\n");
 		quit(sender);
 		return;
 	}
@@ -248,13 +246,7 @@ void Server::handle_client_input(std::string data_sent, Client &sender)
 		return;
 	check_password(data_sent, sender);
 	if (command == "NICK")
-	{
-		std::string lastname = sender.getNickname();
-		std::string oldnick = sender.setNickname(data_sent, all_clients);
-		std::vector<Channel> lastiter = sender.getAllInteractions();
-		for (std::vector<Channel>::iterator it = lastiter.begin(); it != lastiter.end(); it++)
-			cmd_to_channel(RPL_NICK(oldnick, sender.getUsername()[1], sender.getNickname()), *it, sender);
-	}
+		cmd_nick(data_sent, sender);
 	else if (command == "USER")
 		sender.setUsername(data_sent);
 	else if (command == "JOIN")

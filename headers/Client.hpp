@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
+/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:05:32 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/26 14:39:55 by bgaertne         ###   ########.fr       */
+/*   Updated: 2024/06/27 14:20:36 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@
 			struct sockaddr_in			client_address;
 			socklen_t					client_address_len;
 			std::vector<Channel>		last_interaction;
+			bool						registered;
 		
 		public:
 
@@ -40,6 +41,9 @@
 			bool					operator!=(const Client& other) const;
 			
 			/* Accessors */
+			void					setRegistered(bool status);
+			bool					getRegistered();
+			
 			void					setServName(std::string servname);
 			std::string				getServName();
 			
