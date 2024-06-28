@@ -12,12 +12,6 @@
 
 #include "../headers/Server.hpp"
 
-void	display(std::vector<Client> vector) {
-	for (std::vector<Client>::iterator client_it = vector.begin(); client_it != vector.end(); client_it++) {
-		debug(client_it->getSocket());
-	}
-}
-
 void	Server::cmd_invite(std::string data_sent, Client& sender) {
 	std::vector<Client>::iterator target;
 	std::string target_nickname = "#";
@@ -462,7 +456,6 @@ void	Server::cmd_quit(std::string data_sent, Client& sender)
 
 void	Server::cmd_nick(std::string data_sent, Client& sender) {
 	std::string oldnick = sender.setNickname(data_sent, all_clients);
-	//std::vector<Channel> lastiter = sender.getAllInteractions();
 	std::vector<Client> h_clients;
 
 	if (oldnick.size() == 1 && oldnick[0] == '/') {
