@@ -12,7 +12,11 @@
 
 #include "../headers/Server.hpp"
 
-
+void	display(std::vector<Client> vector) {
+	for (std::vector<Client>::iterator client_it = vector.begin(); client_it != vector.end(); client_it++) {
+		debug(client_it->getSocket());
+	}
+}
 
 void	Server::cmd_invite(std::string data_sent, Client& sender) {
 	std::vector<Client>::iterator target;
@@ -457,20 +461,23 @@ void	Server::cmd_quit(std::string data_sent, Client& sender)
 }
 
 void	Server::cmd_nick(std::string data_sent, Client& sender) {
-	std::string lastname = sender.getNickname();
 	std::string oldnick = sender.setNickname(data_sent, all_clients);
-	std::vector<Channel> lastiter = sender.getAllInteractions();
+	//std::vector<Channel> lastiter = sender.getAllInteractions();
 	std::vector<Client> h_clients;
 
-	for (std::vector<Channel>::iterator it = lastiter.begin(); it != lastiter.end(); it++) {
-		// for (std::vector<Client>::iterator tmp = it->getAllUsers().begin(); tmp != it->getAllUsers().end(); tmp++) {
-		// 	debug(it->getAllUsers().size());
-		// 	if (find(h_clients.begin(), h_clients.end(), *tmp) == h_clients.end()) {
-		// 		d_send(*tmp, RPL_NICK(oldnick, sender.getUsername()[1], sender.getNickname()));
-		// 		h_clients.push_back(*tmp);
-		// 	}
-		// }
-		cmd_to_channel(RPL_NICK(oldnick, sender.getUsername()[1], sender.getNickname()), *it, sender);
+	if (oldnick.size() == 1 && oldnick[0] == '/') {
+		return;
+	}
+	d_send(sender, RPL_NICK(oldnick, sender.getUsername()[1], sender.getNickname()));
+	h_clients.push_back(sender);
+
+	for (std::vector<Channel>::iterator it = all_channels.begin(); it != all_channels.end(); it++) {
+		for (std::vector<Client>::iterator tmp = it->getAllUsers().begin(); tmp != it->getAllUsers().end(); tmp++) {
+			if (find(h_clients.begin(), h_clients.end(), *tmp) == h_clients.end()) {
+				d_send(*tmp, RPL_NICK(oldnick, sender.getUsername()[1], sender.getNickname()));
+				h_clients.push_back(*tmp);
+			}
+		}
 	}
 }
 

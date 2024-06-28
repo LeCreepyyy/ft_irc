@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/24 13:09:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/27 14:29:27 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/06/28 10:39:51 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,7 +86,7 @@ std::string	Client::setNickname(std::string cmd, std::vector<Client> &all_client
     if (temp.empty())
         throw std::runtime_error(ERR_NONICKNAMEGIVEN(serv_name, nickname));
 
-    std::string invalidChars = " ,*?!@.";
+    std::string invalidChars = " ,*?!@./";
     if (temp[0] == '#' || temp.find_first_of(invalidChars) != std::string::npos)
     	throw std::runtime_error(ERR_ERRONEUSNICKNAME(serv_name, last, temp));
 
