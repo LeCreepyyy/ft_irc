@@ -228,7 +228,7 @@ void	Server::cmd_privmsg(std::string data_sent, Client& sender)
         throw std::runtime_error(ERR_NOTEXTTOSEND(serv_name, sender.getNickname()));
     }
 	message = clean_message(message);
-	if (!message.empty())
+	if (!message.empty() && message[0] == ':')
 		message = message.substr(1);
 
 	if (target[0] == '#') {
@@ -291,7 +291,7 @@ void	Server::cmd_topic(std::string data_sent, Client& sender)
 		throw std::runtime_error(ERR_NEEDMOREPARAMS(serv_name, sender.getNickname() + " TOPIC"));
 
 	topic = clean_message(&data_sent[6 + target_name.size()]);
-	if (!topic.empty()) {
+	if (!topic.empty() && topic[0] == ':') {
 		topic = topic.substr(1);
 	}
 
