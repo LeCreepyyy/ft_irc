@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:11:21 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/20 13:50:33 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/07/01 11:15:55 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,18 +75,33 @@ std::vector<std::string>	splitString(std::string client_input, char spliter)
 	return result;
 }
 
-std::string		clean_message(const std::string& message) {
-	std::istringstream iss(message);
-	std::string result;
-	while (1) {
-		std::string word;
-		iss >> word;
-		if (word.empty())
-			break ;
-		result += word;
-		result += " ";
-	}
-	return result;
+// std::string		clean_message(const std::string& message) {
+// 	std::istringstream iss(message);
+// 	std::string result;
+// 	while (1) {
+// 		std::string word;
+// 		iss >> word;
+// 		if (word.empty())
+// 			break ;
+// 		result += word;
+// 		result += " ";
+// 	}
+// 	return result;
+// }
+
+std::string clean_message(const std::string& message) {
+    std::istringstream iss(message);
+    std::ostringstream oss;
+    std::string word;
+    bool first_word = true;
+    while (iss >> word) {
+        if (!first_word) {
+            oss << ' ';
+        }
+        oss << word;
+        first_word = false;
+    }
+    return oss.str();
 }
 
 void	d_send(Client& receiver, std::string message) {

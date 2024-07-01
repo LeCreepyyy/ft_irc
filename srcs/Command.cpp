@@ -74,7 +74,6 @@ void	Server::cmd_invite(std::string data_sent, Client& sender) {
 	d_send(*target, RPL_INVITING(sender.getServName(), sender.getNickname(), target_nickname, channel_name));
 }
 
-
 void	Server::cmd_kick(std::string data_sent, Client& sender) {
 
 	std::vector<Client>::iterator target;
@@ -228,7 +227,9 @@ void	Server::cmd_privmsg(std::string data_sent, Client& sender)
 	if (message.empty()) {
         throw std::runtime_error(ERR_NOTEXTTOSEND(serv_name, sender.getNickname()));
     }
-	message = &message[1];
+	message = clean_message(message);
+	if (!message.empty())
+		message = message.substr(1);
 
 	if (target[0] == '#') {
 		Channel chan = getChannel(target, sender);
@@ -290,7 +291,9 @@ void	Server::cmd_topic(std::string data_sent, Client& sender)
 		throw std::runtime_error(ERR_NEEDMOREPARAMS(serv_name, sender.getNickname() + " TOPIC"));
 
 	topic = clean_message(&data_sent[6 + target_name.size()]);
-	topic = &topic[1];
+	if (!topic.empty()) {
+		topic = topic.substr(1);
+	}
 
 	Channel target;
 	if (target_name.size() > 1 && target_name[0] == '#')
@@ -300,8 +303,8 @@ void	Server::cmd_topic(std::string data_sent, Client& sender)
 	for (std::vector<Channel>::iterator it = all_channels.begin(); it != all_channels.end(); it++) {
 		if (*it == target) {
 			if (topic.empty()) {
-				std::string msg = target.rplTopic(sender);
-				d_send(sender, msg);
+				//std::string msg = target.rplTopic(sender);
+				d_send(sender, target.rplTopic(sender));
 			}
 			else {
 				it->setTopic(topic, sender);
@@ -388,7 +391,6 @@ void	Server::cmd_mode(std::string data_sent, Client& sender) {
 		}
 	}
 }
-
 
 void	Server::cmd_ping(std::string data_sent, Client& sender) {
 	if (!data_sent[5])
