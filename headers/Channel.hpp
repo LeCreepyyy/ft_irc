@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/03 10:31:29 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/07/01 11:06:31 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/07/01 13:47:24 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,7 +81,7 @@
 			bool				getPasswordStatus();
 			
 			int					getUserLimit();
-			void				setUserLimit(int limit, Client& sender);
+			void				setUserLimit(int limit, std::string args, Client& sender);
 
 			std::string			getListOfNames();
 			bool				isOP(Client& client);

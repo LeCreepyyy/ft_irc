@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 14:09:45 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/27 14:16:10 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/07/01 13:39:07 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,6 +87,7 @@
 #define RPL_GETMODE(server, nickname, channel, mode_list)		":" + server + " 324 " + nickname + " #" + channel + " " + mode_list + "\r\n"
 #define RPL_BANLIST(server, nickname, channel)					":" + server + " 368 " + nickname + " #" + channel + " :End of channel ban list.\r\n"
 #define RPL_COUNTMODE(server, nickname, channel, size)			":" + server + " 329 " + nickname + " #" + channel + " " + size + "\r\n"
+#define RPL_CHANNELMODEIS(server, nickname, channel, limit)		":" + server + " 324 " + nickname + " #" + channel + " " + limit + "\r\n"
 
 //who
 #define RPL_WHOREPLY(server, nickname, channel, username, hostname, isOp, realname) ":" + server + " 352 " + nickname + " " + channel + " " + username + " " + hostname + " " + server + " " + nickname + " H" + isOp + " :0 " +  realname + "\r\n"
@@ -134,6 +135,10 @@
 #define ERR_USERNOTINCHANNEL(server, nickname, target, channel) ":" + server + " 441 " + nickname + " " + target + " " + channel + " :They aren't on that channel\r\n"
 
 //commande op channel
+/**
+ * @param source +o or -o and nickname of target
+ */
+#define RPL_OP(nickname, username, hostname, channel, source)	":" + nickname + "!" + username + "@" + hostname + " MODE #" + channel + " " + source + "\r\n";
 #define ERR_UNKNOWNMODE(server, nickname) 						":" + server + " 472 " + nickname + " & :is unknown mode char to me for #canal\r\n"
 #define ERR_CHANOPRIVSNEEDED(server, nickname, channel)			":" + server + " 482 " + nickname + " #" + channel + " :You're not channel operator\r\n"
 #define ERR_USERSDONTMATCH(server, nickname)					":" + server + " 502 " + nickname + " :Cannot change mode for other users\r\n"

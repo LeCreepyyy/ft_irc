@@ -6,7 +6,7 @@
 /*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/07 01:42:29 by bgaertne          #+#    #+#             */
-/*   Updated: 2024/07/01 11:06:37 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/07/01 13:51:13 by vpoirot          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -315,12 +315,21 @@ int		Channel::getUserLimit() {
 	return this->user_limit;
 }
 
-void	Channel::setUserLimit(int limit, Client& sender) {
-	if (limit < 1 || limit > 99)
-		throw std::runtime_error(ERR_UNKNOWERROR(sender.getServName() , sender.getNickname(), "Invalid limit. (>0 && <99)"));
-	if (static_cast<size_t>(limit) < this->getAllUsers().size())
-		throw std::runtime_error(ERR_UNKNOWERROR(sender.getServName() , sender.getNickname(), "Too much users in channel to set this limit."));
+void	Channel::setUserLimit(int limit, std::string arg, Client& sender) {
+	debug("INSIDE OPTION L");
+	std::string option = "-l";
+	if (limit == -1) {
+		debug("HIT: -L");
+		throw std::runtime_error(RPL_CHANNELMODEIS(sender.getServName(), sender.getNickname(), name, option));
+	}
+	else if (limit <= 0){
+		debug("HIT: ERROR IN PARAMS");
+		throw std::runtime_error(ERR_NEEDMOREPARAMS(sender.getServName(), sender.getNickname()));
+	}
+	debug("HIT: +L");
 	this->user_limit = limit;
+	option = "+l " + arg;
+	throw std::runtime_error(RPL_CHANNELMODEIS(sender.getServName(), sender.getNickname(), name, option));
 }
 
 // LIST OF NAMES

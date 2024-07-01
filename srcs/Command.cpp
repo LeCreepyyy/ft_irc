@@ -350,6 +350,8 @@ void	Server::cmd_mode(std::string data_sent, Client& sender) {
 	}
 	if (channel == all_channels.end())
 		return;
+	if (channel->isOP(sender) == false)
+		throw std::runtime_error(ERR_CHANOPRIVSNEEDED(serv_name, sender.getNickname(), channel->getName()));
 
 	if (options.empty()) {
 		d_send(sender, RPL_GETMODE(serv_name, sender.getNickname(), channel->getName(), channel->getModes()));
@@ -366,7 +368,7 @@ void	Server::cmd_mode(std::string data_sent, Client& sender) {
 
 	int i = 0;
 	while (options[++i]) {
-		if ((options[i] == 'k' || options[i] == 'o' || options[i] == 'l')) {
+		if (((options[i] == 'k' || options[i] == 'o' || options[i] == 'l') && option_sign == true) || (options[i] == 'o' && option_sign == false)) {
 			iss >> args;
 			if (args.empty())
 				continue;
@@ -380,14 +382,24 @@ void	Server::cmd_mode(std::string data_sent, Client& sender) {
 				args = "/";
 			channel->setPassword(option_sign, args, sender);
 		}
-		if (options[i] == 'o')
+		if (options[i] == 'o') {
 			channel->opUser(option_sign, getClient(args, sender), sender);
+			std::string rpl;
+			if (option_sign == true) {
+				rpl = RPL_OP(sender.getNickname(), sender.getUsername()[0], sender.getUsername()[1], channel->getName(), "+o " + getClient(args, sender).getNickname());
+			} else {
+				rpl = RPL_OP(sender.getNickname(), sender.getUsername()[0], sender.getUsername()[1], channel->getName(), "-o " + getClient(args, sender).getNickname());
+			}
+			cmd_to_channel(rpl, *channel, sender);
+		}
+		debug(options[i]);
 		if (options[i] == 'l') {
+			debug("OPTION L");
 			int limit = -1;
 			if (option_sign == true) {
 				limit = atoi(args.c_str());
 			}
-			channel->setUserLimit(limit, sender);
+			channel->setUserLimit(limit, args, sender);
 		}
 	}
 }
