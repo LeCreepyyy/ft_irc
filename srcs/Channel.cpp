@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/07 01:42:29 by bgaertne          #+#    #+#             */
-/*   Updated: 2024/07/01 13:51:13 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/07/02 10:20:40 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -217,7 +217,6 @@ void	Channel::setWhitelist(bool status, Client& sender) {
 	if (this->on_whitelist == true)
 	{
 		if (status == false) {
-			debug("WHITELIST OFF");
 			this->whitelist.clear();
 			this->on_whitelist = false;
 			std::string notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "-i");
@@ -227,7 +226,6 @@ void	Channel::setWhitelist(bool status, Client& sender) {
 	else
 	{
 		if (status == true) {
-			debug("WHITELIST ON");
 			this->whitelist.push_back(sender);
 			this->on_whitelist = true;
 			std::string notif = RPL_SETMODE(sender.getNickname(), sender.getUsername()[1], name, "+i");
@@ -316,17 +314,11 @@ int		Channel::getUserLimit() {
 }
 
 void	Channel::setUserLimit(int limit, std::string arg, Client& sender) {
-	debug("INSIDE OPTION L");
 	std::string option = "-l";
-	if (limit == -1) {
-		debug("HIT: -L");
+	if (limit == -1)
 		throw std::runtime_error(RPL_CHANNELMODEIS(sender.getServName(), sender.getNickname(), name, option));
-	}
-	else if (limit <= 0){
-		debug("HIT: ERROR IN PARAMS");
+	else if (limit <= 0)
 		throw std::runtime_error(ERR_NEEDMOREPARAMS(sender.getServName(), sender.getNickname()));
-	}
-	debug("HIT: +L");
 	this->user_limit = limit;
 	option = "+l " + arg;
 	throw std::runtime_error(RPL_CHANNELMODEIS(sender.getServName(), sender.getNickname(), name, option));

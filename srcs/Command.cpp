@@ -164,12 +164,9 @@ void	Server::cmd_join(std::string data_sent, Client& sender)
 
 			// If channel is whitelisted, is the user on the whitelist
 			if (all_channels[i].getWhitelistStatus()) {
-				debug("THIS CHANNEL IS WHITELISTED");
 				std::vector<Client> whitelist = all_channels[i].getWhitelist();
-				if (std::find(whitelist.begin(), whitelist.end(), sender) == whitelist.end()) {
-					debug("YOU ARE NOT ON THE WHITELIST");
+				if (std::find(whitelist.begin(), whitelist.end(), sender) == whitelist.end())
 					throw std::runtime_error(ERR_INVITEONLYCHAN(serv_name, sender.getNickname(), channel_name));
-				}
 			}
 
 			// if channel is protected by password, look for it in the user input.
@@ -392,9 +389,7 @@ void	Server::cmd_mode(std::string data_sent, Client& sender) {
 			}
 			cmd_to_channel(rpl, *channel, sender);
 		}
-		debug(options[i]);
 		if (options[i] == 'l') {
-			debug("OPTION L");
 			int limit = -1;
 			if (option_sign == true) {
 				limit = atoi(args.c_str());
@@ -431,7 +426,6 @@ void	Server::cmd_who(std::string data_sent, Client& sender) {
 	std::string channel;
 	iss >> channel;
 
-	debug(channel);
 	std::string notif;
 	Channel chan = getChannel(channel, sender);
 	std::string op_string = "";

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vpoirot <vpoirot@student.42.fr>            +#+  +:+       +#+        */
+/*   By: bgaertne <bgaertne@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/16 11:20:47 by vpoirot           #+#    #+#             */
-/*   Updated: 2024/06/27 14:27:24 by vpoirot          ###   ########.fr       */
+/*   Updated: 2024/07/02 10:04:44 by bgaertne         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -143,10 +143,7 @@ void Server::start()
 					std::vector<std::string> substrings = splitString(client_input, '\n');
 
 					for (std::vector<std::string>::iterator i = substrings.begin(); i < substrings.end(); ++i)
-					{
-						debug(*i);
 						handle_client_input(*i, *client_it);
-					}
 				}
 				catch (const std::exception &e)
 				{
